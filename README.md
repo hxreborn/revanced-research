@@ -61,10 +61,11 @@
 # revanced-research
 
 ![GitHub last commit](https://img.shields.io/github/last-commit/hxreborn/revanced-research?label=updated&color=ff6f3d)
-![GitHub issues](https://img.shields.io/github/issues/hxreborn/revanced-research?color=ffb347)
-![GitHub stars](https://img.shields.io/github/stars/hxreborn/revanced-research?style=social)
+![Status: Experimental](https://img.shields.io/badge/status-experimental-ffb347)
+![GPLv3](https://img.shields.io/badge/license-GPLv3-blue)
+![Repo size](https://img.shields.io/github/repo-size/hxreborn/revanced-research)
 
-`revanced-research` is an operations hub for investigating Android APKs in support of ReVanced and custom patches. It keeps branding in line with the official ReVanced ecosystem while documenting tooling expectations, repeatable workflows, and app-specific findings in one public home.
+`revanced-research` is a personal lab for investigating Android APKs in support of ReVanced and custom patches. It mirrors the official ReVanced branding while documenting tooling expectations, repeatable workflows, and app-specific findings in one public home.
 
 > **Heads up**: This project does not ship patched APKs. It exists purely for research and documentation that supports patch development.
 
