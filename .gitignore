@@ -1,0 +1,18 @@
+# Reverse engineering outputs
+apps/*/*/decode/
+apps/*/*/artifacts/
+apps/*/*/tmp/
+
+# APK containers
+apps/*/*/apk/*.apk
+apps/*/*/apk/*.apks
+apps/*/*/apk/*.aab
+
+# Crash logs and scratch files
+*.log
+*.tmp
+*.bak
+
+# macOS/Linux metadata
+.DS_Store
+Thumbs.db
