@@ -167,12 +167,156 @@ return v0
 
 ### Code References
 
-**Fingerprints**: FP-XXX, FP-YYY (see fingerprints.md)  
-**Journal Entries**: YYYY-MM-DD session (see journal.md)
+**Fingerprints**: FP-XXX, FP-YYY (see fingerprints.md)
+**Analysis Notes**: See README.md for findings summary
+
+---
+
+## Example: TikTok 36.5.4 Share Link Sanitizer
+
+This is a complete real-world example from start to finish.
+
+### Executive Summary
+
+**Objective**: Remove tracking parameters from TikTok share links before clipboard write.
+
+**User Impact**: Users can share videos without exposing tracking UUIDs that correlate behavior across platforms.
+
+**Risk Level**: LOW
+**Complexity**: SIMPLE
+
+### Problem Statement
+
+#### Current Behavior
+
+TikTok embeds tracking identifiers (`share_link_id`, `social_share_type`, `invitation_scene`, `share_item_id`) in every share link. These are encoded in short URLs (`vm.tiktok.com/XXX`) and logged server-side to correlate user behavior.
+
+**Example tracking chain:**
+```
+Share video → share_link_id=UUID-1 generated
+→ Link sent to WhatsApp
+→ User opens link → TikTok logs UUID-1
+→ Later share → UUID-2 logged
+→ TikTok correlates UUID-1 + UUID-2 to user account
+```
+
+#### Desired Behavior
+
+Users' clipboard receives clean links with no tracking parameters.
+
+**Success Criteria**:
+- [ ] Shared links have no query parameters
+- [ ] Link functionality preserved (video still loads)
+- [ ] Works across all share destinations (WhatsApp, SMS, Email, etc.)
+- [ ] No app crashes
+- [ ] Reproducible across multiple shares
+
+### Technical Analysis
+
+#### Target Components
+
+**Primary Class**: `CopyLinkChannel` (line 36, method `LJI()`)
+**Location**: `classes8.dex`
+**Fingerprint**: FP-001 (see fingerprints.md for full details)
+
+#### Call Graph
+
+```
+ShareServiceImpl.LIZIZ()
+  └─> new CopyLinkChannel(false)
+      └─> [PATCH TARGET] CopyLinkChannel.LJI()
+          ├─ input: content.LIZLLL (share URL with params)
+          ├─ [SANITIZATION POINT]
+          └─> C98761aTc.LIZLLL() → Clipboard write
+```
+
+#### Dependencies
+
+- None (Android Uri.parse built-in)
+
+### Implementation Strategy
+
+#### Approach
+
+**Method**: BYTECODE_INJECTION
+
+Inject URL sanitization logic inside `CopyLinkChannel.LJI()` after field extraction, before clipboard delegation.
+
+#### Fingerprint Selection
+
+**Primary**: FP-001 (`CopyLinkChannel.LJI()` method signature + opcodes)
+**Confidence**: 95%
+**Fallback**: String literals + method signature if primary fails
+
+#### Injection Details
+
+**Target Method**: `CopyLinkChannel;->LJI(C98754aTV;Landroid/content/Context;InterfaceC50877Hx2;)Z`
+**Position**: After `iget-object` field extraction of `content.LIZLLL`, before `invoke-static` to clipboard
+
+**Injected Code** (smali):
+```smali
+# After extracting v0 (share URL)
+invoke-static {v0}, Lcom/revanced/tiktok/extensions/ShareLinkUtils;->sanitizeShareUrl(Ljava/lang/String;)Ljava/lang/String;
+move-result-object v0  # v0 now contains sanitized URL
+# Continue with v0 to clipboard
+```
+
+**Helper Class**:
+```java
+public class ShareLinkUtils {
+    public static String sanitizeShareUrl(String url) {
+        try {
+            Uri uri = Uri.parse(url);
+            return uri.getScheme() + "://" + uri.getAuthority() + uri.getPath();
+        } catch (Exception e) {
+            return url;  // Fallback on error
+        }
+    }
+}
+```
+
+### Testing Plan
+
+#### TC-001: WhatsApp Share
+- Open video → Share → WhatsApp
+- Verify URL has no `?share_link_id=`, `?social_share_type=`, etc.
+- **Expected**: `https://www.tiktok.com/@user/video/12345`
+
+#### TC-002: Clipboard Copy
+- Copy link to clipboard → Paste in Notes
+- **Expected**: Clean canonical URL only
+
+#### TC-003: Multiple Shares
+- Share 3 times to different apps
+- **Expected**: Identical URL each time (no randomized tracking IDs)
+
+#### TC-004: Link Functionality
+- Share and copy link → Open in browser
+- **Expected**: Video loads correctly
+
+### Risk Assessment
+
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Fingerprint fails on 36.6.x | LOW | HIGH | Test across minor versions |
+| URL parsing fails | VERY LOW | MEDIUM | Fallback to original URL |
+| Patch breaks share | VERY LOW | CRITICAL | Test all share paths |
+| TikTok detects patch | LOW | MEDIUM | No client-side prevention |
+
+### Implementation Checklist
+
+- [ ] Fingerprints validated (FP-001 tested on 36.5.4)
+- [ ] Dependencies identified (none)
+- [ ] Test plan created (TC-001 through TC-004)
+- [ ] ShareLinkUtils helper class implemented
+- [ ] Smali injection tested
+- [ ] All TCs pass on emulator
+- [ ] Code review complete
+- [ ] PR created
 
 ---
 
 ## Approval & Sign-Off
 
-**Technical Reviewer**: (YYYY-MM-DD)  
+**Technical Reviewer**: (YYYY-MM-DD)
 **Final Approver**: (YYYY-MM-DD)
