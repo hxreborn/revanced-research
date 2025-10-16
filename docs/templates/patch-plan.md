@@ -157,7 +157,6 @@ return v0
 ### Deployment
 
 - [ ] Code review completed
-- [ ] (Optional) PR created in revanced-patches repo
 - [ ] CI/CD pipeline passes
 - [ ] Released to users
 
@@ -312,11 +311,9 @@ public class ShareLinkUtils {
 - [ ] Smali injection tested
 - [ ] All TCs pass on emulator
 - [ ] Code review complete
-- [ ] (Optional) PR created
 
 ---
 
-## Approval & Sign-Off
+## Sign-off
 
-**Technical Reviewer**: (YYYY-MM-DD)
-**Final Approver**: (YYYY-MM-DD)
+**Completed**: (YYYY-MM-DD)
