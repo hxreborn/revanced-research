@@ -1,276 +1,317 @@
 # APK Decompilation Guide
 
-## Quick Start (Recommended)
+Reverse-engineer Android APKs using `jadx` and `apktool`. This guide documents the actual scripts and workflows in `revanced-research`.
 
-For **32GB+ RAM systems**, use the high-performance wrapper:
+## Quick Start
+
+### 1. Set Up a New Target
 
 ```bash
-# Decompile any APK with optimal settings
-jadx-hp --deobf -d output/ app.apk
+./scripts/setup-workspace.sh com.example.app 1.0.0
+# Creates: apps/com.example.app/1.0.0/ with full directory structure
+```
 
-# Or use the full pipeline (recommended for new targets)
+### 2. Place Your APK
+
+```bash
+cp /path/to/app.apk apps/com.example.app/1.0.0/apk/
+sha256sum apps/com.example.app/1.0.0/apk/app.apk > apps/com.example.app/1.0.0/apk/hashes.txt
+```
+
+### 3. Run Decompilation (Full Pipeline)
+
+```bash
+./docs/templates/scripts/decompile-pipeline.sh com.example.app 1.0.0 apps/com.example.app/1.0.0/apk/app.apk
+```
+
+Or manually:
+
+```bash
+# Decode resources
+apktool -JXmx4g d apps/com.example.app/1.0.0/apk/app.apk -o apps/com.example.app/1.0.0/decode/apktool -f
+
+# Decompile to Java
+./scripts/run-jadx.sh apps/com.example.app/1.0.0/apk/app.apk apps/com.example.app/1.0.0
+```
+
+## Available Scripts
+
+### `scripts/run-jadx.sh`
+
+Fast JADX decompilation with auto-tuned settings.
+
+```bash
+./scripts/run-jadx.sh <apk-path> [output-dir]
+
+# Examples
+./scripts/run-jadx.sh app.apk apps/myapp/1.0.0
+./scripts/run-jadx.sh ~/downloads/tiktok.apk
+```
+
+**Features:**
+- Detects CPU cores automatically
+- Uses 80% available RAM
+- Configurable via environment variables
+- Streams output live with timing
+
+**Environment Variables:**
+
+```bash
+# Override thread count (default: auto-detect)
+export THREADS=4
+./scripts/run-jadx.sh app.apk
+
+# Increase timeout (default: 420s = 7 min)
+export TIMEOUT_S=900
+./scripts/run-jadx.sh large_app.apk
+
+# Disable timeout
+export TIMEOUT_S=0
+./scripts/run-jadx.sh app.apk
+```
+
+### `docs/templates/scripts/decompile-pipeline.sh`
+
+Complete APK analysis pipeline: **apktool** → **jadx** → organized output.
+
+```bash
 ./docs/templates/scripts/decompile-pipeline.sh <app-id> <version> <apk-path>
-```
 
-**No configuration needed!** Defaults are optimized for your system.
-
-## Available Wrappers
-
-### 1. `jadx-hp` - High Performance (Recommended)
-**Best for:** Systems with 32GB+ RAM and 8+ cores
-
-```bash
-jadx-hp --deobf -d output/ app.apk
-```
-
-**Features:**
-- ✓ Temurin 25 JDK (most stable)
-- ✓ Parallel GC (avoids G1 crashes)
-- ✓ 24GB max heap
-- ✓ 12 threads (optimal for 16-core CPUs)
-- ✓ `--show-bad-code` enabled (decompiles more code)
-- ✓ Auto-deobfuscation support
-
-**Proven on:** TikTok 36.5.4 (391K files, 6.3GB output, 0 crashes)
-
-### 2. `jadx-safe` - Safe Mode
-**Best for:** Systems with 8-16GB RAM or when debugging crashes
-
-```bash
-jadx-safe --deobf -d output/ app.apk
-```
-
-**Features:**
-- ✓ Conservative 2-8GB heap
-- ✓ Configurable GC algorithm
-- ✓ Optional GC logging for troubleshooting
-
-### 3. `decompile-pipeline.sh` - Full Pipeline
-**Best for:** Complete APK analysis workflow
-
-```bash
+# Example
 ./docs/templates/scripts/decompile-pipeline.sh tiktok 36.5.4 ~/downloads/tiktok.apk
 ```
 
-**Features:**
-- ✓ Runs both apktool AND jadx
-- ✓ Organized output in `apps/<app>/<version>/`
-- ✓ SHA-256 hash verification
-- ✓ Performance metrics
-- ✓ Logs saved for debugging
+**Output structure:**
 
-## Default Settings (High Performance)
-
-Optimized for **CachyOS Linux, 32GB RAM, 16 cores (AMD Ryzen 7 5700X3D)**
-
-| Setting | Default | Why |
-|---------|---------|-----|
-| JDK | Temurin 25 | Most stable GC, latest features |
-| GC Algorithm | Parallel GC | Simpler than G1, avoids SIGSEGV crashes |
-| Min Heap | 4 GB | Reduces GC cycles |
-| Max Heap | 24 GB | Maximizes available RAM (leaves 8GB for system) |
-| Threads | 12 | Optimal for 16 cores (leaves headroom) |
-| Deobfuscation | Enabled | Better code readability |
-| Show Bad Code | Enabled | Decompiles more classes (fewer errors) |
-
-## Environment Variables
-
-Override defaults for specific needs:
-
-```bash
-# Conservative settings for older/smaller systems
-export JADX_HEAP_MAX=8g
-export JADX_THREADS=4
-
-# Maximum performance (all 16 cores, 28GB RAM)
-export JADX_HEAP_MAX=28g
-export JADX_THREADS=16
-
-# Use G1 GC instead of Parallel (if you prefer)
-export JADX_GC=g1
-
-# Disable show-bad-code
-export SHOW_BAD_CODE=false
-
-# Then run your command
-jadx-hp --deobf -d output/ app.apk
+```
+apps/tiktok/36.5.4/
+├── apk/
+│   ├── tiktok-36.5.4.apk
+│   └── hashes.txt
+├── decode/
+│   ├── apktool/          # Resources, smali, AndroidManifest
+│   └── jadx/             # Java decompilation
+├── notes/                # Your analysis (journal, fingerprints, etc.)
+├── analysis/             # Reports and classifications
+└── artifacts/            # Logs and metrics
 ```
 
-### Complete Variable Reference
+### `scripts/setup-workspace.sh`
 
-| Variable | Default | Options |
-|----------|---------|---------|
-| `JADX_JDK` | `/usr/lib/jvm/java-25-temurin` | Any JDK 17+ path |
-| `JADX_GC` | `parallel` | `parallel`, `g1`, `zgc`, `shenandoah` |
-| `JADX_HEAP_MIN` | `4g` | Any size: `512m`, `2g`, etc. |
-| `JADX_HEAP_MAX` | `24g` | Any size: `8g`, `16g`, `28g`, etc. |
-| `JADX_THREADS` | `12` | `1` to `16` (or your CPU count) |
-| `ENABLE_DEOBF` | `true` | `true`, `false` |
-| `SHOW_BAD_CODE` | `true` | `true`, `false` |
-| `JADX_GC_LOG` | `0` | `1` to enable GC logging |
+Initialize a new target directory with templates.
 
-## Performance Examples
-
-### Small APK (< 50MB)
 ```bash
-# Fast, minimal resources
-export JADX_HEAP_MAX=4g
-export JADX_THREADS=4
-jadx-hp -d output/ small.apk
+./scripts/setup-workspace.sh <package> <version> [--force]
+
+# Example
+./scripts/setup-workspace.sh com.whatsapp 2.24.0
 ```
 
-### Medium APK (50-150MB)
-```bash
-# Balanced (default settings work great)
-jadx-hp --deobf -d output/ medium.apk
-```
+Creates full workspace with templates and placeholder README.
 
-### Large APK (150MB+)
-```bash
-# Maximum power (default settings)
-./docs/templates/scripts/decompile-pipeline.sh app 1.0.0 large.apk
-```
+## JVM Configuration
 
-### Extreme APK (300MB+, heavily obfuscated)
+### Default Behavior
+
+`run-jadx.sh` automatically:
+- Detects available CPU cores
+- Allocates 80% of available RAM
+- Uses Parallel GC (stable for large heaps)
+- Enables deobfuscation (`--deobf`)
+
+### Manual JVM Tuning
+
+Override via `JAVA_TOOL_OPTIONS`:
+
 ```bash
-# All resources, show all code
-export JADX_HEAP_MAX=28g
-export JADX_THREADS=14
-export SHOW_BAD_CODE=true
-jadx-hp --deobf --show-bad-code -d output/ extreme.apk
+# Conservative (smaller systems, 8GB RAM, 4 cores)
+export JAVA_TOOL_OPTIONS="-XX:+UseParallelGC -Xms2g -Xmx6g"
+./scripts/run-jadx.sh app.apk
+
+# Aggressive (larger systems, 32GB+ RAM, 16+ cores)
+export JAVA_TOOL_OPTIONS="-XX:+UseParallelGC -Xms8g -Xmx24g"
+./scripts/run-jadx.sh app.apk
+
+# ZGC (experimental, good for very large heaps on modern JVMs)
+export JAVA_TOOL_OPTIONS="-XX:+UseZGC -Xms8g -Xmx20g"
+./scripts/run-jadx.sh app.apk
 ```
 
 ## Troubleshooting
 
-### Still Getting Crashes?
+### JVM Crashes (SIGSEGV)
 
-1. **Try ZGC** (best for very large heaps):
-   ```bash
-   export JADX_GC=zgc
-   jadx-hp --deobf -d output/ app.apk
-   ```
-
-2. **Reduce heap size**:
-   ```bash
-   export JADX_HEAP_MAX=16g
-   jadx-hp --deobf -d output/ app.apk
-   ```
-
-3. **Single threaded** (eliminates concurrency issues):
-   ```bash
-   export JADX_THREADS=1
-   jadx-hp --deobf -d output/ app.apk
-   ```
-
-4. **Enable GC logging**:
-   ```bash
-   export JADX_GC_LOG=1
-   jadx-hp --deobf -d output/ app.apk
-   # Check gc-*.log file for issues
-   ```
-
-### Error: "975 errors" or Similar
-
-This is **normal** for obfuscated apps! The 975 errors from TikTok represent:
-- **0.6% error rate** (99.4% success)
-- Heavily obfuscated code that can't be fully recovered
-- Dead code or invalid bytecode
-
-With `--show-bad-code`, jadx decompiles these as comments, which is better than nothing.
-
-### See Also
-
-- [JVM_GC_TROUBLESHOOTING.md](./JVM_GC_TROUBLESHOOTING.md) - Deep dive into GC issues
-- [AGENTS.md](../AGENTS.md) - Automation and analysis tools
-- [test-jadx-config.sh](../test-jadx-config.sh) - Verify your setup
-
-## Output Structure
-
-Using `decompile-pipeline.sh`:
-
+If you see:
 ```
-apps/<app>/<version>/
-├── apk/
-│   ├── <app>-<version>.apk     # Original APK
-│   └── hashes.txt               # SHA-256 checksum
-├── decode/
-│   ├── apktool/                 # Resources, smali, AndroidManifest.xml
-│   └── jadx/                    # Java source code
-│       ├── sources/             # Decompiled .java files
-│       └── resources/           # Resources
-├── artifacts/
-│   ├── apktool-decode.log       # apktool output
-│   ├── jadx-export.log          # jadx output (check for errors)
-│   └── decompile-performance.txt # Timing and stats
-├── notes/                       # Your analysis notes
-└── scripts/                     # Analysis scripts
+SIGSEGV (0xb) at pc=..., pid=..., tid=...
 ```
 
-## Tips & Best Practices
+Try these in order:
 
-### 1. Always Use Deobfuscation
+**1. Reduce heap size:**
 ```bash
-jadx-hp --deobf -d output/ app.apk
+export JAVA_TOOL_OPTIONS="-XX:+UseParallelGC -Xms2g -Xmx8g"
+./scripts/run-jadx.sh app.apk
 ```
-Renames obfuscated classes from `a.b.c.d` to meaningful names.
 
-### 2. Check Logs for Real Errors
+**2. Use single thread:**
 ```bash
-# 975 "errors" might just be obfuscated code
-grep ERROR apps/app/version/artifacts/jadx-export.log | head -20
+export THREADS=1
+./scripts/run-jadx.sh app.apk
 ```
 
-### 3. Large APKs: Use the Pipeline
-The pipeline script handles everything and saves logs:
+**3. Try ZGC garbage collector:**
 ```bash
-./docs/templates/scripts/decompile-pipeline.sh youtube 19.0.0 youtube.apk
+export JAVA_TOOL_OPTIONS="-XX:+UseZGC -Xms4g -Xmx12g"
+./scripts/run-jadx.sh app.apk
 ```
 
-### 4. Search Decompiled Code
+**4. Check Java version** (17+ required):
 ```bash
-# Find specific classes
-rg "class MainActivity" apps/app/version/decode/jadx/
-
-# Find string literals
-rg "api.example.com" apps/app/version/decode/jadx/
+java -version
 ```
 
-### 5. Monitor System Resources
+### Out of Memory
+
 ```bash
-# While jadx runs in another terminal:
-watch -n1 "free -h && echo && ps aux | grep java | grep -v grep"
+# Increase max heap
+export JAVA_TOOL_OPTIONS="-XX:+UseParallelGC -Xms4g -Xmx16g"
+./scripts/run-jadx.sh large_app.apk
 ```
 
-## Benchmarks
+### Slow Decompilation
 
-**TikTok 36.5.4** (166K classes, 49 DEX files):
-- **Duration:** ~6 minutes
-- **Output:** 6.3 GB (391K Java files)
-- **Memory:** Peak 18GB
-- **CPU:** ~12 cores utilized
-- **Errors:** 975 (0.6%)
-- **Crashes:** 0 ✓
+```bash
+# Use more threads
+export THREADS=8
+./scripts/run-jadx.sh app.apk
 
-**Settings used:** `jadx-hp` defaults (Temurin 25, Parallel GC, 24GB heap, 12 threads)
+# Or increase timeout
+export TIMEOUT_S=1200  # 20 minutes
+./scripts/run-jadx.sh app.apk
+```
 
-## FAQ
+## Performance Benchmarks
 
-**Q: Why Parallel GC instead of G1?**
-A: G1 has known SIGSEGV bugs with large heaps (20GB+) in OpenJDK 17.x. Parallel GC is simpler and more stable.
+Reference: **TikTok 36.5.4** (166K classes, 49 DEX files, 397 MB)
 
-**Q: Can I use my system Java instead of Temurin?**
-A: Yes, but Temurin 21+ is recommended. Set `export JADX_JDK=/usr/lib/jvm/java-21-openjdk`
+| Metric | Result |
+|--------|--------|
+| Duration | ~6-7 minutes |
+| Output Size | 6.3 GB |
+| Java Files | 391,259 |
+| Errors | 975 (0.6%) |
+| Memory Peak | ~18 GB |
+| Status | ✅ Success |
 
-**Q: What if I only have 16GB RAM?**
-A: Use `jadx-safe` or set `export JADX_HEAP_MAX=8g` with `jadx-hp`
+**Command used:**
+```bash
+export JAVA_TOOL_OPTIONS="-XX:+UseParallelGC -Xms4g -Xmx16g"
+./scripts/run-jadx.sh tiktok-36.5.4.apk apps/tiktok/36.5.4
+```
 
-**Q: Should I always use --deobf?**
-A: Yes, unless you specifically want to see obfuscated names. Performance impact is minimal.
+## Analysis & Search
 
-**Q: What does --show-bad-code do?**
-A: Forces jadx to generate code even for methods it can't fully decompile (as comments). Reduces error count.
+### Find Specific Patterns
 
----
+```bash
+# Search for classes
+rg "class MainActivity" apps/app/version/decode/jadx/sources/
 
-**Last Updated:** Based on TikTok 36.5.4 decompilation success (Oct 2025)
-**Tested On:** CachyOS Linux, 32GB RAM, AMD Ryzen 7 5700X3D (16 cores)
+# Find API endpoints
+rg "https?://[a-zA-Z0-9.-]+\.[a-z]+" apps/app/version/decode/jadx/sources/
+
+# Look for crypto operations
+rg "Cipher|RSA|AES|encrypt" apps/app/version/decode/jadx/sources/
+
+# Find permissions used
+grep 'permission' apps/app/version/decode/apktool/AndroidManifest.xml
+```
+
+### Check Decompilation Errors
+
+```bash
+# View error log
+cat apps/app/version/artifacts/jadx-export.log | grep ERROR | head -20
+
+# Count total errors
+grep -c ERROR apps/app/version/artifacts/jadx-export.log
+```
+
+### Monitor Resources During Decompilation
+
+In a separate terminal:
+
+```bash
+watch -n 1 "free -h && echo '---' && ps aux | grep -i java | grep -v grep"
+```
+
+## Known Issues
+
+### High Error Count (e.g., "975 errors")
+
+This is **normal** for obfuscated apps:
+- Represents only 0.6% of methods
+- Caused by ProGuard/R8 obfuscation, not tool failure
+- Actual decompilation completeness: **99.4%**
+
+Use `--show-bad-code` to include problematic methods as comments:
+
+```bash
+jadx --show-bad-code --deobf -j 4 -d output/ app.apk
+```
+
+### Framework Errors in apktool
+
+```
+Can't find framework-res.apk
+```
+
+Solution:
+```bash
+# Let apktool auto-download
+apktool d app.apk  # Downloads on first run
+
+# Or manually install
+apktool if framework-res.apk
+```
+
+## Workflow Example
+
+Complete analysis session:
+
+```bash
+# 1. Setup
+./scripts/setup-workspace.sh instagram 340.0.0
+
+# 2. Copy APK and verify
+cp ~/downloads/instagram.apk apps/instagram/340.0.0/apk/
+sha256sum apps/instagram/340.0.0/apk/instagram.apk > apps/instagram/340.0.0/apk/hashes.txt
+
+# 3. Decode resources
+apktool -JXmx4g d apps/instagram/340.0.0/apk/instagram.apk \
+  -o apps/instagram/340.0.0/decode/apktool -f
+
+# 4. Decompile bytecode
+./scripts/run-jadx.sh apps/instagram/340.0.0/apk/instagram.apk apps/instagram/340.0.0
+
+# 5. Start analysis
+cd apps/instagram/340.0.0/notes/
+vim journal.md  # Log discoveries
+
+# 6. Search for targets
+rg "share_link" ../decode/jadx/sources/
+rg "api.*share" ../decode/apktool/smali/
+
+# 7. Document findings
+vim fingerprints.md    # Candidate patch methods
+vim patch-plan.md      # Injection strategy
+vim tooling.md         # Tool versions, APK hash
+```
+
+## Further Reading
+
+- [JVM_GC_TROUBLESHOOTING.md](./JVM_GC_TROUBLESHOOTING.md) — Advanced GC debugging
+- [AGENTS.md](../AGENTS.md) — Automation workflows and analysis strategies
+- [jadx GitHub](https://github.com/skylot/jadx) — Official JADX documentation
+- [apktool GitHub](https://github.com/ibotpeaches/Apktool) — Resource decoding reference

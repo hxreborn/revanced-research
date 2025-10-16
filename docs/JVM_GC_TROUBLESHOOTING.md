@@ -1,200 +1,289 @@
-# JVM GC Troubleshooting for jadx
+# JVM Garbage Collection Troubleshooting
 
-## Problem
+When decompiling large APKs with jadx, you may encounter JVM crashes with `SIGSEGV` errors from garbage collection threads.
 
-When decompiling large APKs with jadx, you may encounter JVM crashes with `SIGSEGV` errors in G1 GC threads:
+## Symptoms
 
 ```
-SIGSEGV (0xb) at pc=0x00007efcf776bb09, pid=1888729, tid=1888856
+SIGSEGV (0xb) at pc=0x..., pid=..., tid=...
 Current thread: ConcurrentGCThread "G1 Conc#2"
+Fatal Error: SEGV received
+Dumping core...
 ```
 
-This is typically caused by:
-- **Large heap sizes** (~20+ GB) triggering G1 GC edge cases
+## Root Causes
+
+- **Large heap sizes** (20+ GB) triggering GC edge cases
 - **Humongous objects** (large byte arrays, maps) from APK processing
-- **G1 region management** bugs in certain OpenJDK builds
-- **Specific OpenJDK versions** with known G1 bugs (e.g., 17.0.16)
+- **G1 GC bugs** in certain OpenJDK versions
+- **High thread concurrency** creating allocation pressure
 
-## Quick Fixes (Ordered by Effectiveness)
+## Quick Fixes (Try in Order)
 
-### 1. Switch to a Different JDK Build (Highest Success Rate)
+### 1. Reduce Heap Size
 
-**Recommended:** Use Eclipse Temurin or newer OpenJDK versions
-```bash
-# Option A: Use Temurin 25 (most stable for large heaps)
-export JADX_JDK=/usr/lib/jvm/java-25-temurin
-
-# Option B: Use OpenJDK 21
-export JADX_JDK=/usr/lib/jvm/java-21-openjdk
-
-# Then run your decompilation
-./docs/templates/scripts/decompile-pipeline.sh tiktok 36.5.4 path/to/app.apk
-```
-
-### 2. Change Garbage Collector
-
-If switching JDK doesn't help, try a different GC algorithm:
+Most effective first step:
 
 ```bash
-# Parallel GC (good for throughput, less complex than G1)
-export JADX_GC=parallel
-./docs/templates/scripts/decompile-pipeline.sh tiktok 36.5.4 path/to/app.apk
-
-# ZGC (for JDK 17+, excellent for large heaps)
-export JADX_GC=zgc
-./docs/templates/scripts/decompile-pipeline.sh tiktok 36.5.4 path/to/app.apk
+export JAVA_TOOL_OPTIONS="-XX:+UseParallelGC -Xms2g -Xmx8g"
+./scripts/run-jadx.sh app.apk
 ```
 
-### 3. Reduce Heap Size
-
-Limit heap to reduce G1 region count and humongous object pressure:
+Or via pipeline:
 
 ```bash
-export JADX_HEAP_MIN=2g
-export JADX_HEAP_MAX=8g
-./docs/templates/scripts/decompile-pipeline.sh tiktok 36.5.4 path/to/app.apk
+JAVA_TOOL_OPTIONS="-XX:+UseParallelGC -Xms2g -Xmx8g" \
+./docs/templates/scripts/decompile-pipeline.sh myapp 1.0.0 app.apk
 ```
 
-### 4. Reduce jadx Concurrency
+### 2. Use Single Thread
 
-Lower thread count reduces allocation pressure:
+Eliminates allocation concurrency issues:
 
 ```bash
-export JADX_THREADS=1  # or 2
-./docs/templates/scripts/decompile-pipeline.sh tiktok 36.5.4 path/to/app.apk
+export THREADS=1
+./scripts/run-jadx.sh app.apk
 ```
 
-## Advanced Troubleshooting
+### 3. Switch Garbage Collector
+
+If Parallel GC fails, try alternatives:
+
+```bash
+# ZGC (low-latency, good for large heaps on modern JVMs)
+export JAVA_TOOL_OPTIONS="-XX:+UseZGC -Xms4g -Xmx16g"
+./scripts/run-jadx.sh app.apk
+
+# Serial GC (most stable, but slower)
+export JAVA_TOOL_OPTIONS="-XX:+UseSerialGC -Xms2g -Xmx8g"
+./scripts/run-jadx.sh app.apk
+```
+
+### 4. Verify Java Version
+
+Ensure Java 17+:
+
+```bash
+java -version
+# Should show: openjdk version "17.0.x" or newer
+```
+
+Newer JDKs (21+, Temurin builds) have better GC stability.
+
+## Complete Solutions by Scenario
+
+### Small APKs (< 50MB)
+
+```bash
+export JAVA_TOOL_OPTIONS="-XX:+UseParallelGC -Xms1g -Xmx4g"
+export THREADS=2
+./scripts/run-jadx.sh small.apk
+```
+
+### Medium APKs (50-200MB)
+
+```bash
+export JAVA_TOOL_OPTIONS="-XX:+UseParallelGC -Xms2g -Xmx8g"
+export THREADS=4
+./scripts/run-jadx.sh medium.apk
+```
+
+### Large APKs (200MB+, Heavily Obfuscated)
+
+```bash
+# Conservative: Highest stability
+export JAVA_TOOL_OPTIONS="-XX:+UseParallelGC -Xms4g -Xmx12g"
+export THREADS=1
+./scripts/run-jadx.sh large.apk
+
+# Balanced: Good performance + stability
+export JAVA_TOOL_OPTIONS="-XX:+UseZGC -Xms4g -Xmx16g"
+export THREADS=2
+./scripts/run-jadx.sh large.apk
+
+# Performance: If you have 32GB+ RAM
+export JAVA_TOOL_OPTIONS="-XX:+UseZGC -Xms8g -Xmx24g"
+export THREADS=8
+./scripts/run-jadx.sh large.apk
+```
+
+## Environment Variables Reference
+
+### JAVA_TOOL_OPTIONS
+
+Set global JVM configuration:
+
+```bash
+# Syntax: -XX:+UseGC_NAME -Xms<min> -Xmx<max>
+
+export JAVA_TOOL_OPTIONS="-XX:+UseParallelGC -Xms4g -Xmx12g"
+```
+
+**GC Options:**
+- `-XX:+UseParallelGC` — Parallel GC (simple, stable, good throughput)
+- `-XX:+UseG1GC` — G1 GC (default in Java 9+, can crash on large heaps)
+- `-XX:+UseZGC` — ZGC (low-latency, needs Java 11+, experimental)
+- `-XX:+UseSerialGC` — Serial GC (stable but slow)
+- `-XX:+UseShenandoahGC` — Shenandoah (low-latency, needs Java 12+)
+
+**Heap Sizing:**
+- `-Xms<size>` — Minimum heap (e.g., `-Xms2g`)
+- `-Xmx<size>` — Maximum heap (e.g., `-Xmx16g`)
+- Rule of thumb: Leave 8GB for OS and other processes
+
+### scripts/run-jadx.sh Variables
+
+```bash
+export THREADS=4           # Override auto-detected core count
+export TIMEOUT_S=900       # Timeout in seconds (default 420s = 7min)
+export TIMEOUT_S=0         # Disable timeout
+```
+
+## Advanced Debugging
 
 ### Enable GC Logging
 
-To diagnose the exact GC issue:
-
-1. Edit `/home/rafa/.local/bin/jadx-safe` and set:
-   ```bash
-   export JADX_GC_LOG=1
-   jadx-safe --threads-count 1 --deobf -d output/ app.apk
-   ```
-
-2. Check the generated `gc-*.log` file for patterns like:
-   - Frequent "Humongous allocation" messages
-   - Long "To-space exhausted" events
-   - Excessive "G1 concurrent cycle" durations
-
-### Disable Class Data Sharing (CDS)
-
-Rule out CDS archive corruption:
+Diagnose GC issues in detail:
 
 ```bash
-# Add to JVM_OPTS in decompile-pipeline.sh
-JVM_OPTS+=("-Xshare:off")
+export JAVA_TOOL_OPTIONS="-XX:+UseParallelGC -Xms2g -Xmx8g \
+  -Xlog:gc*:file=gc.log:level=info:time,level,tags"
+./scripts/run-jadx.sh app.apk
+# Outputs: gc.log with detailed GC events
 ```
 
-### Manual jadx Invocation
+### Monitor Decompilation in Real-Time
 
-For maximum control, use the wrapper directly:
+In a separate terminal:
 
 ```bash
-# Using jadx-safe wrapper
-JADX_JDK=/usr/lib/jvm/java-25-temurin \
-JADX_GC=parallel \
-JADX_HEAP_MIN=2g \
-JADX_HEAP_MAX=8g \
-jadx-safe --threads-count 1 --deobf -d output/ app.apk
-
-# Or set JAVA_TOOL_OPTIONS manually
-JAVA_HOME=/usr/lib/jvm/java-25-temurin \
-JAVA_TOOL_OPTIONS="-Xms2g -Xmx8g -XX:+UseParallelGC" \
-jadx --threads-count 1 --deobf -d output/ app.apk
+watch -n 1 "free -h && echo '---' && ps aux | grep -i java | grep -v grep"
 ```
 
-## Configuration Reference
+Observe:
+- Memory growth → if it climbs to max heap, increase `-Xmx`
+- CPU usage → if low, increase `THREADS`
+- Crashes → collect `hs_err_pid*.log` for analysis
 
-### decompile-pipeline.sh Environment Variables
+### Collect Crash Info
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `JADX_JDK` | `/usr/lib/jvm/java-25-temurin` | JDK path to use |
-| `JADX_GC` | `g1` | GC algorithm: `g1`, `parallel`, `zgc` |
-| `JADX_HEAP_MIN` | `2g` | Minimum heap size |
-| `JADX_HEAP_MAX` | `8g` | Maximum heap size |
-| `JADX_THREADS` | `4` | jadx thread count |
-| `ENABLE_DEOBF` | `false` | Enable deobfuscation |
-| `APKTOOL_HEAP` | `4g` | apktool heap size |
-
-### jadx-safe Wrapper Environment Variables
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `JADX_JDK` | `/usr/lib/jvm/java-25-temurin` | JDK path |
-| `JADX_GC` | `g1` | GC: `g1`, `parallel`, `zgc`, `shenandoah` |
-| `JADX_HEAP_MIN` | `2g` | Min heap |
-| `JADX_HEAP_MAX` | `8g` | Max heap |
-| `JADX_GC_LOG` | `0` | Set to `1` for GC logging |
-
-## Recommended Combinations for Large APKs (100+ MB)
-
-### Conservative (Most Stable)
-```bash
-export JADX_JDK=/usr/lib/jvm/java-25-temurin
-export JADX_GC=parallel
-export JADX_HEAP_MAX=8g
-export JADX_THREADS=1
-```
-
-### Balanced (Good Performance + Stability)
-```bash
-export JADX_JDK=/usr/lib/jvm/java-21-openjdk
-export JADX_GC=g1
-export JADX_HEAP_MAX=12g
-export JADX_THREADS=2
-```
-
-### Performance (If No Crashes)
-```bash
-export JADX_JDK=/usr/lib/jvm/java-25-temurin
-export JADX_GC=zgc
-export JADX_HEAP_MAX=16g
-export JADX_THREADS=4
-```
-
-## System Information
-
-When reporting issues, include:
+After a crash, examine the error log:
 
 ```bash
-# Java version
-java -version
-
-# Available JDKs
-ls -l /usr/lib/jvm/
-
-# System resources
-free -h
-nproc
-
-# jadx version
-jadx --version
-
-# Crash log location
+# Find the latest crash log
 ls -lt hs_err_pid*.log | head -1
+
+# Key sections to check:
+grep "SEGV" hs_err_pid*.log
+grep "GC History" hs_err_pid*.log
+grep "Heap" hs_err_pid*.log
 ```
 
-## Known Working Configurations
+## Recommended Configurations by System
 
-Based on testing with TikTok 36.5.4 APK on 32GB RAM, 16-core system:
+### 4-8GB RAM, 2-4 cores (Laptop/Minimal)
 
-✅ **Working:**
-- Temurin 25 + Parallel GC + 8GB heap + 1 thread
-- OpenJDK 21 + ZGC + 12GB heap + 2 threads
-- Temurin 25 + G1 GC + 8GB heap + 2 threads
+```bash
+export JAVA_TOOL_OPTIONS="-XX:+UseParallelGC -Xms1g -Xmx3g"
+export THREADS=1
+```
 
-❌ **Known to Crash:**
-- OpenJDK 17.0.16 + G1 GC + 22GB heap (MaxRAMPercentage=70) + 1 thread
+### 8-16GB RAM, 4-8 cores (Workstation)
 
-## Additional Resources
+```bash
+export JAVA_TOOL_OPTIONS="-XX:+UseParallelGC -Xms2g -Xmx8g"
+export THREADS=4
+```
 
-- [JDK Bug Database](https://bugs.openjdk.org/)
-- [G1 GC Tuning Guide](https://docs.oracle.com/en/java/javase/21/gctuning/garbage-first-g1-garbage-collector1.html)
+### 16-32GB RAM, 8+ cores (Development Server)
+
+```bash
+export JAVA_TOOL_OPTIONS="-XX:+UseParallelGC -Xms4g -Xmx12g"
+export THREADS=6
+```
+
+### 32GB+ RAM, 16+ cores (Workstation/Server)
+
+```bash
+export JAVA_TOOL_OPTIONS="-XX:+UseZGC -Xms8g -Xmx24g"
+export THREADS=12
+```
+
+## Common Mistakes
+
+❌ **Don't set -Xmx to 100% of system RAM:**
+```bash
+# BAD - leaves no room for OS
+export JAVA_TOOL_OPTIONS="-Xmx32g"
+```
+
+✅ **Do leave 8GB for OS:**
+```bash
+# GOOD - on 32GB system
+export JAVA_TOOL_OPTIONS="-Xmx24g"
+```
+
+---
+
+❌ **Don't use G1GC with huge heaps:**
+```bash
+# BAD - G1 crashes at 20GB+
+export JAVA_TOOL_OPTIONS="-XX:+UseG1GC -Xmx28g"
+```
+
+✅ **Use Parallel or ZGC for large heaps:**
+```bash
+# GOOD
+export JAVA_TOOL_OPTIONS="-XX:+UseZGC -Xmx24g"
+```
+
+---
+
+❌ **Don't use too many threads:**
+```bash
+# BAD - allocation pressure
+export THREADS=32
+```
+
+✅ **Use conservative thread count:**
+```bash
+# GOOD - leave headroom for GC threads
+export THREADS=8  # on 16-core system
+```
+
+## Integration with revanced-research
+
+### Option 1: Per-Session
+
+```bash
+export JAVA_TOOL_OPTIONS="-XX:+UseParallelGC -Xms4g -Xmx12g"
+export THREADS=4
+./scripts/run-jadx.sh app.apk apps/app/1.0.0
+```
+
+### Option 2: Per-Script
+
+```bash
+JAVA_TOOL_OPTIONS="-XX:+UseParallelGC -Xms4g -Xmx12g" THREADS=4 \
+  ./docs/templates/scripts/decompile-pipeline.sh myapp 1.0.0 app.apk
+```
+
+### Option 3: Shell Alias
+
+Add to `~/.bashrc`:
+
+```bash
+alias jadx-safe='JAVA_TOOL_OPTIONS="-XX:+UseParallelGC -Xms2g -Xmx8g" THREADS=1 ./scripts/run-jadx.sh'
+alias jadx-perf='JAVA_TOOL_OPTIONS="-XX:+UseZGC -Xms8g -Xmx24g" THREADS=12 ./scripts/run-jadx.sh'
+
+# Then use:
+jadx-safe app.apk
+jadx-perf app.apk
+```
+
+## Further References
+
+- [Oracle GC Tuning Guide](https://docs.oracle.com/en/java/javase/21/gctuning/)
+- [OpenJDK Bug Database](https://bugs.openjdk.org/)
 - [jadx GitHub Issues](https://github.com/skylot/jadx/issues)
-- Eclipse Temurin Downloads: [adoptium.net](https://adoptium.net/)
+- [DECOMPILATION_GUIDE.md](./DECOMPILATION_GUIDE.md) — Main usage guide
