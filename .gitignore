@@ -1,7 +1,9 @@
 # Reverse engineering outputs
-apps/*/*/decode/
-apps/*/*/artifacts/
-apps/*/*/tmp/
+apps/*/*/decode/**
+apps/*/*/artifacts/**
+apps/*/*/tmp/**
+apps/*/*/analysis/**
+apps/*/*/scripts/output/**
 
 # APK containers
 apps/*/*/apk/*.apk
