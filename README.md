@@ -103,6 +103,7 @@ Log exact versions and CLI flags in `notes/tooling.md` for reproducibility.
 - [Official Patch Catalogue](https://revanced.app/patches)
 
 ## 🤝 Contributing
+This is a personal tool shared as-is. PRs are welcome, but responses might be slow.
 - Keep large decode outputs, APKs, and temporary files out of Git.
 - Sync major discoveries back into `AGENTS.md` or the relevant `apps/<app>/<version>/notes/` file so future contributors benefit.
 - Follow Conventional Commit message style when updating the playbook or templates (`docs:`, `chore:`, etc.).
