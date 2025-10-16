@@ -9,7 +9,7 @@ This directory hosts reusable Markdown templates that keep each target consisten
 
 To bootstrap a new target:
 ```bash
-mkdir -p targets/<package>/<version>/{apk,decode/{apktool,jadx},notes,artifacts,tmp}
-cp docs/templates/*.md targets/<package>/<version>/notes/
+mkdir -p apps/<package>/<version>/{apk,decode/{apktool,jadx},notes,artifacts,tmp}
+cp docs/templates/*.md apps/<package>/<version>/notes/
 ```
 Update the copies in-place as you investigate; the templates here stay generic.

@@ -266,7 +266,7 @@ check_system_resources() {
     print_success "CPU cores: $cpu_cores (affects jadx --threads-count)"
 }
 
-check_targets_directory() {
+check_apps_directory() {
     ((TOTAL_TOOLS++))
     print_header "Targets Directory"
 
@@ -286,7 +286,7 @@ check_targets_directory() {
 
         # Show a few examples
         local examples
-        examples=$(find targets -maxdepth 2 -type d -name "apk" | head -3 | sed 's|/apk||' | sed 's|targets/||')
+        examples=$(find targets -maxdepth 2 -type d -name "apk" | head -3 | sed 's|/apk||' | sed 's|apps/||')
         if [[ -n "$examples" ]]; then
             print_status "Examples:"
             echo "$examples" | while read -r example; do
@@ -395,7 +395,7 @@ main() {
     check_frida || ((PASSED_TOOLS++))
     check_search_tools || ((PASSED_TOOLS++))
     check_system_resources || ((PASSED_TOOLS++))
-    check_targets_directory || ((FAILED_TOOLS++))
+    check_apps_directory || ((FAILED_TOOLS++))
 
     provide_recommendations
     print_summary

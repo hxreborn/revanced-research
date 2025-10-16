@@ -62,7 +62,7 @@ if [[ ! -f "$APK_PATH" ]]; then
 fi
 
 # Setup target
-WORKSPACE="targets/$APP_ID/$VERSION"
+WORKSPACE="apps/$APP_ID/$VERSION"
 mkdir -p "$WORKSPACE"/{apk,decode/{apktool,jadx},notes,artifacts,scripts,tmp}
 
 echo -e "${BLUE}=== APK Decompilation Pipeline ===${NC}"

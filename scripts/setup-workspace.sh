@@ -71,7 +71,7 @@ validate_inputs() {
 }
 
 create_directory_structure() {
-    local target_dir="targets/$PACKAGE/$VERSION"
+    local target_dir="apps/$PACKAGE/$VERSION"
 
     print_header "Creating Directory Structure"
     print_status "Package: $PACKAGE"
@@ -100,7 +100,7 @@ create_directory_structure() {
 }
 
 copy_templates() {
-    local target_dir="targets/$PACKAGE/$VERSION"
+    local target_dir="apps/$PACKAGE/$VERSION"
     local notes_dir="$target_dir/notes"
 
     print_header "Copying Templates"
@@ -142,7 +142,7 @@ copy_templates() {
 }
 
 create_placeholders() {
-    local target_dir="targets/$PACKAGE/$VERSION"
+    local target_dir="apps/$PACKAGE/$VERSION"
 
     print_header "Creating Placeholder Files"
 
@@ -235,7 +235,7 @@ EOF
 }
 
 create_summary() {
-    local target_dir="targets/$PACKAGE/$VERSION"
+    local target_dir="apps/$PACKAGE/$VERSION"
 
     print_header "Target Summary"
 
@@ -260,7 +260,7 @@ create_summary() {
 }
 
 check_existing_target() {
-    local target_dir="targets/$PACKAGE/$VERSION"
+    local target_dir="apps/$PACKAGE/$VERSION"
 
     if [[ -d "$target_dir" && $(ls -A "$target_dir" 2>/dev/null) ]]; then
         print_warning "Target $PACKAGE/$VERSION already exists and is not empty"

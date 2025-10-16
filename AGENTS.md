@@ -7,7 +7,7 @@ Ops manual for the revanced-research lab—the reverse engineering hub powering 
 ## Base Practices
 
 - **Network boundaries**: All RE activity lives here, outside the `revanced-patches/` repo. Only push distilled fingerprints, bytecode offsets, or patch snippets back to the main project.
-- **Single source of truth**: Maintain this playbook and shared templates; per-app findings belong under `targets/<package>/<version>/notes/`.
+- **Single source of truth**: Maintain this playbook and shared templates; per-app findings belong under `apps/<package>/<version>/notes/`.
 - **Version isolation**: Always nest target per app *and* version so multiple builds can be analyzed in parallel without collisions.
 - **Lightweight provenance**: Track hashes of input APKs (`sha256sum`), tool versions, and key commands. Store them alongside notes for traceability.
 - **Optional git**: If you want history inside `revanced-research/`, initialize a separate repository but avoid committing large decode outputs.
@@ -23,9 +23,9 @@ revanced-research/
 ├── README.md                # Project overview
 ├── docs/
 │   ├── templates/           # Note templates (journal/tooling/etc.)
-│   └── targets/             # Target index & status docs
+│   └── apps/             # Target index & status docs
 ├── scripts/                 # Utility helpers (cleanup, tooling checks)
-└── targets/
+└── apps/
     └── <package>/           # e.g., tiktok, youtube
         └── <version>/       # e.g., 36.5.4, 19.15.34
             ├── apk/         # Pristine APKs (hashes logged)
@@ -44,8 +44,8 @@ revanced-research/
 
 When starting a new investigation, copy the template structure with:
 ```
-mkdir -p targets/<package>/<version>/{apk,decode/{apktool,jadx},notes,artifacts,tmp}
-cp docs/templates/*.md targets/<package>/<version>/notes/
+mkdir -p apps/<package>/<version>/{apk,decode/{apktool,jadx},notes,artifacts,tmp}
+cp docs/templates/*.md apps/<package>/<version>/notes/
 ```
 
 ## Tooling Baseline
@@ -61,9 +61,9 @@ cp docs/templates/*.md targets/<package>/<version>/notes/
 
 Tips:
 - Keep **heap-friendly** use of tools: `jadx` can OOM on gigantic APKs—split dex, lower thread counts, or process critical packages individually.
-- Measure decode/decompile runs (`time`, RSS) and log results in `targets/<package>/<version>/notes/tooling.md` for future diffing.
+- Measure decode/decompile runs (`time`, RSS) and log results in `apps/<package>/<version>/notes/tooling.md` for future diffing.
 - Whenever `apktool` fails due to framework resources, install matching `framework-res.apk` into `~/.local/share/apktool/framework/`.
-- For reproducibility, pin tool versions and CLI options in `targets/<package>/<version>/notes/tooling.md` and commit mapping files if generated.
+- For reproducibility, pin tool versions and CLI options in `apps/<package>/<version>/notes/tooling.md` and commit mapping files if generated.
 
 ---
 
@@ -90,8 +90,8 @@ Tips:
    - Install on emulator, monitor `logcat`, simulate feature usage.
    - Hook suspicious methods with Frida to observe parameters/return values.
 8. **Summarize findings**:
-   - Update `targets/<package>/<version>/notes/fingerprints.md` with candidate matchers.
-   - Draft patch plan in `targets/<package>/<version>/notes/patch-plan.md` detailing injection points and dependencies.
+   - Update `apps/<package>/<version>/notes/fingerprints.md` with candidate matchers.
+   - Draft patch plan in `apps/<package>/<version>/notes/patch-plan.md` detailing injection points and dependencies.
 9. **Diff & determinism**: compare output manifests/smali against previous runs (`diff -ruN`, checksums) to flag unexpected drift.
 10. **Feedback loop**: When patch implementation starts in repo, keep references here for quick lookup.
 
@@ -168,12 +168,12 @@ fix(decoder)!: change smali output format
 - Data structures: TikTok uses protobuf-like builders; inspect classes under `com.bytedance.frameworks.core.*`, `com.ss.android.ugc.aweme.share`.
 
 ### Planned Steps
-1. **apktool decode** → `targets/tiktok/36.5.4/decode/apktool/`
-2. **jadx export** → `targets/tiktok/36.5.4/decode/jadx/`
+1. **apktool decode** → `apps/tiktok/36.5.4/decode/apktool/`
+2. **jadx export** → `apps/tiktok/36.5.4/decode/jadx/`
 3. **Initial grep**:
-   - `rg "share_link" targets/tiktok/36.5.4/decode/apktool`
-   - `rg "utm_" targets/tiktok/36.5.4/decode/apktool`
-   - `rg "SharePackage" targets/tiktok/36.5.4/decode/apktool`
+   - `rg "share_link" apps/tiktok/36.5.4/decode/apktool`
+   - `rg "utm_" apps/tiktok/36.5.4/decode/apktool`
+   - `rg "SharePackage" apps/tiktok/36.5.4/decode/apktool`
 4. **Feature mapping**:
    - Track down the share flow entry (likely `ShareReportService`, `ShareDialog`, `ShareBundle`).
    - Document builder sequence and pinpoint the final method assembling the URL.
@@ -192,6 +192,6 @@ fix(decoder)!: change smali output format
 ## Checklist (Running)
 - [ ] Run `apktool -JXmx4g d … -o decode/apktool/`
 - [ ] Run `jadx --threads-count 4 -d decode/jadx/ …`
-- [ ] Populate `targets/<package>/<version>/notes/fingerprints.md` with 3+ candidate methods
+- [ ] Populate `apps/<package>/<version>/notes/fingerprints.md` with 3+ candidate methods
 - [ ] Validate link builder via emulator/Frida (optional)
 - [ ] Outline patch execution plan

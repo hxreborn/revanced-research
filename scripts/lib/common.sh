@@ -134,9 +134,9 @@ validate_directory() {
 }
 
 validate_repo_root() {
-    if [[ ! -d "templates" && ! -d "targets" && ! -f "AGENTS.md" ]]; then
+    if [[ ! -d "templates" && ! -d "apps" && ! -f "AGENTS.md" ]]; then
         print_error "Must be run from revanced-research root directory"
-        print_status "Expected: templates/, targets/, and AGENTS.md"
+        print_status "Expected: templates/, apps/, and AGENTS.md"
         return 1
     fi
     return 0

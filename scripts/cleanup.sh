@@ -6,7 +6,7 @@ if [[ $# -ne 1 ]]; then
   exit 1
 fi
 
-target_dir="targets/$1"
+target_dir="apps/$1"
 if [[ ! -d "$target_dir" ]]; then
   echo "Target workspace not found: $target_dir" >&2
   exit 1

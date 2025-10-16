@@ -80,9 +80,9 @@ revanced-research/
 ├── README.md                # Project overview
 ├── docs/
 │   ├── templates/           # Note templates (journal/tooling/etc.)
-│   └── targets/             # Target index & status docs
+│   └── apps/             # Target index & status docs
 ├── scripts/                 # Utility helpers (cleanup, tooling checks)
-└── targets/
+└── apps/
     └── <package>/           # e.g., tiktok, youtube
         └── <version>/       # e.g., 36.5.4, 19.15.34
             ├── apk/         # Pristine APKs (hashes logged)
@@ -105,12 +105,12 @@ revanced-research/
    ```bash
    export APP_ID=tiktok
    export APP_VER=36.5.4
-   mkdir -p targets/$APP_ID/$APP_VER/{apk,decode/{apktool,jadx},notes,artifacts,tmp}
-   cp docs/templates/*.md targets/$APP_ID/$APP_VER/notes/
+   mkdir -p apps/$APP_ID/$APP_VER/{apk,decode/{apktool,jadx},notes,artifacts,tmp}
+   cp docs/templates/*.md apps/$APP_ID/$APP_VER/notes/
    ```
-3. **Stage the APK** — Drop the pristine APK into `targets/$APP_ID/$APP_VER/apk/`, record its SHA-256 in `targets/$APP_ID/$APP_VER/notes/tooling.md`.
+3. **Stage the APK** — Drop the pristine APK into `apps/$APP_ID/$APP_VER/apk/`, record its SHA-256 in `apps/$APP_ID/$APP_VER/notes/tooling.md`.
 4. **Decode & decompile** — Follow the commands in `AGENTS.md` (`apktool -JXmx4g`, `jadx --threads-count 4`, etc.). Keep generated output out of Git thanks to `.gitignore`.
-5. **Document findings** — Use `targets/$APP_ID/$APP_VER/notes/journal.md` for daily logs, `targets/$APP_ID/$APP_VER/notes/fingerprints.md` for match candidates, and `targets/$APP_ID/$APP_VER/notes/patch-plan.md` for final injection strategies.
+5. **Document findings** — Use `apps/$APP_ID/$APP_VER/notes/journal.md` for daily logs, `apps/$APP_ID/$APP_VER/notes/fingerprints.md` for match candidates, and `apps/$APP_ID/$APP_VER/notes/patch-plan.md` for final injection strategies.
 
 ## 🔧 Toolchain Snapshot
 | Tool       | Recommended Version | Notes |
@@ -123,13 +123,13 @@ revanced-research/
 | frida      | optional            | Runtime inspection/hooking |
 | rg / fd    | latest              | Fast text searching across smali/Java |
 
-Log exact versions and CLI flags in `targets/$APP_ID/$APP_VER/notes/tooling.md` for reproducibility.
+Log exact versions and CLI flags in `apps/$APP_ID/$APP_VER/notes/tooling.md` for reproducibility.
 
 ## 📘 Documentation
 - `AGENTS.md` — reverse-engineering playbook
 - `docs/templates/` — Markdown note templates
-- `docs/targets/README.md` — current target index
-- `targets/README.md` — per-target folder guide
+- `docs/apps/README.md` — current target index
+- `apps/README.md` — per-target folder guide
 
 ## 📚 Reference Links
 - [ReVanced Documentation](https://github.com/ReVanced/revanced-documentation)
@@ -141,7 +141,7 @@ Log exact versions and CLI flags in `targets/$APP_ID/$APP_VER/notes/tooling.md` 
 ## 🤝 Contributing
 This is a personal tool shared as-is. PRs are welcome, but responses might be slow.
 - Keep large decode outputs, APKs, and temporary files out of Git.
-- Sync major discoveries back into `AGENTS.md` or the relevant `targets/<package>/<version>/notes/` files so future runs stay reproducible.
+- Sync major discoveries back into `AGENTS.md` or the relevant `apps/<package>/<version>/notes/` files so future runs stay reproducible.
 - Follow Conventional Commit message style when updating the playbook or templates (`docs:`, `chore:`, etc.).
 
 ## ⚖️ License

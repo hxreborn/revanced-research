@@ -7,8 +7,8 @@ Scripts for automating common RE tasks.
 Copy scripts into your target workspace:
 
 ```bash
-cp -r docs/templates/scripts/* targets/<app>/<version>/scripts/
-cd targets/<app>/<version>/scripts/
+cp -r docs/templates/scripts/* apps/<app>/<version>/scripts/
+cd apps/<app>/<version>/scripts/
 ```
 
 ## Scripts

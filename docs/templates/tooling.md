@@ -177,15 +177,15 @@ jadx --threads-count 4 -d decode/jadx/ app-36.5.4.apk
 
 ```bash
 # Create target workspace
-mkdir -p targets/<app>/<ver>/{apk,decode/{apktool,jadx},notes,artifacts,tmp}
-cp docs/templates/*.md targets/<app>/<ver>/notes/
-cp -r docs/templates/scripts/ targets/<app>/<ver>/scripts/
+mkdir -p apps/<app>/<ver>/{apk,decode/{apktool,jadx},notes,artifacts,tmp}
+cp docs/templates/*.md apps/<app>/<ver>/notes/
+cp -r docs/templates/scripts/ apps/<app>/<ver>/scripts/
 ```
 
 ### Decompilation Pipeline
 
 ```bash
-cd targets/<app>/<ver>/scripts/
+cd apps/<app>/<ver>/scripts/
 
 # apktool decode
 apktool -JXmx4g d ../apk/<app>-<ver>.apk -o ../decode/apktool/ -f
