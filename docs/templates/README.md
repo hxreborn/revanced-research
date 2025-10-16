@@ -7,7 +7,7 @@ This directory hosts reusable Markdown templates that keep each target analysis 
 These three files form the foundation of every target analysis:
 
 - **`README.md`** — High-level overview, findings summary, verification checklist, references
-- **`fingerprints.md`** — Bytecode signatures for method matching across obfuscation (FP-NEW, FP-001, etc.)
+- **`fingerprints.md`** — Bytecode signatures for method matching across obfuscation
 - **`patch-plan.md`** — Implementation strategy, injection points, testing checklist, risks
 
 *(Note: Create app-specific `tooling.md` for command documentation and reproducibility.)*
@@ -33,11 +33,11 @@ cp docs/templates/{README,fingerprints,patch-plan}.md apps/<package>/<version>/n
 mkdir -p apps/<package>/<version>/decode/{dex2jar,cfr}
 ```
 
-## Real Example: TikTok 36.5.4
+## Example: TikTok 36.5.4
 
 See `apps/tiktok/36.5.4/notes/`:
 - **README.md** — Tracking mechanism explanation, findings summary
-- **fingerprints.md** — FP-001 (CopyLinkChannel.LJI), FP-002 (C98444aOV.LIZIZ), FP-003, FP-004
+- **fingerprints.md** — FP-NEW (C98549aQC.LJFF) fingerprint for method matching
 - **patch-plan.md** — Share link sanitization strategy with 3 implementation options
 - **cfr-comparison.md** — CFR vs JADX analysis for key methods
 - **tooling.md** — Exact commands, heap settings, runtime metrics
