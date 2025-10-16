@@ -38,7 +38,7 @@
 ![GitHub issues](https://img.shields.io/github/issues/hxreborn/revanced-research?color=ffb347)
 ![GitHub stars](https://img.shields.io/github/stars/hxreborn/revanced-research?style=social)
 
-`revanced-research` is an operations hub for investigating Android APKs before patches are implemented in [`revanced-patches`](https://github.com/ReVanced/revanced-patches). It keeps branding in line with the official ReVanced ecosystem while documenting tooling expectations, repeatable workflows, and app-specific findings in one public home.
+`revanced-research` is an operations hub for investigating Android APKs in support of ReVanced and custom patches. It keeps branding in line with the official ReVanced ecosystem while documenting tooling expectations, repeatable workflows, and app-specific findings in one public home.
 
 > **Heads up**: This project does not ship patched APKs. It exists purely for research and documentation that supports patch development.
 
@@ -103,11 +103,11 @@ Log exact versions and CLI flags in `notes/tooling.md` for reproducibility.
 - [Official Patch Catalogue](https://revanced.app/patches)
 
 ## 🤝 Contributing
-- Keep large decode outputs, APKs, and temporary files out of Git (already covered by `.gitignore`).
+- Keep large decode outputs, APKs, and temporary files out of Git.
 - Sync major discoveries back into `AGENTS.md` or the relevant `apps/<app>/<version>/notes/` file so future contributors benefit.
 - Follow Conventional Commit message style when updating the playbook or templates (`docs:`, `chore:`, etc.).
 
 ## ⚖️ License
-No license has been selected yet. If you plan to distribute this repository, add an appropriate license file first.
+This project is licensed under the [GNU General Public License v3.0](LICENSE).
 
 <sub>ReVanced name, logo, and brand assets © their respective owners. Used here for documentation alignment.</sub>
