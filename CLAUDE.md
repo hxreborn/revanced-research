@@ -36,7 +36,7 @@ See `apps/tiktok/36.5.4/notes/bytecode-phase-handoff.md` for complete example.
 
 ```
 revanced-research/
-├── AGENTS.md              # Reverse-engineering playbook (Conventional Commits, RE workflow)
+├── AGENTS.md              # Machine-facing guide (Conventional Commits, RE workflow)
 ├── README.md              # Project overview
 ├── CONTRIBUTING.md        # Contribution guidelines
 ├── docs/
@@ -128,6 +128,6 @@ When analysis is complete:
 
 ## Reference
 
-- **AGENTS.md** — Full reverse-engineering playbook with workflow details
+- **AGENTS.md** — Full reverse-engineering guide with workflow details
 - **README.md** — Project overview and setup
 - **docs/jvm_gc_troubleshooting.md** — GC crash diagnosis & recovery
