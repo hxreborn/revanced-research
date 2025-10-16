@@ -34,7 +34,7 @@ revanced-research/
             │   ├── jadx/    # `jadx` export
             │   ├── dex2jar/ # Per-dex JARs for CFR/other tooling
             │   └── cfr/     # CFR decompilation exports (optional)
-            ├── notes/       # README, fingerprints, patch plan, plus optional studies
+            ├── notes/       # README, fingerprints, patch-plan (core) + optional tooling, data-flow, etc.
             ├── artifacts/   # Dumps, payloads, screenshots
             └── tmp/         # Scratch data (safe to wipe)
 ```
@@ -69,6 +69,7 @@ Tips:
 - Record CFR command lines, JVM flags, runtimes, and warnings in the same tooling log for reproducibility.
 - Whenever `apktool` fails due to framework resources, install matching `framework-res.apk` into `~/.local/share/apktool/framework/`.
 - For reproducibility, pin tool versions and CLI options in `apps/<package>/<version>/notes/tooling.md` and commit mapping files if generated.
+- **For JADX GC crashes**, see `docs/jvm_gc_troubleshooting.md` for detailed diagnosis and recovery strategies.
 
 ---
 

@@ -16,6 +16,10 @@ hs_err_pid*.log
 *.tmp
 *.bak
 
+# Archive backups
+Archive.tar.gz
+*.tar.gz
+
 # macOS/Linux metadata
 .DS_Store
 Thumbs.db

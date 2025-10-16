@@ -64,87 +64,45 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/hxreborn/revanced-research?label=updated&color=ff6f3d)
 ![Status: Experimental](https://img.shields.io/badge/status-experimental-ffb347)
 ![GPLv3](https://img.shields.io/badge/license-GPLv3-blue)
-![Repo size](https://img.shields.io/github/repo-size/hxreborn/revanced-research)
 
-`revanced-research` is a reverse-engineering workspace for ReVanced and custom patches. It mirrors the official ReVanced branding while documenting tooling expectations, repeatable workflows, and app-specific findings in one place.
-
-> **Heads up**: This project does not ship patched APKs. It exists purely for research and documentation that supports patch development.
-
-## ✨ Purpose
-- Maintain a clean, reproducible reverse-engineering environment that mirrors the official ReVanced workflow.
+A reverse-engineering workspace for ReVanced patch development. Documents tooling expectations, repeatable workflows, and app-specific findings. **Does not ship patched APKs**—purely for research and documentation.
 
 ## 🧱 Repository Layout
 ```text
 revanced-research/
-├── AGENTS.md                # Reverse-engineering playbook
-├── README.md                # Project overview
-├── docs/
-│   ├── templates/           # Note templates (journal/tooling/etc.)
-│   └── apps/             # Target index & status docs
-├── scripts/                 # Utility helpers (cleanup, tooling checks)
-└── apps/
-    └── <package>/           # e.g., tiktok, youtube
-        └── <version>/       # e.g., 36.5.4, 19.15.34
-            ├── apk/         # Pristine APKs (hashes logged)
-            ├── decode/
-            │   ├── apktool/ # `apktool d` output
-            │   └── jadx/    # `jadx` export
-            ├── notes/       # journal, fingerprints, patch plan, tooling
-            ├── artifacts/   # Dumps, payloads, screenshots
-            └── tmp/         # Scratch data
+├── docs/              # Human guides & templates
+│   ├── templates/     # Analysis templates (README, fingerprints, patch-plan)
+│   └── jvm_gc_troubleshooting.md
+├── apps/              # Per-app analysis workspaces
+│   └── <package>/<version>/
+│       ├── apk/       # Pristine APKs
+│       ├── decode/    # Decompilation outputs (gitignored)
+│       ├── notes/     # Analysis documents
+│       └── artifacts/ # Dumps & screenshots (gitignored)
+└── scripts/           # Utility scripts (apktool, jadx wrappers, etc.)
 ```
 
-## 🚀 Getting Started
-1. **Clone & read**
-   ```bash
-   git clone https://github.com/hxreborn/revanced-research.git
-   cd revanced-research
-   ```
-   Skim `AGENTS.md` to understand conventions and tooling.
-2. **Spin up a target**
-   ```bash
-   export APP_ID=tiktok
-   export APP_VER=36.5.4
-   mkdir -p apps/$APP_ID/$APP_VER/{apk,decode/{apktool,jadx},notes,artifacts,tmp}
-   cp docs/templates/*.md apps/$APP_ID/$APP_VER/notes/
-   ```
-3. **Stage the APK** — Drop the pristine APK into `apps/$APP_ID/$APP_VER/apk/`, record its SHA-256 in `apps/$APP_ID/$APP_VER/notes/tooling.md`.
-4. **Decode & decompile** — Follow the commands in `AGENTS.md` (`apktool -JXmx4g`, `jadx --threads-count 4`, etc.). Keep generated output out of Git thanks to `.gitignore`.
-5. **Document findings** — Use `apps/$APP_ID/$APP_VER/notes/journal.md` for daily logs, `apps/$APP_ID/$APP_VER/notes/fingerprints.md` for match candidates, and `apps/$APP_ID/$APP_VER/notes/patch-plan.md` for final injection strategies.
+## 🚀 Quick Start
 
-## 🔧 Toolchain Snapshot
-| Tool       | Recommended Version | Notes |
-|------------|---------------------|-------|
-| Java       | 17+                 | Matches ReVanced patch build requirements |
-| apktool    | 2.12.x              | Run with `-JXmx4g` for multi-dex apps |
-| jadx       | 1.5+                | CLI or GUI, `--deobf` optional |
-| dex2jar    | 2.4+                | Bundle of `d2j-*` helpers |
-| adb        | latest platform-tools | For emulator/device validation |
-| frida      | optional            | Runtime inspection/hooking |
-| rg / fd    | latest              | Fast text searching across smali/Java |
+```bash
+# 1. Clone the repository
+git clone https://github.com/hxreborn/revanced-research.git && cd revanced-research
 
-Log exact versions and CLI flags in `apps/$APP_ID/$APP_VER/notes/tooling.md` for reproducibility.
+# 2. Set up a target workspace
+export APP=myapp VER=1.0.0
+mkdir -p apps/$APP/$VER/{apk,decode/{apktool,jadx},notes,artifacts,tmp}
+cp docs/templates/*.md apps/$APP/$VER/notes/
 
-## 📘 Documentation
-- `AGENTS.md` — reverse-engineering playbook
-- `docs/templates/` — Markdown note templates
-- `docs/apps/README.md` — current target index
-- `apps/README.md` — per-target folder guide
+# 3. Place APK, decode, decompile, analyze, and document findings
+# See docs/templates/ and docs/JVM_GC_TROUBLESHOOTING.md for guidance
+```
 
-## 📚 Reference Links
-- [ReVanced Documentation](https://github.com/ReVanced/revanced-documentation)
-- [ReVanced Patcher](https://github.com/ReVanced/revanced-patcher)
-- [ReVanced CLI](https://github.com/ReVanced/revanced-cli)
-- [ReVanced Manager](https://github.com/ReVanced/revanced-manager)
-- [Official Patch Catalogue](https://revanced.app/patches)
+## 📚 Resources
+- **`docs/templates/`** — Analysis templates (README, fingerprints, patch-plan)
+- **`docs/JVM_GC_TROUBLESHOOTING.md`** — GC crash diagnosis for large APK decompilation
+- **Example**: `apps/tiktok/36.5.4/notes/` shows completed analysis
 
-## 🤝 Contributing
-This is a personal tool shared as-is. PRs are welcome, but responses might be slow.
-- Keep large decode outputs, APKs, and temporary files out of Git.
-- Sync major discoveries back into `AGENTS.md` or the relevant `apps/<package>/<version>/notes/` files so future runs stay reproducible.
-- Follow Conventional Commit message style when updating the playbook or templates (`docs:`, `chore:`, etc.).
-
-## ⚖️ License
-This project is licensed under the [GNU General Public License v3.0](LICENSE).
-
-<sub>ReVanced name, logo, and brand assets © their respective owners. Used here for documentation alignment.</sub>
+## 📚 Quick Links
+- [ReVanced Patches](https://revanced.app/patches)
+- [Contributing Guidelines](https://github.com/hxreborn/revanced-research)
+- **License**: [GPLv3](LICENSE)

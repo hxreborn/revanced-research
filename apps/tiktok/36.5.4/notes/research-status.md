@@ -1,0 +1,167 @@
+# TikTok 36.5.4 Share Link Sanitizer — Research Phase Complete ✅
+
+**Status**: Ready for Bytecode Implementation
+**Date**: 2025-10-16
+**Phase**: Bytecode Verification → Smali Implementation
+
+---
+
+## Current State
+
+All analysis documents are locked and cross-linked. See `bytecode-phase-handoff.md` for critical unknowns blocking implementation.
+
+### Core Documentation (Production-Ready)
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| `fingerprints.md` | FP-NEW + archived FP-001 with rationale | ✅ Final |
+| `patch-plan.md` | High-level strategy, 6 test cases | ✅ Final |
+| `implementation-strategy.md` | Bytecode-level design, helper signatures | ✅ Final |
+| `ljff-data-flow-analysis.md` | Call path, register planning, verification checklist | ✅ Final |
+| `tooling.md` | Reproducible commands, tool versions, metrics | ✅ Final |
+| `README.md` | Overview, findings, evidence validation | ✅ Final |
+
+### Supplementary
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| `bytecode-phase-handoff.md` | Transition checklist, unknowns, resolution steps | ✅ Active |
+
+---
+
+## Key Decisions (Locked)
+
+### ✅ FP-NEW: C98549aQC.LJFF() (Pre-Shortening)
+
+**Why This Over CopyLinkChannel.LJI()?**
+
+| Aspect | CopyLinkChannel.LJI | C98549aQC.LJFF | Winner |
+|--------|-------------------|-----------------|--------|
+| Timing | After shortening | **Before shortening** | ✅ LJFF |
+| Coverage | Copy link only | **All surfaces** | ✅ LJFF |
+| Analytics | Breaks | **Preserved** | ✅ LJFF |
+| Network Calls | None eliminated | **IShortenUrlApi bypassed** | ✅ LJFF |
+
+FP-001 archived as historical reference (see `fingerprints.md`).
+
+### ✅ Helper Function Strategy
+
+```java
+// Pseudocode
+Observable<String> buildCanonicalUrl(
+    int itemType,        // Share type (Copy, More, Channel)
+    String url1,         // Parameter 1 (see bytecode-phase-handoff)
+    String url2,         // Parameter 2
+    String url3          // Parameter 3 (fallback)
+) {
+    if (isLinkShareType(itemType)) {
+        String canonicalUrl = deriveCanonicalUrl(url1, url2, url3);
+        return AbstractC98976aX5.m14172LJ(canonicalUrl);
+    }
+    // Non-link shares: pass through unchanged
+    return IShortenUrlApi.getShareLinkShortenUel(...);
+}
+```
+
+### ✅ Injection Strategy
+
+Replace `IShortenUrlApi.getShareLinkShortenUel()` invocation:
+
+```
+BEFORE: invoke-interface {...}, LIShortenUrlApi;->getShareLinkShortenUel(...)
+AFTER:  invoke-static {...}, LLhelperClass;->buildCanonicalUrl(...)
+```
+
+---
+
+## Unknowns (Blocking Bytecode Phase)
+
+See `bytecode-phase-handoff.md` for resolution commands and status.
+
+### 🔍 Unknown #1: Aweme Field Access
+
+**Question**: How to get `userId` and `videoId` in LJFF context?
+
+**Options**:
+- [ ] Aweme passed as parameter
+- [ ] Cached in static/instance field
+- [ ] Already extracted in string params (p2-p4)
+
+**Resolution**: Commands in bytecode-phase-handoff.md (~15 min)
+
+### 🔍 Unknown #2: itemType Enum Mapping
+
+**Question**: Which int value = "link share"?
+
+**Options**:
+- [ ] Find enum constant definition
+- [ ] Trace LJFF callers for itemType values
+- [ ] Use fallback (apply to all itemType values)
+
+**Resolution**: Commands in bytecode-phase-handoff.md (~15 min)
+
+### 🔍 Unknown #3: Observable Type Compatibility
+
+**Question**: Does `AbstractC98976aX5.m14172LJ(String)` return same type as `IShortenUrlApi.getShareLinkShortenUel()`?
+
+**Resolution**: Signature verification in bytecode-phase-handoff.md (~10 min)
+
+---
+
+## Ready for Next Phase
+
+### ✅ Bytecode Verification (1-2 hours)
+
+1. Run resolution commands in bytecode-phase-handoff.md
+2. Document findings in ljff-data-flow-analysis.md
+3. Finalize register allocation diagram
+
+### ✅ Smali Implementation (2-3 hours)
+
+1. Extract LJFF method from apktool smali
+2. Locate IShortenUrlApi invoke-interface
+3. Draft smali injection with register assignments
+
+### ✅ Testing (2-3 hours)
+
+1. Build patched APK
+2. Run TC-001 through TC-006 on emulator
+3. Verify clipboard output and analytics
+
+---
+
+## Files to Commit Now
+
+```bash
+git add apps/tiktok/36.5.4/notes/
+git commit -m "docs(tiktok): lock share link sanitizer analysis
+
+- fingerprints.md: FP-NEW (C98549aQC.LJFF) + FP-001 archived
+- patch-plan.md: Updated strategy with test cases
+- implementation-strategy.md: Production-spec bytecode design
+- ljff-data-flow-analysis.md: Call paths + verification checklist
+- bytecode-phase-handoff.md: Transition checkpoint + unknowns
+- tooling.md: CFR runs, commands, performance metrics
+
+Analysis phase complete; ready for bytecode verification."
+```
+
+---
+
+## Navigation
+
+**Understanding the Approach:**
+→ Start: `patch-plan.md` (high-level)
+→ Details: `implementation-strategy.md` (bytecode spec)
+
+**Validation:**
+→ Fingerprints: `fingerprints.md`
+→ Reproducibility: `tooling.md`
+
+**Implementation Phase:**
+→ Unknowns: `bytecode-phase-handoff.md`
+→ Verification: `ljff-data-flow-analysis.md`
+
+---
+
+**Next Action**: Resolve 3 unknowns in `bytecode-phase-handoff.md` → Proceed to smali implementation

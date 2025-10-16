@@ -1,7 +1,7 @@
 # TikTok 36.5.4 Decompilation Project - Summary
 
 ## Project Overview
-Successfully decompiled TikTok (Musical.ly) APK version 36.5.4 using JADX, generating 391,259 Java source files for analysis.
+Successfully decompiled TikTok (Musical.ly) APK version 36.5.4 using JADX, generating 221,897 Java source files for analysis.
 
 **Status:** ✅ COMPLETE
 
@@ -31,8 +31,8 @@ jadx --deobf --no-debug-info -j 8 -d output/ tiktok-36.5.4.apk
 
 **Result:** ✅ Completed successfully
 - **Duration:** ~7 minutes
-- **Output Size:** 2.9 GB
-- **Files Generated:** 391,259 Java files
+- **Output Size:** 1.8 GB
+- **Files Generated:** 221,897 Java files
 - **Decompilation Errors:** 975 (0.6% - normal for heavily obfuscated apps)
 
 ### 3. Output Structure
@@ -43,17 +43,18 @@ apps/tiktok/36.5.4/
 │   └── hashes.txt                  # SHA-256 checksum
 ├── decode/
 │   ├── jadx/
-│   │   ├── sources/                # 391,259 decompiled .java files (2.9 GB)
+│   │   ├── sources/                # 221,897 decompiled .java files (1.8 GB)
 │   │   └── resources/              # APK resources
 │   └── apktool/
 │       ├── smali/                  # DEX bytecode (smali format) (3.4 GB)
 │       ├── res/                    # Resources
 │       └── AndroidManifest.xml     # App manifest
 ├── notes/
-│   ├── journal.md                  # Analysis discoveries & timeline
-│   ├── fingerprints.md             # Candidate patch methods
+│   ├── fingerprints.md             # Bytecode fingerprints for method matching
 │   ├── patch-plan.md               # Injection strategy & dependencies
-│   └── tooling.md                  # Tool versions, APK hash, performance metrics
+│   ├── implementation-strategy.md   # Bytecode-level design spec
+│   ├── tooling.md                  # Tool versions, APK hash, performance metrics
+│   └── bytecode-phase-handoff.md   # Phase transition checklist
 ├── analysis/
 │   ├── jadx_parallel_*.log         # JADX build logs
 │   ├── deobfuscation_report.json   # Class analysis
@@ -63,34 +64,7 @@ apps/tiktok/36.5.4/
     └── decompile-performance.txt   # Timing metrics
 ```
 
-### 4. Deobfuscation Efforts
-
-Created two Python deobfuscation analyzers:
-
-#### 4.1 Basic Deobfuscation (`deobfuscate.py`)
-- Scanned 391,259 Java files
-- Identified class purposes using Android patterns
-- **Results:**
-  - Activities: 389 classes
-  - Listeners: 542 classes
-  - Database-related: 260 classes
-  - Adapters: 22 classes
-  - Services: 2 classes
-  - Unknown/Heavily Obfuscated: 165,442 classes
-
-#### 4.2 Advanced API Classification (`advanced_deobf.py`)
-- Categorizes classes by functionality:
-  - Network/API patterns
-  - Cryptography/Security
-  - Database operations
-  - Media handling
-  - Analytics/Tracking
-  - Storage operations
-  - UI/View components
-  - Threading patterns
-  - Permission handling
-
-### 5. Key Findings
+### 4. Key Findings
 
 #### Package Structure
 - **Main Package:** `com.zhiliaoapp.musically`
@@ -107,12 +81,8 @@ Created two Python deobfuscation analyzers:
 - JADX deobfuscation (`--deobf` flag) provides some improvement
 - Full reversal would require ProGuard mapping files (not included in APK)
 
-### 6. Tools Used
-- **JADX 1.5.x** - Java decompiler (primary)
-- **apktool 2.x** - APK resource extraction
-- **Java 25 (Temurin)** - Runtime (most stable for large heaps)
-- **Python 3** - Custom analysis scripts
-- **ripgrep** - Source code search
+### 5. Tools Used
+See `AGENTS.md` for toolchain details.
 
 ## Output Files & How to Use Them
 
@@ -191,25 +161,15 @@ jq '.[] | select(.purpose != null) | {class: .class_name, purpose: .purpose}' \
 
 ## Project Structure
 
+This workspace follows the structure defined in `AGENTS.md`. Current analysis:
 ```
-revanced-research/
-├── README.md                          # Main documentation
-├── TIKTOK_DECOMPILATION_SUMMARY.md   # This file
-├── docs/
-│   ├── DECOMPILATION_GUIDE.md        # Setup and execution guide
-│   └── JVM_GC_TROUBLESHOOTING.md    # GC crash solutions
-├── scripts/
-│   ├── run-jadx.sh                   # Primary decompilation script
-│   ├── deobfuscate.py                # Basic deobfuscation analyzer
-│   ├── advanced_deobf.py             # API classification tool
-│   └── check-tools.sh                # Dependency checker
-└── targets/
-    └── tiktok/36.5.4/
-        ├── apk/                      # Original APK
-        ├── decode/jadx/              # Decompiled Java sources
-        ├── decode/apktool/           # APK resources
-        ├── analysis/                 # Analysis reports
-        └── artifacts/                # Build logs & metrics
+apps/tiktok/36.5.4/
+├── apk/                   # Original APK (397 MB)
+├── decode/
+│   ├── jadx/              # Decompiled Java sources (~391k files)
+│   └── apktool/           # Resources, smali, manifest
+├── notes/                 # Analysis documents (fingerprints, patch-plan)
+└── artifacts/             # Build logs & metrics
 ```
 
 ## Next Steps
