@@ -70,8 +70,6 @@
 
 ## ✨ Purpose
 - Maintain a clean, reproducible reverse-engineering environment that mirrors the official ReVanced workflow.
-- Share per-app research logs, fingerprints, and patch plans without polluting the main patch repository.
-- Onboard collaborators quickly with branded documentation and ready-to-use templates.
 
 ## 🧱 Repository Layout
 ```
