@@ -8,49 +8,50 @@
     <img 
       width="256px"
       src="https://raw.githubusercontent.com/ReVanced/revanced-patches/main/assets/revanced-headline/revanced-headline-vertical-light.svg"
+      alt="ReVanced headline logo"
     >
   </picture>
   <br>
   <a href="https://revanced.app/">
      <picture>
          <source height="24px" media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/ReVanced/revanced-patches/main/assets/revanced-logo/revanced-logo.svg" />
-         <img height="24px" src="https://raw.githubusercontent.com/ReVanced/revanced-patches/main/assets/revanced-logo/revanced-logo.svg" />
+         <img height="24px" src="https://raw.githubusercontent.com/ReVanced/revanced-patches/main/assets/revanced-logo/revanced-logo.svg" alt="ReVanced" />
      </picture>
    </a>&nbsp;&nbsp;&nbsp;
    <a href="https://github.com/ReVanced">
        <picture>
            <source height="24px" media="(prefers-color-scheme: dark)" srcset="https://i.ibb.co/dMMmCrW/Git-Hub-Mark.png" />
-           <img height="24px" src="https://i.ibb.co/9wV3HGF/Git-Hub-Mark-Light.png" />
+           <img height="24px" src="https://i.ibb.co/9wV3HGF/Git-Hub-Mark-Light.png" alt="GitHub" />
        </picture>
    </a>&nbsp;&nbsp;&nbsp;
    <a href="http://revanced.app/discord">
        <picture>
            <source height="24px" media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/13122796/178032563-d4e084b7-244e-4358-af50-26bde6dd4996.png" />
-           <img height="24px" src="https://user-images.githubusercontent.com/13122796/178032563-d4e084b7-244e-4358-af50-26bde6dd4996.png" />
+           <img height="24px" src="https://user-images.githubusercontent.com/13122796/178032563-d4e084b7-244e-4358-af50-26bde6dd4996.png" alt="Discord" />
        </picture>
    </a>&nbsp;&nbsp;&nbsp;
    <a href="https://reddit.com/r/revancedapp">
        <picture>
            <source height="24px" media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/13122796/178032351-9d9d5619-8ef7-470a-9eec-2744ece54553.png" />
-           <img height="24px" src="https://user-images.githubusercontent.com/13122796/178032351-9d9d5619-8ef7-470a-9eec-2744ece54553.png" />
+           <img height="24px" src="https://user-images.githubusercontent.com/13122796/178032351-9d9d5619-8ef7-470a-9eec-2744ece54553.png" alt="Reddit" />
        </picture>
    </a>&nbsp;&nbsp;&nbsp;
    <a href="https://t.me/app_revanced">
       <picture>
          <source height="24px" media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/13122796/178032213-faf25ab8-0bc3-4a94-a730-b524c96df124.png" />
-         <img height="24px" src="https://user-images.githubusercontent.com/13122796/178032213-faf25ab8-0bc3-4a94-a730-b524c96df124.png" />
+         <img height="24px" src="https://user-images.githubusercontent.com/13122796/178032213-faf25ab8-0bc3-4a94-a730-b524c96df124.png" alt="Telegram" />
       </picture>
    </a>&nbsp;&nbsp;&nbsp;
    <a href="https://x.com/revancedapp">
       <picture>
          <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/93124920/270180600-7c1b38bf-889b-4d68-bd5e-b9d86f91421a.png">
-         <img height="24px" src="https://user-images.githubusercontent.com/93124920/270108715-d80743fa-b330-4809-b1e6-79fbdc60d09c.png" />
+         <img height="24px" src="https://user-images.githubusercontent.com/93124920/270108715-d80743fa-b330-4809-b1e6-79fbdc60d09c.png" alt="X" />
       </picture>
    </a>&nbsp;&nbsp;&nbsp;
    <a href="https://www.youtube.com/@ReVanced">
       <picture>
          <source height="24px" media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/13122796/178032714-c51c7492-0666-44ac-99c2-f003a695ab50.png" />
-         <img height="24px" src="https://user-images.githubusercontent.com/13122796/178032714-c51c7492-0666-44ac-99c2-f003a695ab50.png" />
+         <img height="24px" src="https://user-images.githubusercontent.com/13122796/178032714-c51c7492-0666-44ac-99c2-f003a695ab50.png" alt="YouTube" />
      </picture>
    </a>
    <br>
@@ -73,20 +74,24 @@
 - Maintain a clean, reproducible reverse-engineering environment that mirrors the official ReVanced workflow.
 
 ## 🧱 Repository Layout
-```
+```text
 revanced-research/
-├── AGENTS.md                  # Ops manual / playbook
-├── README.md                  # You're here
-├── templates/                 # Note & checklist templates
-└── apps/
-    └── <app-id>/<version>/    # Per-target workspaces
-        ├── apk/               # Pristine APKs (hashes logged in notes)
-        ├── decode/apktool/    # apktool output (gitignored)
-        ├── decode/jadx/       # jadx output (gitignored)
-        ├── notes/             # journal, fingerprints, patch plan, tooling
-        ├── artifacts/         # dumps, payloads, screenshots (gitignored)
-        ├── scripts/           # helper scripts
-        └── tmp/               # scratch pad
+├── AGENTS.md                # Reverse-engineering playbook
+├── README.md                # Project overview
+├── docs/
+│   ├── templates/           # Note templates (journal/tooling/etc.)
+│   └── targets/             # Target index & status docs
+├── scripts/                 # Utility helpers (cleanup, tooling checks)
+└── targets/
+    └── <package>/           # e.g., tiktok, youtube
+        └── <version>/       # e.g., 36.5.4, 19.15.34
+            ├── apk/         # Pristine APKs (hashes logged)
+            ├── decode/
+            │   ├── apktool/ # `apktool d` output
+            │   └── jadx/    # `jadx` export
+            ├── notes/       # journal, fingerprints, patch plan, tooling
+            ├── artifacts/   # Dumps, payloads, screenshots
+            └── tmp/         # Scratch data (safe to wipe)
 ```
 
 ## 🚀 Getting Started
@@ -96,16 +101,16 @@ revanced-research/
    cd revanced-research
    ```
    Skim `AGENTS.md` to understand conventions and tooling.
-2. **Spawn a workspace**
+2. **Spin up a target**
    ```bash
    export APP_ID=tiktok
    export APP_VER=36.5.4
-   mkdir -p apps/$APP_ID/$APP_VER/{apk,decode/{apktool,jadx},notes,artifacts,scripts,tmp}
-   cp templates/*.md apps/$APP_ID/$APP_VER/notes/
+   mkdir -p targets/$APP_ID/$APP_VER/{apk,decode/{apktool,jadx},notes,artifacts,tmp}
+   cp docs/templates/*.md targets/$APP_ID/$APP_VER/notes/
    ```
-3. **Stage the APK** — Drop the pristine APK into `apps/$APP_ID/$APP_VER/apk/`, record its SHA-256 in `notes/tooling.md`.
+3. **Stage the APK** — Drop the pristine APK into `targets/$APP_ID/$APP_VER/apk/`, record its SHA-256 in `targets/$APP_ID/$APP_VER/notes/tooling.md`.
 4. **Decode & decompile** — Follow the commands in `AGENTS.md` (`apktool -JXmx4g`, `jadx --threads-count 4`, etc.). Keep generated output out of Git thanks to `.gitignore`.
-5. **Document findings** — Use `notes/journal.md` for daily logs, `notes/fingerprints.md` for match candidates, and `notes/patch-plan.md` for final injection strategies.
+5. **Document findings** — Use `targets/$APP_ID/$APP_VER/notes/journal.md` for daily logs, `targets/$APP_ID/$APP_VER/notes/fingerprints.md` for match candidates, and `targets/$APP_ID/$APP_VER/notes/patch-plan.md` for final injection strategies.
 
 ## 🔧 Toolchain Snapshot
 | Tool       | Recommended Version | Notes |
@@ -118,7 +123,13 @@ revanced-research/
 | frida      | optional            | Runtime inspection/hooking |
 | rg / fd    | latest              | Fast text searching across smali/Java |
 
-Log exact versions and CLI flags in `notes/tooling.md` for reproducibility.
+Log exact versions and CLI flags in `targets/$APP_ID/$APP_VER/notes/tooling.md` for reproducibility.
+
+## 📘 Documentation
+- `AGENTS.md` — reverse-engineering playbook
+- `docs/templates/` — Markdown note templates
+- `docs/targets/README.md` — current target index
+- `targets/README.md` — per-target folder guide
 
 ## 📚 Reference Links
 - [ReVanced Documentation](https://github.com/ReVanced/revanced-documentation)
@@ -130,7 +141,7 @@ Log exact versions and CLI flags in `notes/tooling.md` for reproducibility.
 ## 🤝 Contributing
 This is a personal tool shared as-is. PRs are welcome, but responses might be slow.
 - Keep large decode outputs, APKs, and temporary files out of Git.
-- Sync major discoveries back into `AGENTS.md` or the relevant `apps/<app>/<version>/notes/` file so future contributors benefit.
+- Sync major discoveries back into `AGENTS.md` or the relevant `targets/<package>/<version>/notes/` files so future runs stay reproducible.
 - Follow Conventional Commit message style when updating the playbook or templates (`docs:`, `chore:`, etc.).
 
 ## ⚖️ License
