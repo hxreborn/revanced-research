@@ -127,7 +127,7 @@ Quick reference table:
 
 ## Example: TikTok 36.5.4 FP-001
 
-This is a real fingerprint from a completed analysis. Use as a reference for structure and detail level.
+This fingerprint comes from a completed analysis. Use it as a reference for structure and detail level.
 
 ### FP-001: CopyLinkChannel.LJI() — Final Clipboard Write
 

@@ -157,7 +157,7 @@ return v0
 ### Deployment
 
 - [ ] Code review completed
-- [ ] PR created in revanced-patches repo
+- [ ] (Optional) PR created in revanced-patches repo
 - [ ] CI/CD pipeline passes
 - [ ] Released to users
 
@@ -174,7 +174,7 @@ return v0
 
 ## Example: TikTok 36.5.4 Share Link Sanitizer
 
-This is a complete real-world example from start to finish.
+This is a complete example from start to finish.
 
 ### Executive Summary
 
@@ -312,7 +312,7 @@ public class ShareLinkUtils {
 - [ ] Smali injection tested
 - [ ] All TCs pass on emulator
 - [ ] Code review complete
-- [ ] PR created
+- [ ] (Optional) PR created
 
 ---
 
