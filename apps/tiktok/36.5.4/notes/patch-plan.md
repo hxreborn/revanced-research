@@ -1,203 +1,132 @@
-# Patch Implementation Plan
+# Patch Plan – TikTok Share Link Sanitizer
 
-**App:** TikTok
-**Version:** 36.5.4
-**Patch Name:** Share Link Sanitizer
-**Priority:** HIGH
-**Status:** DESIGN → IMPLEMENTATION-READY
-**Author:** ReVanced Research
-**Last Updated:** 2025-10-16
-
-> **📋 DESIGN REFERENCE**: See `implementation-strategy.md` for detailed bytecode-level planning, register allocation, fingerprint anchors, and implementation checklist. This document provides the high-level context.
+**App / Version**: TikTok 36.5.4  
+**Patch name**: Share Link Sanitizer  
+**Priority**: High  
+**Current status**: DESIGN ➜ IMPLEMENTATION Ready  
+**Last updated**: 2025-10-16  
 
 ---
 
-## Executive Summary
+## 1. Goal
 
-**Objective:** Prevent TikTok from generating tracking-enabled short URLs by intercepting the shortening process and substituting canonical URLs instead.
-
-**User Impact:** Users' clipboard and all share destinations receive canonical URLs (`https://www.tiktok.com/@user/video/{id}`) with **zero tracking metadata**, eliminating the ability for TikTok to correlate shares across platforms.
-
-**Risk Level:** LOW  
-**Complexity:** SIMPLE (single injection point, no query param parsing needed)
+Deliver canonical share URLs (`https://www.tiktok.com/@handle/video/<aid>`) for every share surface, eliminating TikTok’s short-link tracking while keeping analytics and UI stable.
 
 ---
 
-## Problem Statement
+## 2. Final Strategy Summary
 
-### Current Behavior
-
-TikTok intercepts share requests before users see the URL and generates tracking-enabled short URLs:
-
-1. **Share Triggered**: User taps Copy Link, More options, or channel chip
-2. **Shortening Request**: TikTok sends full URL to `IShortenUrlApi.getShareLinkShortenUel()`
-3. **Short URL Generated**: API returns short code (e.g., `vm.tiktok.com/ZNd7AJCU5/`)
-   - Short code encodes metadata: who shared, when, from which surface, user context
-4. **Clipboard Write**: Short URL copied to clipboard
-5. **Server Logging**: When shared URL is clicked elsewhere, TikTok decodes short code → correlates user behavior
-
-**Evidence**: Examples from user research:
-- Input: `https://www.tiktok.com/@champimuros/video/7561790867955076374` (canonical, clean)
-- Clipboard receives: `https://vm.tiktok.com/ZNd7AJCU5/` (short code with embedded metadata)
-
-### Desired Behavior
-
-Users' clipboard and all share destinations receive canonical URLs with zero tracking identifiers.
-
-**Success Criteria:**
-- [ ] Shared links are canonical form: `https://www.tiktok.com/@{user}/video/{id}`
-- [ ] No short URLs generated (bypass shortening entirely)
-- [ ] Works across ALL share surfaces (Copy, More options, channel chips)
-- [ ] Link functionality preserved (video still loads)
-- [ ] Analytics/logging still fires (no broken observables)
-- [ ] No app crashes
+| Item | Decision |
+|---|---|
+| **Injection point** | `Lp004Y/ACallableS112S0200000_17;->call$0()` (smali_classes18) |
+| **Why here?** | This callable owns the Aweme payload *and* executes immediately before `C98549aQC.LJFF()` launches the shortener |
+| **Action** | Bypass the `C98549aQC.LJFF` call, synthesize our own `ShortenModel`, wrap with `C54361JSy` |
+| **Helpers** | `CanonicalUrlBuilder.buildFromAweme(Aweme, String)` + `CanonicalShortenModelFactory.create(String)` |
+| **Null safety** | Five-level fallback chain for handles; fall back to video-only URL if none available |
+| **Risk** | Medium – smali patch invokes helpers, extra register juggling |
+| **Estimate** | 10–12 hours (helper work, smali patch, regression tests) |
 
 ---
 
-## Technical Analysis
+## 3. Data & Helpers
 
-### Target Components
-
-**Primary Class:** `Lcom/p124ss/android/ugc/aweme/share/C98549aQC;`  
-**Primary Method:** `LJFF(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)L...;`  
-**Location:** `classes18.dex`, line 183  
-**Interception Point:** Pre-shortening (before IShortenUrlApi.getShareLinkShortenUel invocation)
-
-### Call Graph
-
+### Aweme access
 ```
-User Share Action (Copy Link, More Options, Channel Chip)
-  ↓
-ShareService.triggerShare(Aweme, channel)
-  ↓
-CopyLinkWorker.doWork() / Channel Handler
-  ↓
-[PATCH TARGET] C98549aQC.LJFF(itemType, url1, url2, url3)
-  ├─ Access Aweme context (userId, videoId)
-  ├─ Derive canonical URL: https://www.tiktok.com/@{userId}/video/{videoId}
-  └─ Return: AbstractC98976aX5.m14172LJ(canonicalUrl)
-      └─ [Skip IShortenUrlApi.getShareLinkShortenUel()]
-  ↓
-C50550Hrl.LIZIZ()  [Observer chain]
-  ↓
-Result: Observable<String> → Clipboard / Share destination
+p0  -> ACallableS112S0200000_17 instance
+p0.f17831l1 -> C98759aTa
+p0.f17831l1.LJJLJLI -> Aweme (full metadata)
 ```
 
-### Dependencies
+### Helper expectations
 
-- **Aweme context access**: Must resolve Aweme fields from LJFF scope
-- **Helper function**: `ShareUrlUtils.buildCanonicalUrl(int, String, long, String)`
-- **Observable wrapper**: `AbstractC98976aX5.m14172LJ(String)` must return compatible type
-
----
-
-## Implementation Strategy
-
-### Method: Pre-Shortening Interception
-
-Hook `C98549aQC.LJFF()` **before** URL shortening occurs, replacing the shortener API call with a canonical URL reconstruction.
-
-### Fingerprint
-
-**Target:** FP-NEW (`C98549aQC.LJFF()`) — **NOT FP-001**  
-**Confidence:** 95%  
-**Location:** `classes18.dex`, line 183 (CFR reference)
-
-**Why LJFF over CopyLinkChannel.LJI():**
-
-| Criterion | LJI (Archived) | LJFF (New) | Winner |
-|-----------|----------------|-----------|--------|
-| **Timing** | Post-shortening (too late) | Pre-shortening (optimal) | ✅ LJFF |
-| **Coverage** | Copy only | All surfaces (copy, more, chips) | ✅ LJFF |
-| **Data Access** | Short URL only | Full Aweme context | ✅ LJFF |
-| **Analytics** | Breaks logging | Preserved | ✅ LJFF |
-| **Network Calls** | None eliminated | IShortenUrlApi bypassed | ✅ LJFF |
-| **Future-Proof** | Fragile | Robust | ✅ LJFF |
-
----
-
-### Solution: Canonical URL Reconstruction
-
-**Strategy**: Intercept LJFF, derive canonical URL from Aweme context, skip shortener
-
-**Pseudo-code:**
 ```java
-// Inside C98549aQC.LJFF()
-if (isLinkShareType(itemType)) {
-    String userId = getSharedAwemeContext().getUser().getUniqueId();
-    long videoId = getSharedAwemeContext().getAid();
-    String canonicalUrl = "https://www.tiktok.com/@" + userId + "/video/" + videoId;
-    
-    // Instead of: IShortenUrlApi.getShareLinkShortenUel(request)
-    // Return: AbstractC98976aX5.m14172LJ(canonicalUrl)
-}
+// CanonicalUrlBuilder
+public static String buildFromAweme(@Nullable Aweme aweme,
+                                    @Nullable String fallbackShareUrl);
+// Fallback chain: uniqueId → uid → secUid → aweme.getAuthorUid()
+// → handle parsed from shareUrl → video-only URL.
+
+// CanonicalShortenModelFactory
+public static ShortenModel create(String url); // statusCode 200, statusMsg "Success"
 ```
 
-**Pros:**
-- ✅ Intercepts ALL share surfaces (not just copy)
-- ✅ Eliminates network shortening call
-- ✅ Analytics/logging preserved
-- ✅ Future-proof (if channels added, still works)
-- ✅ No query params (metadata in short URL is replaced with canonical)
-
-**Cons:**
-- Requires Aweme field access from share context/caches
-- Must identify itemType values for link-oriented shares
+Helpers compile in the extension module; expose fully qualified names for smali invocations.
 
 ---
 
-## Helper Function Requirement
+## 4. Smali Patch Blueprint
 
-**Location**: `extensions/tiktok/misc/privacy/ShareUrlUtils.java`
+1. Locate `invoke-static {…, …}, Lp003X/C98549aQC;->LJFF(...)` inside `call$0()`.
+2. Within the `if (!C79341T9s.LJII())` branch, replace the LJFF block with:
+   ```smali
+   iget-object vX, p0, Lp004Y/ACallableS112S0200000_17;->f17831l1:Ljava/lang/Object;
+   check-cast vX, Lp003X/C98759aTa;
+   iget-object vAweme, vX, Lp003X/C98759aTa;->LJJLJLI:Lcom/ss/android/ugc/aweme/feed/model/Aweme;
 
-**Function Signature**:
-```java
-public static String buildCanonicalUrl(
-    int itemType,           // Detect link-oriented shares
-    String userId,          // From Aweme.User.getUniqueId()
-    long videoId,           // From Aweme.getAid()
-    String fallbackUrl      // Original URL if derivation fails
-) {
-    if (isLinkShareType(itemType)) {
-        try {
-            return "https://www.tiktok.com/@" + userId + "/video/" + videoId;
-        } catch (Exception e) {
-            Logger.printException(() -> "canonical build failed", e);
-        }
-    }
-    return fallbackUrl;
-}
-```
+   invoke-static {vAweme, vShareUrl},
+       Lapp/revanced/tiktok/share/CanonicalUrlBuilder;->buildFromAweme(Lcom/ss/android/ugc/aweme/feed/model/Aweme;Ljava/lang/String;)Ljava/lang/String;
+   move-result-object vCanonical
 
-**Critical Unknowns to Resolve**:
-- [ ] Aweme/field availability in LJFF: Are userId/videoId accessible, or must cached from context?
-- [ ] itemType semantics: Which int values correspond to link-oriented shares?
-- [ ] Observable wrapping: Confirm AbstractC98976aX5.m14172LJ returns compatible type
+   invoke-static {vCanonical},
+       Lapp/revanced/tiktok/share/CanonicalShortenModelFactory;->create(Ljava/lang/String;)Lcom/ss/android/ugc/aweme/share/model/ShortenModel;
+   move-result-object vModel
 
-## Injection Details
+   new-instance vObs, Lp003X/C54361JSy;
+   invoke-direct {vObs, vModel}, Lp003X/C54361JSy;-><init>(Ljava/lang/Object;)V
 
-### Location: C98549aQC.LJFF() [classes18.dex:183]
+   move-object vResult, vObs
+   ```
+3. Preserve the `else` branch (existing fallback) so behaviour is unchanged when TikTok disables the feature via `C79341T9s`.
+4. Remove the original LJFF invocation to prevent re-shortening.
 
-**Before:** `invoke-interface {...}, IShortenUrlApi;->getShareLinkShortenUel(...)`  
-**After:** Replaced with direct canonical URL return
+---
 
-**Injection Concept:**
-```smali
-# Original (to be replaced):
-invoke-interface {v_api}, LIShortenUrlApi;->getShareLinkShortenUel(...)
-move-result-object v_result
+## 5. Testing Matrix
 
-# Patched (conceptual):
-invoke-static {p1, v_userId, v_videoId, v_fallback}, 
-    Lcom/revanced/tiktok/extensions/ShareUrlUtils;->buildCanonicalUrl(...)Z
-move-result-object v_canonical
+| ID | Scenario | Expected Outcome |
+|----|----------|------------------|
+| TC-001 | Regular video copy-link | Canonical URL with @handle/video |
+| TC-002 | Ads/promoted content (missing author) | Video-only canonical URL fallback |
+| TC-003 | Privacy / restricted accounts | Safe fallback, no crash |
+| TC-004 | Story / alternate surfaces | Canonical or fallback URLs preserved |
+| TC-005 | Share to third-party app | Intent contains canonical link |
+| TC-006 | Legacy shortened link flow | Parser recovers handle or falls back gracefully |
 
-invoke-static {v_canonical}, 
-    LAbstractC98976aX5;->m14172LJ(Ljava/lang/String;)L...;
-move-result-object v_result
-```
+**Validation tips**
+- Monitor `adb logcat` for helper logs & fallback messages.
+- Confirm no hits to `/tiktok/share/link/shorten/v1/`.
+- Check ShortenModel status code remains 200.
 
-**Register Mapping** (To be finalized in bytecode phase):
+---
+
+## 6. Execution Checklist
+
+- [ ] Implement & compile helper classes.
+- [ ] Export original smali for `call$0()` as backup.
+- [ ] Apply smali patch, adjust registers.
+- [ ] Rebuild patched APK, deploy to device/emulator.
+- [ ] Run TC-001 through TC-006, capture logs/screens.
+- [ ] Document verification in `research-status.md` & commit diff.
+
+---
+
+## 7. Rollback Plan
+
+If regression appears:
+1. Restore original smali & remove helper references.
+2. Rebuild/flash to confirm rollback.
+3. Investigate failure (likely fallback gap or register misuse) before re-applying.
+
+---
+
+## 8. Reference Files
+
+- `decode/jadx/sources/p004Y/ACallableS112S0200000_17.java`
+- `decode/jadx/sources/p003X/C98759aTa.java`
+- `decode/jadx/sources/p003X/C54361JSy.java`
+- `decode/jadx/sources/com/p124ss/android/ugc/aweme/feed/model/Aweme.java`
+
+This single plan supersedes all earlier draft documents. No other share-sanitizer notes remain authoritative. (If you uncover new edge cases, update this file rather than spawning additional docs.)
 - `p1`: itemType parameter
 - `v_userId`: From Aweme.User.getUniqueId()
 - `v_videoId`: From Aweme.getAid()
