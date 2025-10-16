@@ -91,7 +91,7 @@ revanced-research/
             │   └── jadx/    # `jadx` export
             ├── notes/       # journal, fingerprints, patch plan, tooling
             ├── artifacts/   # Dumps, payloads, screenshots
-            └── tmp/         # Scratch data (safe to wipe)
+            └── tmp/         # Scratch data
 ```
 
 ## 🚀 Getting Started
