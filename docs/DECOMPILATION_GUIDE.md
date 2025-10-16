@@ -96,36 +96,6 @@ apps/tiktok/36.5.4/
 └── artifacts/            # Logs and metrics
 ```
 
-### CFR (Optional - Complementary)
-
-**CFR** is an alternative Java decompiler with different heuristics than jadx. Use it alongside jadx for better code quality in specific scenarios.
-
-**Usage:**
-
-```bash
-# Decompile entire APK with CFR
-cfr apps/app/1.0.0/apk/app.apk --outputdir apps/app/1.0.0/decode/cfr
-
-# Decompile specific DEX file
-cfr classes.dex --outputdir cfr_output
-
-# With deobfuscation
-cfr app.apk --outputdir output/ --decompile-concurrency 4
-```
-
-**When to use CFR vs jadx:**
-
-| Aspect | jadx | CFR |
-|--------|------|-----|
-| Speed | ⚡ Faster | 🐢 Slower |
-| Code quality | Good | Better for modern Java |
-| Lambda expressions | Basic | Excellent |
-| Type inference | Standard | Advanced heuristics |
-| Coverage | More complete | Some edge cases |
-| Large APKs | ✅ Preferred | ⚠️ Slower |
-
-**Typical workflow:** jadx for coverage, CFR for specific suspicious methods.
-
 ### `scripts/setup-workspace.sh`
 
 Initialize a new target directory with templates.
@@ -322,36 +292,23 @@ sha256sum apps/instagram/340.0.0/apk/instagram.apk > apps/instagram/340.0.0/apk/
 apktool -JXmx4g d apps/instagram/340.0.0/apk/instagram.apk \
   -o apps/instagram/340.0.0/decode/apktool -f
 
-# 4. Primary decompilation with jadx (fast, complete coverage)
+# 4. Decompile with jadx (handles large APKs well)
 ./scripts/run-jadx.sh apps/instagram/340.0.0/apk/instagram.apk apps/instagram/340.0.0
 
-# 5. Optional: Secondary decompilation with CFR (better heuristics)
-cfr apps/instagram/340.0.0/apk/instagram.apk \
-  --outputdir apps/instagram/340.0.0/decode/cfr --decompile-concurrency 4
-
-# 6. Start analysis
+# 5. Start analysis
 cd apps/instagram/340.0.0/notes/
-vim journal.md  # Log discoveries
 
-# 7. Search for targets
+# 6. Search for targets
 rg "share_link" ../decode/jadx/sources/
-rg "share_link" ../decode/cfr/  # Compare with CFR output if unclear
 
-# 8. Compare decompilers for suspicious methods
-# Use CFR for advanced type inference, jadx for coverage
-
-# 9. Document findings
-vim fingerprints.md    # Candidate patch methods
-vim patch-plan.md      # Injection strategy
-vim tooling.md         # Tool versions, APK hash, decompiler versions
+# 7. Document findings
+vim fingerprints.md    # Bytecode signatures for patch matching
+vim patch-plan.md      # Implementation strategy
 ```
-
-**Note:** Using both jadx and CFR provides better heuristic coverage. jadx is faster for initial exploration, CFR for detailed analysis of suspicious code patterns.
 
 ## Further Reading
 
 - [JVM_GC_TROUBLESHOOTING.md](./JVM_GC_TROUBLESHOOTING.md) — Advanced GC debugging
 - [AGENTS.md](../AGENTS.md) — Automation workflows and analysis strategies
 - [jadx GitHub](https://github.com/skylot/jadx) — Official JADX documentation
-- [CFR](https://www.benf.org/other/cfr/) — Alternative decompiler with advanced heuristics
 - [apktool GitHub](https://github.com/ibotpeaches/Apktool) — Resource decoding reference
