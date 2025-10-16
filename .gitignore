@@ -1,14 +1,15 @@
 # Reverse engineering outputs
-apps/*/*/decode/
-apps/*/*/artifacts/
-apps/*/*/tmp/
+targets/*/*/decode/
+targets/*/*/artifacts/
+targets/*/*/tmp/
 
 # APK containers
-apps/*/*/apk/*.apk
-apps/*/*/apk/*.apks
-apps/*/*/apk/*.aab
+targets/*/*/apk/*.apk
+targets/*/*/apk/*.apks
+targets/*/*/apk/*.aab
 
 # Crash logs and scratch files
+hs_err_pid*.log
 *.log
 *.tmp
 *.bak
