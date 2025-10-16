@@ -7,7 +7,7 @@ Ops manual for the revanced-research lab—the reverse engineering hub powering 
 ## Base Practices
 
 - **Network boundaries**: All RE activity lives here, outside the `revanced-patches/` repo. Only push distilled fingerprints, bytecode offsets, or patch snippets back to the main project.
-- **Single source of truth**: Maintain this playbook and shared templates; per-app findings belong under `apps/<package>/<version>/notes/`.
+- **Single source of truth**: Maintain this guide and shared templates; per-app findings belong under `apps/<package>/<version>/notes/`.
 - **Version isolation**: Always nest target per app *and* version so multiple builds can be analyzed in parallel without collisions.
 - **Lightweight provenance**: Track hashes of input APKs (`sha256sum`), tool versions, and key commands. Store them alongside notes for traceability.
 - **Optional git**: If you want history inside `revanced-research/`, initialize a separate repository but avoid committing large decode outputs.
@@ -20,7 +20,7 @@ Ops manual for the revanced-research lab—the reverse engineering hub powering 
 ````text
 revanced-research/
 ├── README.md                # Human overview & quick start
-├── AGENTS.md                # Machine-facing playbook (this file)
+├── AGENTS.md                # Machine-facing guide (this file)
 ├── CLAUDE.md                # Claude Code guidance
 ├── docs/
 │   ├── templates/           # Markdown skeletons for per-target notes
@@ -168,7 +168,7 @@ Keep universal guidance in this file and capture app- or feature-specific invest
 - `patch-plan.md` — injection strategy (dependencies, risks, testing)
 - Optional deep dives (`tooling.md`, `*-data-flow-analysis.md`, `*-phase-handoff.md`) when additional bytecode or runtime evidence is required
 
-When a new investigation starts, clone the templates from `docs/templates/`, record the APK hash, and keep the notes self-contained so the universal playbook remains lean.
+When a new investigation starts, clone the templates from `docs/templates/`, record the APK hash, and keep the notes self-contained so the universal guide remains lean.
 
 ---
 
@@ -209,6 +209,6 @@ Use this runbook block when kicking off or reviewing a target. Populate the plac
 
 ## Maintenance Cadence
 
-- **Quarterly audit**: Validate tool versions, directory layout, and links in this playbook against the repo.
+- **Quarterly audit**: Validate tool versions, directory layout, and links in this guide against the repo.
 - **Per-release check**: When a new app version is added, ensure templates are up to date and `.gitignore` still protects decode outputs.
 - **Ownership**: The maintainer of `revanced-research` (or delegate) signs off on updates; note changes in the repo changelog or via Conventional Commit messages (`docs(agents): ...`).
