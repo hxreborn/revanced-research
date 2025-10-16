@@ -65,7 +65,7 @@
 ![GPLv3](https://img.shields.io/badge/license-GPLv3-blue)
 ![Repo size](https://img.shields.io/github/repo-size/hxreborn/revanced-research)
 
-`revanced-research` is a reverse-engineering workspace for ReVanced and custom patches. It mirrors the official ReVanced branding while documenting tooling expectations, repeatable workflows, and app-specific findings in one public home.
+`revanced-research` is a reverse-engineering workspace for ReVanced and custom patches. It mirrors the official ReVanced branding while documenting tooling expectations, repeatable workflows, and app-specific findings in one place.
 
 > **Heads up**: This project does not ship patched APKs. It exists purely for research and documentation that supports patch development.
 
