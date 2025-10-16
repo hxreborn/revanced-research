@@ -100,22 +100,17 @@ apps/tiktok/36.5.4/
 
 **CFR** is an alternative Java decompiler with different heuristics than jadx. Use it alongside jadx for better code quality in specific scenarios.
 
-**Installation:**
-
-```bash
-# Download latest CFR (standalone JAR)
-wget https://www.benf.org/other/cfr/cfr.jar
-chmod +x cfr.jar
-```
-
 **Usage:**
 
 ```bash
-# Decompile with CFR
-java -jar cfr.jar app.apk --outputdir apps/app/1.0.0/decode/cfr
+# Decompile entire APK with CFR
+cfr apps/app/1.0.0/apk/app.apk --outputdir apps/app/1.0.0/decode/cfr
 
-# Or just a single DEX file
-java -jar cfr.jar app.dex --outputdir cfr_output
+# Decompile specific DEX file
+cfr classes.dex --outputdir cfr_output
+
+# With deobfuscation
+cfr app.apk --outputdir output/ --decompile-concurrency 4
 ```
 
 **When to use CFR vs jadx:**
@@ -331,8 +326,8 @@ apktool -JXmx4g d apps/instagram/340.0.0/apk/instagram.apk \
 ./scripts/run-jadx.sh apps/instagram/340.0.0/apk/instagram.apk apps/instagram/340.0.0
 
 # 5. Optional: Secondary decompilation with CFR (better heuristics)
-java -jar cfr.jar apps/instagram/340.0.0/apk/instagram.apk \
-  --outputdir apps/instagram/340.0.0/decode/cfr
+cfr apps/instagram/340.0.0/apk/instagram.apk \
+  --outputdir apps/instagram/340.0.0/decode/cfr --decompile-concurrency 4
 
 # 6. Start analysis
 cd apps/instagram/340.0.0/notes/
