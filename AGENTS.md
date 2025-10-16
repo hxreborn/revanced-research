@@ -19,25 +19,23 @@ Ops manual for the revanced-research lab—the reverse engineering hub powering 
 
 ````text
 revanced-research/
-├── AGENTS.md                # Reverse-engineering playbook
-├── README.md                # Project overview
+├── README.md                # Human overview & quick start
+├── AGENTS.md                # Machine-facing playbook (this file)
+├── CLAUDE.md                # Claude Code guidance
 ├── docs/
-│   ├── templates/           # Note templates (README, fingerprints, patch plan)
-│   └── apps/                # Target index & status docs
-├── scripts/                 # Utility helpers (cleanup, tooling checks)
+│   ├── templates/           # Markdown skeletons for per-target notes
+│   └── JVM_GC_TROUBLESHOOTING.md
+├── scripts/                 # Utility helpers (setup, cleanup, jadx wrapper)
 └── apps/
-    └── <package>/           # e.g., tiktok, youtube
-        └── <version>/       # e.g., 36.5.4, 19.15.34
-            ├── apk/         # Pristine APKs (hashes logged)
-            ├── decode/
-            │   ├── apktool/ # `apktool d` output
-            │   ├── jadx/    # `jadx` export
-            │   ├── dex2jar/ # Per-dex JARs for CFR/other tooling
-            │   └── cfr/     # CFR decompilation exports (optional)
-            ├── notes/       # README, fingerprints, patch-plan (core) + optional tooling, data-flow, etc.
-            ├── artifacts/   # Dumps, payloads, screenshots
-            └── tmp/         # Scratch data (safe to wipe)
+    └── <package>/<version>/ # e.g., tiktok/36.5.4
+        ├── apk/             # Pristine APKs (hashes logged)
+        ├── decode/          # Tool outputs (apktool/, jadx/, optional dex2jar/, cfr/)
+        ├── notes/           # README, fingerprints, patch-plan (core) + optional tooling, data-flow, etc.
+        ├── artifacts/       # Dumps, payloads, screenshots
+        └── tmp/             # Scratch data (safe to wipe)
 ```
+
+> **Navigation tip**: keep humans in `README.md`, automation context here, Claude specifics in `CLAUDE.md`, toolkit references under `docs/`, and per-app runbooks inside `apps/<package>/<version>/notes/`.
 
 > **Naming conventions**
 > - `<app-id>`: lowercase, hyphenated package nickname (match ReVanced module if possible).
@@ -69,7 +67,7 @@ Tips:
 - Record CFR command lines, JVM flags, runtimes, and warnings in the same tooling log for reproducibility.
 - Whenever `apktool` fails due to framework resources, install matching `framework-res.apk` into `~/.local/share/apktool/framework/`.
 - For reproducibility, pin tool versions and CLI options in `apps/<package>/<version>/notes/tooling.md` and commit mapping files if generated.
-- **For JADX GC crashes**, see `docs/jvm_gc_troubleshooting.md` for detailed diagnosis and recovery strategies.
+- **For JADX GC crashes**, see `docs/JVM_GC_TROUBLESHOOTING.md` for detailed diagnosis and recovery strategies.
 
 ---
 
@@ -161,47 +159,56 @@ fix(decoder)!: change smali output format
 
 ---
 
----
+## Per-App Playbooks
 
-## TikTok Share Sanitizer Focus (tiktok / 36.5.4)
+Keep universal guidance in this file and capture app- or feature-specific investigations under `apps/<package>/<version>/notes/`. Each target should have:
 
-### Objectives
-- Identify the code path that builds outgoing share links (e.g., `ShareService`, `SharePackage`, or JSON payload constructors).
-- Extract the method(s) responsible for populating tracking parameters (`_r`, `share_uid`, etc.) and the earliest point we can sanitize URLs.
-- Determine if there is a centralized `LinkSanitizer` analog or if we need to introduce one via extension.
+- `README.md` — current status, scope, and verification checkpoints
+- `fingerprints.md` — bytecode fingerprints with FP naming states (FP-NEW, FP-00X, ARCHIVED)
+- `patch-plan.md` — injection strategy (dependencies, risks, testing)
+- Optional deep dives (`tooling.md`, `*-data-flow-analysis.md`, `*-phase-handoff.md`) when additional bytecode or runtime evidence is required
 
-### Target Signals
-- Strings/literals: look for `share_link`, `utm_campaign`, `share_copy`, `aweme_id`.
-- Network endpoints: search for `api/share`, `v1/aweme/share/`.
-- Data structures: TikTok uses protobuf-like builders; inspect classes under `com.bytedance.frameworks.core.*`, `com.ss.android.ugc.aweme.share`.
-
-### Planned Steps
-1. **apktool decode** → `apps/tiktok/36.5.4/decode/apktool/`
-2. **jadx export** → `apps/tiktok/36.5.4/decode/jadx/`
-3. **Initial grep**:
-   - `rg "share_link" apps/tiktok/36.5.4/decode/apktool`
-   - `rg "utm_" apps/tiktok/36.5.4/decode/apktool`
-   - `rg "SharePackage" apps/tiktok/36.5.4/decode/apktool`
-4. **Feature mapping**:
-   - Track down the share flow entry (likely `ShareReportService`, `ShareDialog`, `ShareBundle`).
-   - Document builder sequence and pinpoint the final method assembling the URL.
-5. **Candidate patch strategy**:
-   - Fingerprint method that yields raw URL before user sees/copies it.
-   - Inject call to shared sanitizer (if available) or plan new extension hook under `extensions/tiktok/.../SanitizeSharingLinksPatch`.
-   - Record dependencies (e.g., ensure patch runs after any share UI modifications).
-
-### Notes to Capture
-- Compatible TikTok versions and observed hashes.
-- Any dynamic feature flags gating the share functionality.
-- Potential side effects (e.g., if sanitized URL breaks QR codes or deep links).
+When a new investigation starts, clone the templates from `docs/templates/`, record the APK hash, and keep the notes self-contained so the universal playbook remains lean.
 
 ---
 
-## Checklist (Running)
-- [ ] Run `apktool -JXmx4g d … -o decode/apktool/`
-- [ ] Run `jadx --threads-count 4 -d decode/jadx/ …`
-- [ ] Convert dex files with `d2j-dex2jar` into `decode/dex2jar/`
-- [ ] Run CFR on target jars when needed; log commands in `notes/tooling.md`
-- [ ] Populate `apps/<package>/<version>/notes/fingerprints.md` with 3+ candidate methods
-- [ ] Validate link builder via emulator/Frida (optional)
-- [ ] Outline patch execution plan
+## Operational Checklist Template
+
+Use this runbook block when kicking off or reviewing a target. Populate the placeholders and paste into the per-app `notes/README.md` (or a dedicated runbook doc):
+
+```
+### Runbook: <target summary>
+- Owner: <agent/contact>
+- Prerequisites: <apk hash logged, tools verified, emulator ready, etc.>
+- Tools: apktool ≥2.12, jadx ≥1.5, dex2jar (optional), frida (optional)
+
+1. Prep workspace (`setup-workspace.sh <package> <version>`)
+2. Verify inputs (`sha256sum apk/<file>.apk`, document in tooling.md)
+3. Decode resources (`apktool -JXmx4g d ...`)
+4. Decompile bytecode (`./scripts/run-jadx.sh ...`)
+5. Capture metrics/logs (stash in `notes/tooling.md`, `artifacts/`)
+6. Update fingerprints & patch plan (min. three candidate methods)
+7. Validate behavior (emulator/device, logcat, optional Frida hooks)
+8. Record open questions & blockers (phase handoff if needed)
+
+- Success Criteria: <e.g., canonical URL extracted before shortening>
+- Rollback / Cleanup: `./scripts/cleanup.sh`, remove `decode/` before reruns
+- Escalation: <who to notify if tooling fails or behavior regresses>
+```
+
+---
+
+## Automation & Documentation Aids
+
+- **RepoSummary** or similar tools can generate status digests; attach them to `notes/research-status.md` so humans can skim progress.
+- **DocAgent** outputs (flowcharts, state diagrams) should land in `artifacts/` with links from the per-app README.
+- **VisDocSketcher** (or any quick diagramming tool) helps illustrate intricate control flow—convert to PNG/SVG and store in `artifacts/`.
+- Log when automated insights diverge from manual findings so future agents know which source of truth to trust.
+
+---
+
+## Maintenance Cadence
+
+- **Quarterly audit**: Validate tool versions, directory layout, and links in this playbook against the repo.
+- **Per-release check**: When a new app version is added, ensure templates are up to date and `.gitignore` still protects decode outputs.
+- **Ownership**: The maintainer of `revanced-research` (or delegate) signs off on updates; note changes in the repo changelog or via Conventional Commit messages (`docs(agents): ...`).
