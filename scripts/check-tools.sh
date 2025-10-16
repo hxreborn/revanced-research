@@ -387,7 +387,6 @@ main() {
     print_header "revanced-research Tool Validation"
     print_divider
 
-    # Run all checks
     check_java || ((FAILED_TOOLS++))
     check_apktool || ((FAILED_TOOLS++))
     check_jadx || ((FAILED_TOOLS++))
@@ -398,13 +397,9 @@ main() {
     check_system_resources || ((PASSED_TOOLS++))
     check_targets_directory || ((FAILED_TOOLS++))
 
-    # Provide recommendations
     provide_recommendations
-
-    # Print summary
     print_summary
 
-    # Exit with appropriate code
     if [[ $FAILED_TOOLS -gt 0 ]]; then
         exit 1
     else
@@ -412,5 +407,4 @@ main() {
     fi
 }
 
-# Run main function
 main "$@"

@@ -283,19 +283,11 @@ main() {
     print_header "revanced-research Target Setup"
     print_divider
 
-    # Parse arguments
     parse_arguments "$@"
-
-    # Validate we're in repo root
     validate_repo_root || exit 1
-
-    # Validate inputs
     validate_inputs
-
-    # Check for existing target
     check_existing_target
 
-    # Create target
     print_status "Setting up target for $PACKAGE v$VERSION..."
 
     create_directory_structure
@@ -308,8 +300,5 @@ main() {
     create_summary
 }
 
-# Export FORCE for common library
 export FORCE="$FORCE"
-
-# Run main function with all arguments
 main "$@"
