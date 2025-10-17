@@ -13,6 +13,7 @@ public final class CanonicalUrlBuilder {
     /**
      * Strip query parameters from URL (everything after '?')
      */
+    // TODO: replace with shared LinkSanitizer helper when upstreamed
     private static String stripQuery(String url) {
         if (url == null) {
             return "";
