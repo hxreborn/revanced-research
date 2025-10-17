@@ -28,6 +28,13 @@ Deliver canonical share URLs (`https://www.tiktok.com/@handle/video/<aid>`) for 
 
 ---
 
+### Current status (2025-10-17)
+- UI-level hook added in revanced-patches (`LX/aqc;->onClick`) does not execute; logcat shows no `RV-Sanitizer` output.
+- Clipboard continues receiving TikTok short links, meaning canonical builder still isn’t invoked.
+- Next action: re-evaluate hook target (confirm copy click listener class, search for additional `LX/VJd;->LIZJ` call sites) or fall back to clipboard-level interception.
+
+---
+
 ## 3. Data & Helpers
 
 ### Aweme access
