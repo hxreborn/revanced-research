@@ -56,6 +56,25 @@ jadx --threads-count 1 --deobf --show-bad-code -d decode/jadx apk/tiktok-36.5.4.
 # Status: USABLE FOR REVERSE ENGINEERING
 ```
 
+### Test 5: dex2jar per-dex + CFR ✅ SUCCESS
+```bash
+# Whole-apk attempt OOM'd, so split per classes*.dex (50 files total)
+unzip -j apk/tiktok-36.5.4.apk 'classes*.dex' -d tmp/dex
+export D2J_JAVA_OPTS='-Xms512m -Xmx4g'
+for dex in tmp/dex/classes*.dex; do
+  base="$(basename "$dex" .dex)"
+  d2j-dex2jar -f -o decode/dex2jar/${base}.jar "$dex"
+done
+# Each JAR then decompiled with CFR
+for jar in decode/dex2jar/classes*.jar; do
+  base="$(basename "$jar" .jar)"
+  cfr "$jar" --outputdir decode/cfr/${base} >decode/cfr/${base}/cfr.log 2>&1
+done
+# Duration: ~8 minutes end-to-end across 50 dex slices
+# Output: decode/dex2jar/classes*.jar + decode/cfr/classes*/ (Java + logs)
+# Status: Provides alternative Java view when jadx output is suspect
+```
+
 ## Critical Finding: Temurin 25 Required
 
 **Root Cause:** The TikTok 36.5.4 APK contains problematic bytecode (likely in classes3.dex) that triggers:

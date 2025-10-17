@@ -1,1 +1,0 @@
-jvm_gc_troubleshooting.md
