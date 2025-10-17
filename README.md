@@ -22,7 +22,6 @@ revanced-research/
         ├── apk/
         │   └── tiktok-36.5.4.apk   # pristine; record SHA-256 in notes
         ├── notes/
-        │   ├── README.md           # what this target covers and scope
         │   ├── fingerprints.md     # bytecode/class/method signatures
         │   ├── patch-plan.md       # planned changes and hook points
         │   ├── research-status.md  # phase, blockers, next steps
@@ -70,8 +69,6 @@ Each target's `notes/` directory contains:
 - **patch-plan.md** — Injection strategy and dependencies
 - **tooling.md** — Tool versions, commands, reproducibility details
 - **research-status.md** — Current phase and blockers
-
-See [apps/tiktok/36.5.4/notes/](./apps/tiktok/36.5.4/notes/) for a complete example.
 
 ## References
 
