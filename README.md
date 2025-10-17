@@ -49,8 +49,8 @@ Notes:
 
 3. **Add APK and record metadata**
    - Place APK in `apps/myapp/1.0.0/apk/`
-   - Record SHA-256 hash and tool versions in `apps/myapp/1.0.0/notes/tooling.md`
-   - See [apps/tiktok/36.5.4/notes/tooling.md](./apps/tiktok/36.5.4/notes/tooling.md) for example format
+   - Record SHA-256 hash in `apk/hashes.txt`
+   - Document tool versions and commands in `notes/tooling.md`
 
 ## Tools
 
@@ -61,6 +61,17 @@ Notes:
 - **rg / fd** — Search decompiled sources
 
 Pin exact versions and CLI flags in `apps/<package>/<version>/notes/tooling.md` per target.
+
+## Analysis Documents
+
+Each target's `notes/` directory contains:
+
+- **fingerprints.md** — Bytecode fingerprints for patch targets
+- **patch-plan.md** — Injection strategy and dependencies
+- **tooling.md** — Tool versions, commands, reproducibility details
+- **research-status.md** — Current phase and blockers
+
+See [apps/tiktok/36.5.4/notes/](./apps/tiktok/36.5.4/notes/) for a complete example.
 
 ## References
 
