@@ -77,6 +77,33 @@ Result: canonical URLs reach the clipboard without calling `/tiktok/share/link/s
 ---
 
 
+## 7. Tracking Parameters (Stock Behaviour)
+
+When TikTok shortens a share link, the client attaches numerous query parameters. Common ones observed in logcat include:
+
+| Parameter | Purpose (observed/guessed) |
+|-----------|----------------------------|
+| `_r` | Region hint / routing flag |
+| `u_code` | User code / referral identifier |
+| `preview_pb` | Preview playback toggle |
+| `sharer_language` | UI language of sharer |
+| `_d` | Internal device/session token |
+| `share_item_id` | Content ID (duplicates aid) |
+| `source` | Share surface (`h5_m`, etc.) |
+| `timestamp` | Epoch timestamp |
+| `social_share_type` | Share channel code (copy, whatsapp, …) |
+| `utm_source`, `utm_campaign`, `utm_medium` | Marketing attribution |
+| `share_iid` | Install ID |
+| `share_link_id` | Unique UUID per share/funnel |
+| `share_app_id` | App ID (TikTok) |
+| `ugbiz_name`, `ug_btm` | Growth/UGC business metrics |
+| `link_reflow_popup_iteration_sharer` | JSON-encoded UX flags |
+
+The canonical bypass strips the entire query string, returning the base
+`https://www.tiktok.com/@<handle>/video/<aid>` (or fallback `/video/<aid>` when no handle is available). Analytics events (LX/Hrl) continue to fire because the patched method only replaces the network call, not the logging branches.
+
+
+
 ## 7. Flow Reference (Stock vs Patched)
 
 ```
