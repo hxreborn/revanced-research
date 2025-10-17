@@ -99,56 +99,24 @@ When TikTok shortens a share link, the client attaches numerous query parameters
 | `ugbiz_name`, `ug_btm` | Growth/UGC business metrics |
 | `link_reflow_popup_iteration_sharer` | JSON-encoded UX flags |
 
-The canonical bypass strips the entire query string, returning the base
-`https://www.tiktok.com/@<handle>/video/<aid>` (or fallback `/video/<aid>` when no handle is available). Analytics events (LX/Hrl) continue to fire because the patched method only replaces the network call, not the logging branches.
+Our patch removes everything after the first `?` before handing the URL back to the app.
+- **If the author handle is known:** the clipboard sees `https://www.tiktok.com/@<handle>/video/<aid>`.
+- **If no handle is available:** we fall back to `https://www.tiktok.com/video/<aid>`.
+
+Only the shortener call is replaced; the surrounding analytics blocks (`LX/Hrl`, `C50550Hrl`) still execute, so TikTok's telemetry behaves exactly as before.
 
 
 
 ## 7. Flow Reference (Stock vs Patched)
 
-```
-          ┌──────────────────────────┐
-          │  Share sheet triggered   │
-          └────────────┬────────────┘
-                       │
-                       ▼
-          ┌──────────────────────────┐
-          │ AwemeSharePackage.LJIJJ │ ➊ extras["share_url"] populated
-          └────────────┬────────────┘
-                       │
-                       ▼
-          ┌──────────────────────────┐
-          │ LY/ACallable…call$0     │ ➋ Copy-link callable
-          │  Stock: injects UTM     │
-          │  Patched: preserves URL │
-          └────────────┬────────────┘
-                       │
-                       ▼
-          ┌──────────────────────────┐
-          │ LX/aQC.LJFF              │ ➌ Entry point audited here
-          │  Stock: invoke shortener │
-          │  Patched: CanonicalUrl   │
-          │          Builder + JSy   │
-          └────────────┬────────────┘
-                       │
-          Stock        │        Patched
-     (network call)    │        (no network call)
-                       │
-          ┌────────────▼────────────┐
-          │ LX/aTc.LIZLLL           │ ➍ Clipboard write
-          │  Stock: vm.tiktok.com   │
-          │  Patched: canonical URL │
-          └────────────┬────────────┘
-                       │
-                       ▼
-          ┌──────────────────────────┐
-          │ Clipboard / share target │ ➎ External apps receive canonical URL
-          └──────────────────────────┘
-```
+| Step | Stock behaviour | Patched behaviour |
+|------|-----------------|-------------------|
+| 1. Share sheet triggered | TikTok builds a share package with `extras["share_url"]`. | Same as stock. |
+| 2. `LY/ACallable…call$0` | Injects tracking params (UTM, share IDs, etc.) into the URL. | Helper keeps the canonical URL untouched. |
+| 3. `LX/aQC.LJFF` | Calls `/tiktok/share/link/shorten/multi/v1/`, logging the original URL. | Calls `CanonicalUrlBuilder` + `CanonicalShortenModelFactory`, logs canonical URL, and skips the network call. |
+| 4. `LX/aTc.LIZLLL` | Clipboard receives the TikTok short link (`https://vm.tiktok.com/...`). | Clipboard receives `https://www.tiktok.com/@handle/video/<aid>` (query stripped). |
+| 5. Clipboard / target app | External apps see the shortened URL with tracking. | External apps see the canonical URL with no tracking. |
 
-**Behaviour summary**
-- **Stock**: `aQC.LJFF` calls `/tiktok/share/link/shorten/multi/v1/`, clipboard receives a `vm.tiktok.com` short link containing tracking parameters.
-- **Patched**: helper bypasses the API, constructs `https://www.tiktok.com/@handle/video/<aid>` (query stripped), clipboard and intents receive tracking-free URLs.
-- Analytics (`LX/Hrl`, `C50550Hrl`) and feature-flag branches remain intact so fallback matches stock behaviour when TikTok disables the shortener.
+**Key point:** only step 3 changes. Analytics/logging branches remain in place so feature flags and telemetry continue to behave exactly like the stock app.
 
 ---
