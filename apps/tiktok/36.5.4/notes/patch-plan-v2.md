@@ -94,7 +94,7 @@ Implementation notes:
 ---
 
 ## 8. Next Steps (Open)
-- [ ] Inject logging at the four checkpoints and validate via `adb logcat`.  
+- [x] Inject logging at the four checkpoints and validate via `adb logcat`. _(2025-10-17 diagnostic build; see `artifacts/PROJECT_COMPLETION_SUMMARY.md`)_  
 - [ ] Implement canonical URL shortcut inside `LX/aQC;->LJFF` with helper integration.  
 - [ ] Update `LY/ACallableS112S0200000_17;->call$0` to skip UTM injection when canonicalising.  
 - [ ] Run regression matrix (copy link, share sheet, ads/restricted) on device/emulator.  

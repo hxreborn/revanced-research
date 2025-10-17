@@ -110,6 +110,11 @@ These claims require decompiled APK analysis to confirm:
 - [ ] Confirm no tracking params present
 - [ ] Test across share destinations (WhatsApp, SMS, etc.)
 
+### Diagnostic Builds
+- ✅ `apps/tiktok/36.5.4/artifacts/tiktok-logged-install-final.apk` — instrumentation build with `RV-Sanitizer` logging
+- Logs & analysis: `LOGGING_TEST_RESULTS.md`, `PROJECT_COMPLETION_SUMMARY.md`, `logcat_RV-Sanitizer.log`
+- Usage: `adb logcat -s RV-Sanitizer:D -v time`
+
 ---
 
 ## Related Documentation

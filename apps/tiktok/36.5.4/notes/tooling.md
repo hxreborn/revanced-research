@@ -144,3 +144,46 @@ jadx --threads-count 1 --deobf --show-bad-code -d decode/jadx apk/tiktok-36.5.4.
 - Testing method: Sequential configuration variants with timing
 - Test duration: ~3 hours comprehensive testing
 - Team: Automated benchmark + manual verification
+
+---
+
+## 2025-10-17 Diagnostic Logging Build
+
+### Goal
+Produce an installable APK with `RV-Sanitizer` logging at four hook points (`call$0`, `aQC.LJFF`, `accept$2`, `aTc.LIZLLL`) for on-device verification.
+
+### Workflow Summary
+```bash
+# 1. Assemble modified smali (apktool fallback disabled due to manifest errors)
+smali smali_classes18 -o build/classes18.dex
+smali smali_classes8  -o build/classes8.dex
+
+# 2. Replace dex files inside pristine APK
+cp apk/tiktok-36.5.4.apk artifacts/tiktok-logged-unsigned.apk
+zip -d artifacts/tiktok-logged-unsigned.apk 'classes*.dex'
+zip artifacts/tiktok-logged-unsigned.apk build/classes*.dex
+
+# 3. Align & sign
+zipalign -p 4 artifacts/tiktok-logged-unsigned.apk artifacts/tiktok-logged-signed.apk
+apksigner sign --ks ~/.android/debug.keystore --out artifacts/tiktok-logged-install.apk artifacts/tiktok-logged-signed.apk
+
+# 4. Install & capture logs
+adb install -r artifacts/tiktok-logged-install.apk
+adb logcat -s RV-Sanitizer:D -v time > artifacts/logcat_RV-Sanitizer.log
+```
+
+### Outputs
+- `artifacts/tiktok-logged-install-final.apk` — final aligned + signed build (post-validation copy)
+- `artifacts/LOGGING_TEST_RESULTS.md` — scenario log excerpts with expected sequence
+- `artifacts/PROJECT_COMPLETION_SUMMARY.md` — architecture notes + key findings
+
+### Validation Matrix
+| Scenario | Result | Notes |
+|----------|--------|-------|
+| Copy Link (clipboard) | ✅ Logs from all four hooks; final URL == short link | Pixel 9 Pro |
+| Share → WhatsApp | ✅ `aQC.LJFF` invoked, clipboard hook skipped | Confirms channel differentiation |
+| Share → “More” target | ✅ Entry log only (no clipboard) | Validates branching |
+
+### Installation Target
+- Device: Pixel 9 Pro (Android 15 beta)
+- Build fingerprint captured in `PROJECT_COMPLETION_SUMMARY.md`

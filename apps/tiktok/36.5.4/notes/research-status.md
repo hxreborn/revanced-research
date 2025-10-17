@@ -164,4 +164,24 @@ Analysis phase complete; ready for bytecode verification."
 
 ---
 
+## 2025-10-17 Diagnostic Logging Run ✅
+
+- **Build:** `artifacts/tiktok-logged-install-final.apk` (signed, installed on Pixel 9 Pro)  
+- **Docs:** `artifacts/LOGGING_TEST_RESULTS.md`, `artifacts/PROJECT_COMPLETION_SUMMARY.md`  
+- **Logs:** `artifacts/logcat_RV-Sanitizer.log` for baseline comparisons  
+
+**Highlights**
+- `LX/aQC;->LJFF` confirmed as universal entry point for all share paths.
+- Clipboard writes consistently flow through `LX/aTc;->LIZLLL`.
+- URL shortening shrinks payloads from ~400+ chars to 23 chars (≈94% reduction).
+- Channel tracking values logged; enables targeting specific share channels later.
+
+**Usage**
+```bash
+adb logcat -s RV-Sanitizer:D -v time
+```
+Monitor while performing share actions to verify canonical URL patches once implemented.
+
+---
+
 **Next Action**: Resolve 3 unknowns in `bytecode-phase-handoff.md` → Proceed to smali implementation
