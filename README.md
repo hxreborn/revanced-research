@@ -1,32 +1,14 @@
-<picture>
-  <source
-    media="(prefers-color-scheme: dark)"
-    srcset="https://raw.githubusercontent.com/ReVanced/revanced-patches/main/assets/revanced-headline/revanced-headline-vertical-dark.svg"
-  >
-  <img 
-    width="256px"
-    alt="ReVanced headline logo"
-    src="https://raw.githubusercontent.com/ReVanced/revanced-patches/main/assets/revanced-headline/revanced-headline-vertical-light.svg"
-  >
-</picture>
-
 # revanced-research
 
 ![GitHub last commit](https://img.shields.io/github/last-commit/hxreborn/revanced-research?label=updated&color=ff6f3d)
 ![Status: Experimental](https://img.shields.io/badge/status-experimental-ffb347)
 ![GPLv3](https://img.shields.io/badge/license-GPLv3-blue)
 
-[Website](https://revanced.app/) · [GitHub](https://github.com/ReVanced) · [Discord](http://revanced.app/discord) · [Reddit](https://reddit.com/r/revancedapp) · [Telegram](https://t.me/app_revanced) · [X](https://x.com/revancedapp) · [YouTube](https://www.youtube.com/@ReVanced)
-
----
-
-## ❓ About
-
-`revanced-research` is a reverse-engineering workspace for analyzing Android APKs. It documents bytecode fingerprints, patch strategies, and analysis findings.
+Reverse-engineering workspace for analyzing Android APKs and documenting patch research.
 
 **No APKs or binaries are provided or distributed from this repository.**
 
-## 📂 Repository Layout
+## Repository Layout
 
 Example for TikTok `36.5.4`:
 
@@ -52,7 +34,7 @@ Notes:
 - Decompile outputs and large artifacts are ignored by Git and not listed here.
 - File names use kebab-case. One topic per doc.
 
-## 🚀 Getting Started
+## Getting Started
 
 1. **Clone**
    ```bash
@@ -70,7 +52,7 @@ Notes:
    - Record SHA-256 hash and tool versions in `apps/myapp/1.0.0/notes/tooling.md`
    - See [apps/tiktok/36.5.4/notes/tooling.md](./apps/tiktok/36.5.4/notes/tooling.md) for example format
 
-## 🛠 Tools
+## Tools
 
 - **apktool** — Decode APKs to smali and resources
 - **jadx** — Decompile DEX to Java source
@@ -80,7 +62,7 @@ Notes:
 
 Pin exact versions and CLI flags in `apps/<package>/<version>/notes/tooling.md` per target.
 
-## 📚 References
+## References
 
 - [ReVanced Documentation](https://github.com/ReVanced/revanced-documentation)
 - [ReVanced Patcher](https://github.com/ReVanced/revanced-patcher)
@@ -88,11 +70,11 @@ Pin exact versions and CLI flags in `apps/<package>/<version>/notes/tooling.md` 
 - [ReVanced Manager](https://github.com/ReVanced/revanced-manager)
 - [Official Patch Catalogue](https://revanced.app/patches)
 
-## 🤝 Contributing
+## Contributing
 
 This is a personal tool shared as-is. Keep decompilation outputs and APKs out of Git. Document findings in `apps/<package>/<version>/notes/` for reproducibility. Follow [Conventional Commits](https://www.conventionalcommits.org/) style (`docs:`, `feat:`, `fix:`, etc.).
 
-## ⚖️ License
+## License
 
 Licensed under [GNU General Public License v3.0](LICENSE).
 
