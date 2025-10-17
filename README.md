@@ -28,18 +28,29 @@
 
 ## 📂 Repository Layout
 
+Example for TikTok `36.5.4`:
+
 ```
 revanced-research/
-├── README.md                # You're here
-├── CONTRIBUTING.md          # Guidelines
-├── scripts/                 # Utilities
+├── README.md
+├── CONTRIBUTING.md
+├── scripts/                        # setup, cleanup, decompile helpers
 └── apps/
-    └── <package>/<version>/
-        ├── apk/             # Pristine APKs (hashes logged in notes)
-        └── notes/           # Analysis documents
+    └── tiktok/36.5.4/
+        ├── apk/
+        │   └── tiktok-36.5.4.apk   # pristine; record SHA-256 in notes
+        ├── notes/
+        │   ├── README.md           # what this target covers and scope
+        │   ├── fingerprints.md     # bytecode/class/method signatures
+        │   ├── patch-plan.md       # planned changes and hook points
+        │   ├── research-status.md  # phase, blockers, next steps
+        │   └── tooling.md          # exact tool versions and commands
+        └── helpers/                # small scripts or reference stubs (optional)
 ```
 
-Decompilation outputs and generated artifacts (e.g., `decode/`, `tmp/`) are .gitignored.
+Notes:
+- Decompile outputs and large artifacts are ignored by Git and not listed here.
+- File names use kebab-case. One topic per doc.
 
 ## 🚀 Getting Started
 
