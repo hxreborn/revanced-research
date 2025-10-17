@@ -78,7 +78,7 @@ mkdir -p apps/<package>/<version>/{apk,decode/{apktool,jadx,dex2jar,cfr},notes,a
 Tips:
 - Keep **heap-friendly** use of tools: `jadx` can OOM on gigantic APKs—split dex, lower thread counts, or process critical packages individually.
 - For `dex2jar`, favor per-dex conversion when full-apk runs exhaust heap; bump `D2J_JAVA_OPTS` and stash outputs in `decode/dex2jar/`.
-- Measure decode/decompile runs (`time`, RSS) and log results in `apps/<package>/<version>/notes/tooling.md` for future diffing.
+- Measure decode/decompile runs (`time`, RSS) and log results in `apps/<package>/<version>/notes/tooling.md` for version comparison.
 - Record CFR command lines, JVM flags, runtimes, and warnings in the same tooling log for reproducibility.
 - Whenever `apktool` fails due to framework resources, install matching `framework-res.apk` into `~/.local/share/apktool/framework/`.
 - For reproducibility, pin tool versions and CLI options in `apps/<package>/<version>/notes/tooling.md` and commit mapping files if generated.
@@ -88,10 +88,8 @@ Tips:
 
 | Command | Purpose |
 |---------|---------|
-| `apktool -JXmx4g d <apk> -o decode/apktool -f` | Decode resources + smali |
-| `smali assemble decode/apktool/smali_classes18 -o decode/apktool/classes18.dex` | Rebuild modified dex |
-| `adb logcat -s RV-Sanitizer:D -v time` | Stream instrumentation logs |
-| `sha256sum apk/<file>.apk` | Record APK provenance |
+| `apktool -JXmx4g d <apk> -o decode/apktool -f` | Decode resources and smali |
+| `sha256sum apk/<file>.apk` | Record APK hash for provenance |
 
 ## Generic Workflow
 
@@ -107,7 +105,7 @@ Tips:
    - Deep search for target strings, API endpoints, or feature flags in `smali*/` and partial `jadx/` output using `rg`.
    - Map class hierarchies and singleton providers relevant to the feature.
 7. **Bytecode analysis**:
-   - Confirm control flow in smali for accuracy; `jadx` may misrepresent intents.
+   - Verify control flow in smali; `jadx` can misrepresent intents.
    - Document method descriptors (`Lcom/example/Class;->method(ILjava/lang/String;)V`) for fingerprinting.
    - Record register usage where patch injections will occur, note surrounding native calls/anti-tamper checks.
 8. **Obfuscation & defenses**:
@@ -186,14 +184,14 @@ fix(decoder)!: change smali output format
 
 ## Per-App Playbooks
 
-Keep universal guidance in this file and capture app- or feature-specific investigations under `apps/<package>/<version>/notes/`. Each target should have:
+Keep universal guidance in this file and capture app- or feature-specific investigations under `apps/<package>/<version>/notes/`. Each target requires:
 
 - `README.md` — current status, scope, and verification checkpoints
 - `fingerprints.md` — bytecode fingerprints with FP naming states (FP-NEW, FP-00X, ARCHIVED)
 - `patch-plan.md` — injection strategy (dependencies, risks, testing)
 - Optional deep dives (`tooling.md`, `*-data-flow-analysis.md`, `*-phase-handoff.md`) when additional bytecode or runtime evidence is required
 
-When a new investigation starts, clone the templates from `docs/templates/`, record the APK hash, and keep the notes self-contained so the universal guide remains lean.
+When a new investigation starts, record the APK hash and keep the notes self-contained so the universal guide remains lean.
 
 ---
 
@@ -223,14 +221,7 @@ Use this runbook block when kicking off or reviewing a target. Populate the plac
 
 ---
 
-## Automation & Documentation Aids
 
-- **RepoSummary** or similar tools can generate status digests; attach them to `notes/research-status.md` so humans can skim progress.
-- **DocAgent** outputs (flowcharts, state diagrams) should land in `artifacts/` with links from the per-app README.
-- **VisDocSketcher** (or any quick diagramming tool) helps illustrate intricate control flow—convert to PNG/SVG and store in `artifacts/`.
-- Log when automated insights diverge from manual findings so future agents know which source of truth to trust.
-
----
 
 ## Maintenance Cadence
 

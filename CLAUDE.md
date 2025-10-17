@@ -30,7 +30,7 @@ Before proceeding to smali implementation, create a `*-phase-handoff.md` to docu
 - Verification commands to resolve each unknown
 - Smali phase readiness checklist (register allocation, injection point location, test environment)
 
-See `apps/tiktok/36.5.4/notes/bytecode-phase-handoff.md` for complete example.
+See [apps/tiktok/36.5.4/notes/](../../../apps/tiktok/36.5.4/notes/) for examples.
 
 ### Directory Structure
 
@@ -39,9 +39,7 @@ revanced-research/
 ├── AGENTS.md              # Machine-facing guide (Conventional Commits, RE workflow)
 ├── README.md              # Project overview
 ├── CONTRIBUTING.md        # Contribution guidelines
-├── docs/
-│   ├── templates/         # Markdown templates (README.md, fingerprints.md, patch-plan.md)
-│   └── jvm_gc_troubleshooting.md
+├── docs/                  # (documentation templates removed)
 ├── scripts/
 │   ├── check-tools.sh     # Validates Java, apktool, jadx, Android tools, Frida, ripgrep, disk/memory
 │   ├── run-jadx.sh        # JADX decompilation with auto-tuned GC (ParallelGC, 80% RAM, all cores)
@@ -57,73 +55,13 @@ revanced-research/
 │       └── tmp/           # Scratch space (gitignored)
 ```
 
-## Commands & Tools
+## Analysis Notes
 
-**Full workflow and commands → AGENTS.md**
+See AGENTS.md for full workflow and commands.
 
-**Tool versions and detailed setup → AGENTS.md**
+## Runtime Validation
 
-**GC crash guidance → docs/jvm_gc_troubleshooting.md**
-
-## Extended Thinking for Complex Analysis
-
-Use Claude's extended thinking when analysis requires deep evaluation:
-
-**Levels:**
-- `"think"` — Fingerprint validation across 3+ versions, opcode pattern disambiguation
-- `"think hard"` — Data flow analysis spanning 5+ call stacks, patch strategy comparison
-- `"think harder"` — Alternative implementation tradeoffs with security/compatibility analysis
-- `"ultrathink"` — Complete bytecode reconstruction from obfuscated patterns
-
-**Example scenarios:**
-- Resolving ambiguous enum values from decompiled code
-- Comparing dex2jar + CFR output against JADX for method signature validation
-- Designing injection strategy with minimal register pressure
-- Mapping class hierarchy through multiple inheritance levels
-
-## Session Management
-
-**Context boundaries:**
-- Use `/clear` between distinct targets (e.g., after completing tiktok analysis, clear before instagram)
-- Start fresh session per app version to prevent token bloat
-- Each major phase transition (decode → analysis → bytecode verification) = new session scope
-
-**When to persist context:**
-- Keep same session for related fingerprint refinements (FP-001 → FP-002)
-- Maintain context during single-app data flow analysis
-- Preserve during iterative patch plan revisions
-
-**Recovery patterns:**
-- If context becomes stale, summarize findings in phase-handoff.md, then `/clear`
-- For long-running investigations, checkpoint progress in notes/ before clearing
-
-## Dynamic Analysis & Runtime Validation
-
-After static fingerprinting, validate findings with Frida:
-
-**Workflow:**
-1. **Hook target methods** to confirm argument types, return values, call ordering
-2. **Log runtime behavior** for fields/enums that decompilation couldn't resolve
-3. **Document mismatches** (e.g., "decompiled enum shows 0x01, runtime uses 0x02")
-
-**AI-Assisted Hook Generation:**
-```javascript
-// Prompt: "Generate Frida hook for method Lcom/ss/android/ugc/aweme/share/C98549aQC;->LJFF(...)V
-// to log all arguments and return value"
-Java.perform(function() {
-  var targetClass = Java.use("com.ss.android.ugc.aweme.share.C98549aQC");
-  targetClass.LJFF.implementation = function() {
-    console.log("[+] LJFF called with args:", arguments);
-    var result = this.LJFF.apply(this, arguments);
-    console.log("[+] LJFF returned:", result);
-    return result;
-  };
-});
-```
-
-**Integration with fingerprints:**
-- Update `fingerprints.md` with runtime-confirmed signatures
-- Note discrepancies in `*-phase-handoff.md` as critical unknowns
+After static fingerprinting, validate findings with Frida to confirm argument types, return values, call ordering. Document mismatches between decompiled and runtime behavior in per-app notes.
 
 ## Package Name Reference
 
@@ -131,7 +69,7 @@ Java.perform(function() {
 
 ## Per-Target Documentation
 
-Each target needs three core notes (templates in `docs/templates/`):
+Each target needs three core notes:
 
 1. **`README.md`** — High-level overview, findings summary, verification checklist, references
 2. **`fingerprints.md`** — Bytecode fingerprints for method matching across obfuscation
@@ -143,7 +81,7 @@ Supplementary (create as needed):
 6. **`implementation-strategy.md`** — Bytecode-level design, helper class signatures
 7. **`*-phase-handoff.md`** — Transition checkpoint between analysis phases (unknowns, blockers, verification steps)
 
-Update these as you analyze so future runs (or other agents) can quickly understand the landscape.
+Update these as analysis proceeds for reproducibility and cross-version comparison.
 
 ## Fingerprinting Methodology
 
@@ -165,7 +103,7 @@ Fingerprints identify injection points across obfuscated code. Each fingerprint 
 
 ### Evolution Pattern
 
-Start with broad surface-level targets (e.g., clipboard write), then refine through bytecode tracing to find optimal injection points (e.g., pre-shortening URL handler). Archive inferior fingerprints with clear rationale for future reference.
+Start with broad surface-level targets (e.g., clipboard write), then refine through bytecode tracing to optimal injection points (e.g., pre-shortening URL handler). Archive inferior fingerprints with rationale for validation and fallback.
 
 ### Example: TikTok 36.5.4 Share Link Sanitizer
 
@@ -178,31 +116,9 @@ Start with broad surface-level targets (e.g., clipboard write), then refine thro
 - **Why Archived**: Short URL already generated, limited to copy-link surface only
 - **Retained For**: Historical context, fallback reference, validation
 
-See `apps/tiktok/36.5.4/notes/fingerprints.md` for complete example.
+See [apps/tiktok/36.5.4/notes/fingerprints.md](../../../apps/tiktok/36.5.4/notes/fingerprints.md) for example.
 
-## AI-Assisted Analysis Patterns
 
-Modern workflows combine static analysis + LLM capabilities:
-
-**Code Interpretation:**
-- Prompt: "Explain this smali bytecode pattern" for opcode sequences
-- Use for obfuscated control flow reconstruction
-- Document interpretation in data-flow-analysis.md
-
-**Script Generation:**
-- "Generate Frida hook for method X to log args/return"
-- "Create ripgrep pattern to find all usages of field Y"
-- "Write bash one-liner to extract class names matching pattern Z"
-
-**Cross-Reference Automation:**
-- "Find all invocations of IShortenUrlApi across decompiled sources"
-- "Map class hierarchy for C98549aQC and identify injection-safe parent methods"
-- "Compare method signatures between JADX and CFR outputs for classesX.jar"
-
-**Validation:**
-- Always verify AI-generated patterns against actual bytecode
-- Test generated Frida scripts in controlled environment before production
-- Document successful prompts in tooling.md for reuse across versions
 
 ## Integration with revanced-patches
 
@@ -214,33 +130,15 @@ When analysis is complete:
 
 **Do NOT commit** full sources, APKs, or decode outputs to this repo.
 
-## Claude Session Checklist
+## Troubleshooting
 
-When starting new target analysis:
-
-1. **Session Scope:** Start fresh (`/clear` if continuing from prior app)
-2. **Load Context:** Review `apps/<package>/<version>/notes/README.md` for status
-3. **Tool Validation:** Confirm decode outputs exist, check tooling.md for versions
-4. **Analysis Mode:** Choose approach:
-   - Quick fingerprint → standard analysis
-   - Complex bytecode → `think hard` or `ultrathink`
-   - Runtime validation → Frida hook generation + testing
-5. **Documentation:** Update fingerprints.md, patch-plan.md as findings emerge
-6. **Phase Transition:** Create `*-phase-handoff.md` before moving to smali implementation
-7. **Completion:** Summarize in README.md, `/clear` before next target
-
-**Escalation patterns:**
-- If decompilation ambiguous → try dex2jar + CFR alternative
-- If fingerprint matching fails → request runtime validation with Frida
-- If GC crashes → consult docs/jvm_gc_troubleshooting.md
+- If decompilation is ambiguous, use dex2jar + CFR as validation
+- If fingerprint matching fails, validate with runtime inspection (Frida)
+- If GC crashes occur, see AGENTS.md for diagnosis and recovery strategies
 
 ## Reference
 
-- **AGENTS.md** — Universal machine guide (setup, workflow, commit style, maintenance cadence)
+- **AGENTS.md** — Universal machine guide (setup, workflow, commit style, troubleshooting)
 - **README.md** — Human-facing project overview
-- **docs/jvm_gc_troubleshooting.md** — GC crash diagnosis & recovery
 
-**Maintenance:**
-- Review this file quarterly alongside AGENTS.md updates
-- Align with new Claude Code features as released
-- Document new AI-assisted patterns as they prove valuable in practice
+

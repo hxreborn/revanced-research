@@ -21,5 +21,5 @@ Each `apps/<app>/<version>/` contains:
 ```bash
 APP=<app-name> VER=<version>
 mkdir -p apps/$APP/$VER/{apk,decode/{apktool,jadx},notes,artifacts,tmp}
-cp docs/templates/*.md apps/$APP/$VER/notes/
+# Create core notes: README.md, fingerprints.md, patch-plan.md, tooling.md
 ```
