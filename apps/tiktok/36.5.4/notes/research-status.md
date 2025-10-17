@@ -167,7 +167,7 @@ Analysis phase complete; ready for bytecode verification."
 ## 2025-10-17 Diagnostic Logging Run ✅
 
 - **Build:** `artifacts/tiktok-logged-install-final.apk` (signed, installed on Pixel 9 Pro)  
-- **Docs:** `artifacts/LOGGING_TEST_RESULTS.md`, `artifacts/PROJECT_COMPLETION_SUMMARY.md`  
+- **Docs:** `notes/diagnostic-logging.md`
 - **Logs:** `artifacts/logcat_RV-Sanitizer.log` for baseline comparisons  
 
 **Highlights**

@@ -174,8 +174,7 @@ adb logcat -s RV-Sanitizer:D -v time > artifacts/logcat_RV-Sanitizer.log
 
 ### Outputs
 - `artifacts/tiktok-logged-install-final.apk` — final aligned + signed build (post-validation copy)
-- `artifacts/LOGGING_TEST_RESULTS.md` — scenario log excerpts with expected sequence
-- `artifacts/PROJECT_COMPLETION_SUMMARY.md` — architecture notes + key findings
+- `notes/diagnostic-logging.md` — instrumentation summary with log excerpts
 
 ### Validation Matrix
 | Scenario | Result | Notes |
@@ -186,4 +185,4 @@ adb logcat -s RV-Sanitizer:D -v time > artifacts/logcat_RV-Sanitizer.log
 
 ### Installation Target
 - Device: Pixel 9 Pro (Android 15 beta)
-- Build fingerprint captured in `PROJECT_COMPLETION_SUMMARY.md`
+- Build fingerprint captured in `notes/diagnostic-logging.md`

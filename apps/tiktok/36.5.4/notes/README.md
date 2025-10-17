@@ -112,7 +112,7 @@ These claims require decompiled APK analysis to confirm:
 
 ### Diagnostic Builds
 - ✅ `apps/tiktok/36.5.4/artifacts/tiktok-logged-install-final.apk` — instrumentation build with `RV-Sanitizer` logging
-- Logs & analysis: `LOGGING_TEST_RESULTS.md`, `PROJECT_COMPLETION_SUMMARY.md`, `logcat_RV-Sanitizer.log`
+- Notes: `notes/diagnostic-logging.md`
 - Usage: `adb logcat -s RV-Sanitizer:D -v time`
 
 ---
