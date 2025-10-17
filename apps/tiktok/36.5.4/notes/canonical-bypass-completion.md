@@ -75,3 +75,53 @@ Result: canonical URLs reach the clipboard without calling `/tiktok/share/link/s
 - `artifacts/tiktok-canonical-unsigned.apk` – installable test build.
 
 ---
+
+
+## 7. Flow Reference (Stock vs Patched)
+
+```
+          ┌──────────────────────────┐
+          │  Share sheet triggered   │
+          └────────────┬────────────┘
+                       │
+                       ▼
+          ┌──────────────────────────┐
+          │ AwemeSharePackage.LJIJJ │ ➊ extras["share_url"] populated
+          └────────────┬────────────┘
+                       │
+                       ▼
+          ┌──────────────────────────┐
+          │ LY/ACallable…call$0     │ ➋ Copy-link callable
+          │  Stock: injects UTM     │
+          │  Patched: preserves URL │
+          └────────────┬────────────┘
+                       │
+                       ▼
+          ┌──────────────────────────┐
+          │ LX/aQC.LJFF              │ ➌ Entry point audited here
+          │  Stock: invoke shortener │
+          │  Patched: CanonicalUrl   │
+          │          Builder + JSy   │
+          └────────────┬────────────┘
+                       │
+          Stock        │        Patched
+     (network call)    │        (no network call)
+                       │
+          ┌────────────▼────────────┐
+          │ LX/aTc.LIZLLL           │ ➍ Clipboard write
+          │  Stock: vm.tiktok.com   │
+          │  Patched: canonical URL │
+          └────────────┬────────────┘
+                       │
+                       ▼
+          ┌──────────────────────────┐
+          │ Clipboard / share target │ ➎ External apps receive canonical URL
+          └──────────────────────────┘
+```
+
+**Behaviour summary**
+- **Stock**: `aQC.LJFF` calls `/tiktok/share/link/shorten/multi/v1/`, clipboard receives a `vm.tiktok.com` short link containing tracking parameters.
+- **Patched**: helper bypasses the API, constructs `https://www.tiktok.com/@handle/video/<aid>` (query stripped), clipboard and intents receive tracking-free URLs.
+- Analytics (`LX/Hrl`, `C50550Hrl`) and feature-flag branches remain intact so fallback matches stock behaviour when TikTok disables the shortener.
+
+---
