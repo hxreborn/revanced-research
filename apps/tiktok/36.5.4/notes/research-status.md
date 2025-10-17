@@ -1,8 +1,7 @@
-# TikTok 36.5.4 Share Link Sanitizer — Research Phase Complete ✅
+# TikTok 36.5.4 Share Link Sanitizer
 
-**Status**: Ready for Bytecode Implementation
+**Status**: Analysis complete
 **Date**: 2025-10-16
-**Phase**: Bytecode Verification → Smali Implementation
 
 ---
 
@@ -14,37 +13,37 @@ All analysis documents are locked and cross-linked. See `bytecode-phase-handoff.
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| `fingerprints.md` | FP-NEW + archived FP-001 with rationale | ✅ Final |
-| `patch-plan.md` | High-level strategy, 6 test cases | ✅ Final |
-| `implementation-strategy.md` | Bytecode-level design, helper signatures | ✅ Final |
-| `ljff-data-flow-analysis.md` | Call path, register planning, verification checklist | ✅ Final |
-| `tooling.md` | Reproducible commands, tool versions, metrics | ✅ Final |
-| `README.md` | Overview, findings, evidence validation | ✅ Final |
+| `fingerprints.md` | FP-NEW + archived FP-001 with rationale | [PASS] Final |
+| `patch-plan.md` | High-level strategy, 6 test cases | [PASS] Final |
+| `implementation-strategy.md` | Bytecode-level design, helper signatures | [PASS] Final |
+| `ljff-data-flow-analysis.md` | Call path, register planning, verification checklist | [PASS] Final |
+| `tooling.md` | Reproducible commands, tool versions, metrics | [PASS] Final |
+| `README.md` | Overview, findings, evidence validation | [PASS] Final |
 
 ### Supplementary
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| `bytecode-phase-handoff.md` | Transition checklist, unknowns, resolution steps | ✅ Active |
+| `bytecode-phase-handoff.md` | Transition checklist, unknowns, resolution steps | [PASS] Active |
 
 ---
 
 ## Key Decisions (Locked)
 
-### ✅ FP-NEW: C98549aQC.LJFF() (Pre-Shortening)
+### FP-NEW: C98549aQC.LJFF() (Pre-Shortening)
 
 **Why This Over CopyLinkChannel.LJI()?**
 
 | Aspect | CopyLinkChannel.LJI | C98549aQC.LJFF | Winner |
 |--------|-------------------|-----------------|--------|
-| Timing | After shortening | **Before shortening** | ✅ LJFF |
-| Coverage | Copy link only | **All surfaces** | ✅ LJFF |
-| Analytics | Breaks | **Preserved** | ✅ LJFF |
-| Network Calls | None eliminated | **IShortenUrlApi bypassed** | ✅ LJFF |
+| Timing | After shortening | **Before shortening** | [PASS] LJFF |
+| Coverage | Copy link only | **All surfaces** | [PASS] LJFF |
+| Analytics | Breaks | **Preserved** | [PASS] LJFF |
+| Network Calls | None eliminated | **IShortenUrlApi bypassed** | [PASS] LJFF |
 
 FP-001 archived as historical reference (see `fingerprints.md`).
 
-### ✅ Helper Function Strategy
+### Helper Function Strategy
 
 ```java
 // Pseudocode
@@ -63,7 +62,7 @@ Observable<String> buildCanonicalUrl(
 }
 ```
 
-### ✅ Injection Strategy
+### Injection Strategy
 
 Replace `IShortenUrlApi.getShareLinkShortenUel()` invocation:
 
@@ -87,9 +86,9 @@ See `bytecode-phase-handoff.md` for resolution commands and status.
 - [ ] Cached in static/instance field
 - [ ] Already extracted in string params (p2-p4)
 
-**Resolution**: Commands in bytecode-phase-handoff.md (~15 min)
+**Resolution**: See [patch-plan.md](./patch-plan.md)
 
-### 🔍 Unknown #2: itemType Enum Mapping
+### Unknown #2: itemType Enum Mapping
 
 **Question**: Which int value = "link share"?
 
@@ -98,53 +97,13 @@ See `bytecode-phase-handoff.md` for resolution commands and status.
 - [ ] Trace LJFF callers for itemType values
 - [ ] Use fallback (apply to all itemType values)
 
-**Resolution**: Commands in bytecode-phase-handoff.md (~15 min)
+**Resolution**: See [patch-plan.md](./patch-plan.md)
 
-### 🔍 Unknown #3: Observable Type Compatibility
+### Unknown #3: Observable Type Compatibility
 
 **Question**: Does `AbstractC98976aX5.m14172LJ(String)` return same type as `IShortenUrlApi.getShareLinkShortenUel()`?
 
-**Resolution**: Signature verification in bytecode-phase-handoff.md (~10 min)
-
----
-
-## Ready for Next Phase
-
-### ✅ Bytecode Verification (1-2 hours)
-
-1. Run resolution commands in bytecode-phase-handoff.md
-2. Document findings in ljff-data-flow-analysis.md
-3. Finalize register allocation diagram
-
-### ✅ Smali Implementation (2-3 hours)
-
-1. Extract LJFF method from apktool smali
-2. Locate IShortenUrlApi invoke-interface
-3. Draft smali injection with register assignments
-
-### ✅ Testing (2-3 hours)
-
-1. Build patched APK
-2. Run TC-001 through TC-006 on emulator
-3. Verify clipboard output and analytics
-
----
-
-## Files to Commit Now
-
-```bash
-git add apps/tiktok/36.5.4/notes/
-git commit -m "docs(tiktok): lock share link sanitizer analysis
-
-- fingerprints.md: FP-NEW (C98549aQC.LJFF) + FP-001 archived
-- patch-plan.md: Updated strategy with test cases
-- implementation-strategy.md: Production-spec bytecode design
-- ljff-data-flow-analysis.md: Call paths + verification checklist
-- bytecode-phase-handoff.md: Transition checkpoint + unknowns
-- tooling.md: CFR runs, commands, performance metrics
-
-Analysis phase complete; ready for bytecode verification."
-```
+**Resolution**: See [patch-plan.md](./patch-plan.md)
 
 ---
 
@@ -164,7 +123,7 @@ Analysis phase complete; ready for bytecode verification."
 
 ---
 
-## 2025-10-17 Diagnostic Logging Run ✅
+## 2025-10-17 Diagnostic Logging Run
 
 - **Build:** `artifacts/tiktok-logged-install-final.apk` (signed, installed on Pixel 9 Pro)  
 - **Docs:** `notes/diagnostic-logging.md`
@@ -184,4 +143,4 @@ Monitor while performing share actions to verify canonical URL patches once impl
 
 ---
 
-**Next Action**: Resolve 3 unknowns in `bytecode-phase-handoff.md` → Proceed to smali implementation
+

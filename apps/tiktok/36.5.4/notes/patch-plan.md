@@ -11,7 +11,7 @@
 ## 1. Objectives
 - Deliver canonical share URLs (`https://www.tiktok.com/@handle/video/<aid>`) across all share surfaces.
 - Remove TikTok tracking parameters by skipping the `/share/link/shorten/multi/v1/` API.
-- Preserve analytics/telemetry and maintain behaviour when TikTok disables shortening.
+- Preserve analytics/telemetry when TikTok disables shortening.
 - Validate the change locally with the RV-Sanitizer logging build before porting to ReVanced.
 
 ---
@@ -63,12 +63,12 @@
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Implement helper classes (Java) and derive smali | ✅ | Compiled helpers → smali via `baksmali`; committed under `smali_classes18/app/revanced/tiktok/share/`. |
-| Inject helper smali into apktool tree | ✅ | Helpers in place; dex rebuild successful. |
-| Modify `call$0` to use canonical builder + skip UTM | ✅ | Canonical builder invoked; UTM block bypassed when canonical used. |
-| Modify `aQC.LJFF` to return canonical Single | ✅ | Shortener invoke replaced with helper + `LX/JSy` return. |
-| Rebuild dex, hot-swap APK, reinstall | ✅ | `classes18.dex` rebuilt; APK installed on Pixel 9 Pro. |
-| Verify logs + regression checklist | ✅ | RV-Sanitizer logs confirm canonical flow; shortener avoided. |
+| Implement helper classes (Java) and derive smali | [PASS] | Compiled helpers → smali via `baksmali`; committed under `smali_classes18/app/revanced/tiktok/share/`. |
+| Inject helper smali into apktool tree | [PASS] | Helpers in place; dex rebuild successful. |
+| Modify `call$0` to use canonical builder + skip UTM | [PASS] | Canonical builder invoked; UTM block bypassed when canonical used. |
+| Modify `aQC.LJFF` to return canonical Single | [PASS] | Shortener invoke replaced with helper + `LX/JSy` return. |
+| Rebuild dex, hot-swap APK, reinstall | [PASS] | `classes18.dex` rebuilt; APK installed on Pixel 9 Pro. |
+| Verify logs + regression checklist | [PASS] | RV-Sanitizer logs confirm canonical flow; shortener avoided. |
 | Port helpers + smali edits to `revanced-patches` | ☐ | After verification; create fingerprints & patch. |
 | Remove temp helpers directory (`notes/helpers`) | ☐ | Once helpers are committed or moved upstream. |
 
@@ -78,7 +78,7 @@
 - **Incomplete Aweme data:** Use URL parsing fallback; return original URL if aid missing.  
 - **Register pressure:** Carefully adjust `.locals` and reuse temps to avoid clobbering state.  
 - **Feature flag drift:** Always respect `C74211T9s.LJII()`; fall back to stock path when TikTok disables shortening.  
-- **Telemetry regression:** Leave timing/logging intact so analytics pipelines remain unaffected.  
+- **Telemetry regression:** Keep timing/logging intact for analytics pipelines.  
 - **Rebuild issues:** Continue dex hot-swap workflow if apktool manifest errors persist (documented in `tooling.md`).
 
 ---
@@ -145,19 +145,7 @@ Keep this document as the single authoritative plan; remove or update any drafts
 
 ---
 
-## Implementation Checklist
-
-- [ ] ReVanced patch JSON configured
-- [ ] Helper class bytecode prepared
-- [ ] Smali injection tested
-- [ ] TC-001 through TC-004 pass
-- [ ] Code review complete
-- [ ] PR created
-
----
-
 ## Notes
 
 - Patch prevents users from sharing tracking URLs in chat messages
 - Server-side tracking (Phase 1/2) occurs before patch point; cannot be prevented client-side
-- Future: Network interception could prevent Phase 2 API call (out of scope)

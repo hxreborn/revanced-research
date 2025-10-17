@@ -97,15 +97,15 @@ invoke-interface {...}, LIShortenUrlApi;->getShareLinkShortenUel(...)
 
 **Canonical Replacement:** `Lapp/revanced/tiktok/share/CanonicalShortenModelFactory;->create(Ljava/lang/String;)Lcom/ss/android/ugc/aweme/share/model/ShortenModel;`  
 **Observable Wrapper:** `new-instance LX/JSy` (Single) wrapping canonical model  
-**Status:** ✅ Confirmed via diagnostic logging APK (`artifacts/tiktok-logged-install-final.apk`)
+**Status:** Confirmed via diagnostic logging APK
 
 ### Version Compatibility
 
 | Version | Status | Notes |
 |---------|--------|-------|
-| 36.5.4 | ✅ MATCH | Current target; instrumentation verified |
-| 36.6.x | ⚠️ ASSUME | Reconfirm anchor sequence before release |
-| 37.x.x | ⚠️ REVIEW | Expect obfuscation churn; redo fingerprint
+| 36.5.4 | [PASS] MATCH | Current target; instrumentation verified |
+| 36.6.x | [WARN] ASSUME | Reconfirm anchor sequence before release |
+| 37.x.x | [WARN] REVIEW | Expect obfuscation churn; redo fingerprint
 
 ---
 

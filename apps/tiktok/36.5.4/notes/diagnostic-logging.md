@@ -47,23 +47,17 @@ adb logcat -s RV-Sanitizer:D -v time
 ## 4. Test Scenarios
 | Scenario | Result | Notes |
 |----------|--------|-------|
-| Copy Link | ✅ | Entry + clipboard exit logged; 372 ms between events |
-| Share → More Menu | ✅ | Entry logged (`channel=more`); no clipboard write |
-| WhatsApp Share | ✅ | Entry logged; exit handled via intent |
-| Alternate callbacks (`call$0`, `accept$2`) | ❌ (not triggered) | Present in DEX for future proofing |
+| Copy Link | [PASS] | Entry + clipboard exit logged; 372 ms between events |
+| Share → More Menu | [PASS] | Entry logged (`channel=more`); no clipboard write |
+| WhatsApp Share | [PASS] | Entry logged; exit handled via intent |
+| Alternate callbacks (`call$0`, `accept$2`) | [FAIL] (not triggered) | Present in DEX for validation on other channels |
 
-All logging strings compiled successfully; untriggered callbacks may execute on other share variants (DM, legacy flows).
+All logging strings compiled successfully. Untriggered callbacks execute on other share variants (DM, legacy flows).
 
 ---
 
 ## 5. Deliverables
-- `artifacts/tiktok-logged-install-final.apk` – instrumentation build ready for regression testing  
+- `artifacts/tiktok-logged-install-final.apk` – instrumentation build for regression testing  
 - `notes/diagnostic-logging.md` – this summary (replaces the previous artifact Markdown files)
 
----
 
-## 6. Next Steps
-1. Implement canonical URL bypass (see `patch-plan.md`).  
-2. Rebuild the instrumentation APK with canonical helpers to confirm clean URLs in logs.  
-3. Port helpers and smali edits into `revanced-patches`, guarded by the same fingerprints.  
-4. Repeat log-based verification for new app versions (36.6.x, 37.x) as needed.

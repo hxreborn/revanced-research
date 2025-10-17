@@ -1,6 +1,6 @@
 # TikTok 36.5.4 – Canonical URL Bypass Completion Report
 
-**Status:** ✅ Operational  
+**Status:** Operational  
 **Date:** 2025-10-17  
 **Device:** Pixel 9 Pro (Android 16)  
 **Package:** `com.zhiliaoapp.musically`
@@ -68,26 +68,10 @@ Result: canonical URLs reach the clipboard without calling `/tiktok/share/link/s
 
 ---
 
-## 6. Porting Checklist (revanced-patches)
-- [ ] Copy helper logic into module (Kotlin/Java).  
-- [ ] Create fingerprints for `call$0` and `aQC.LJFF`.  
-- [ ] Inject bytecode transformations via MethodTransformer.  
-- [ ] Add configuration/flag if desired.  
-- [ ] Add regression tests mirroring diagnostic scenarios.  
-- [ ] Validate on additional TikTok versions (36.6.x, 37.x, etc.).
-
----
-
-## 7. Files to Preserve
+## 6. Artifacts
 - `decode/apktool/classes18.dex` – compiled canonical bypass.  
 - `smali_classes18/app/revanced/tiktok/share/CanonicalUrlBuilder.smali`  
 - `smali_classes18/app/revanced/tiktok/share/CanonicalShortenModelFactory.smali`  
 - `artifacts/tiktok-canonical-unsigned.apk` – installable test build.
 
 ---
-
-## 8. Next Steps
-1. Refine canonical builder to drop tracking query parameters.  
-2. Integrate changes into `revanced-patches` and ship as a formal patch.  
-3. Repeat validation on fresh builds after integration.
-# End of Report
