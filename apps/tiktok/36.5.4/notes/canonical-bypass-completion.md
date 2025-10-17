@@ -107,16 +107,31 @@ Only the shortener call is replaced; the surrounding analytics blocks (`LX/Hrl`,
 
 
 
-## 7. Flow Reference (Stock vs Patched)
+## 7. Flow Outline (Stock vs. Patched)
 
-| Step | Stock behaviour | Patched behaviour |
-|------|-----------------|-------------------|
-| 1. Share sheet triggered | TikTok builds a share package with `extras["share_url"]`. | Same as stock. |
-| 2. `LY/ACallable…call$0` | Injects tracking params (UTM, share IDs, etc.) into the URL. | Helper keeps the canonical URL untouched. |
-| 3. `LX/aQC.LJFF` | Calls `/tiktok/share/link/shorten/multi/v1/`, logging the original URL. | Calls `CanonicalUrlBuilder` + `CanonicalShortenModelFactory`, logs canonical URL, and skips the network call. |
-| 4. `LX/aTc.LIZLLL` | Clipboard receives the TikTok short link (`https://vm.tiktok.com/...`). | Clipboard receives `https://www.tiktok.com/@handle/video/<aid>` (query stripped). |
-| 5. Clipboard / target app | External apps see the shortened URL with tracking. | External apps see the canonical URL with no tracking. |
+```
+Share intent
+    ↓
+AwemeSharePackage.LJIJJ        # build share payload (extras["share_url"])
+    ↓
+Callables / channel handlers   # e.g., LY/ACallable…call$0 (copy link)
+    • Stock: inject tracking params (UTM, share IDs)
+    • Patched: leave canonical URL unchanged
+    ↓
+C98549aQC.LJFF (entry point)   # shortener + analytics logic
+    • Stock: invoke IShortenUrlApi.getShareLinkShortenUel()
+    • Patched: CanonicalUrlBuilder + CanonicalShortenModelFactory, skip network
+    ↓
+LX/aTc.LIZLLL (clipboard path) # or other share targets
+    • Stock: clipboard/intent receives https://vm.tiktok.com/...
+    • Patched: clipboard/intent receives https://www.tiktok.com/@handle/video/<aid>
+    ↓
+External app / clipboard user  # user shares canonical link
+```
 
-**Key point:** only step 3 changes. Analytics/logging branches remain in place so feature flags and telemetry continue to behave exactly like the stock app.
+**Notes**
+- Only the shortener call is replaced; analytics (`LX/Hrl`, `C50550Hrl`) and feature-flag branches remain intact.
+- Applies to any share surface routed through `aQC.LJFF` (copy link, channel chips, “More”).
+- Fallback returns the original URL if canonicalisation fails, preserving stock behaviour.
 
 ---
