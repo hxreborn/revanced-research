@@ -2,7 +2,7 @@
 
 ## Status
 
-Analysis complete. APK decompiled with apktool and JADX. Research notes in `notes/`.
+Analysis complete. APK decompiled with apktool and JADX. Research notes in [notes/](./notes/).
 
 ## APK Details
 
@@ -13,7 +13,7 @@ Analysis complete. APK decompiled with apktool and JADX. Research notes in `note
 
 ## Analysis Documents
 
-- `notes/fingerprints.md` — Bytecode fingerprints for patch targets
-- `notes/patch-plan.md` — Injection strategy and dependencies
-- `notes/tooling.md` — Tool versions, commands, reproducibility details
-- `notes/research-status.md` — Current phase and blockers
+- [fingerprints.md](./notes/fingerprints.md) — Bytecode fingerprints for patch targets
+- [patch-plan.md](./notes/patch-plan.md) — Injection strategy and dependencies
+- [tooling.md](./notes/tooling.md) — Tool versions, commands, reproducibility details
+- [research-status.md](./notes/research-status.md) — Current phase and blockers
