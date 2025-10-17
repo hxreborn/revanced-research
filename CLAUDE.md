@@ -125,6 +125,10 @@ Java.perform(function() {
 - Update `fingerprints.md` with runtime-confirmed signatures
 - Note discrepancies in `*-phase-handoff.md` as critical unknowns
 
+## Package Name Reference
+
+**TikTok 36.5.4:** `com.zhiliaoapp.musically` (not `com.ss.android.ugc.tiktok`)
+
 ## Per-Target Documentation
 
 Each target needs three core notes (templates in `docs/templates/`):
