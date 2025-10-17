@@ -4,6 +4,14 @@ Ops manual for the revanced-research lab—the reverse engineering hub powering 
 
 ---
 
+## Before You Start
+
+1. **Reset the workspace:** `rm -rf apps/<pkg>/<ver>/{decode,artifacts,tmp}` unless you intentionally need prior outputs.
+2. **Log provenance:** capture `sha256sum` of the APK and note tool versions in `notes/tooling.md`.
+3. **Keep repo clean:** decoded binaries stay out of git; only Markdown/JSON updates and helper sources are committed.
+
+---
+
 ## Base Practices
 
 - **Network boundaries**: All RE activity lives here, outside the `revanced-patches/` repo. Only push distilled fingerprints, bytecode offsets, or patch snippets back to the main project.
@@ -12,6 +20,16 @@ Ops manual for the revanced-research lab—the reverse engineering hub powering 
 - **Lightweight provenance**: Track hashes of input APKs (`sha256sum`), tool versions, and key commands. Store them alongside notes for traceability.
 - **Optional git**: If you want history inside `revanced-research/`, initialize a separate repository but avoid committing large decode outputs.
 - **Determinism first**: Remove `decode/*` and `artifacts/*` before each run, record tool versions, and persist APK hashes to keep diffs meaningful.
+- **Artifacts hygiene**: Keep binaries and payloads under `artifacts/`; move Markdown or analysis narratives into `notes/`.
+
+### Do / Don't Quick Reference
+
+| ✅ Do | ❌ Don’t |
+|------|---------|
+| Document findings in `notes/` (fingerprints, plans, diagnostics) | Commit decoded smali/resources or whole APKs |
+| Use `artifacts/` for binaries, payloads, screenshots | Leave Markdown or logs inside `artifacts/` |
+| Record tool versions + APK hash at run start | Run destructive commands (`rm -rf`) outside scoped paths |
+| Promote production-ready helpers into `revanced-patches` ASAP | Forget to clean `decode/` before new runs |
 
 ---
 
@@ -22,30 +40,27 @@ revanced-research/
 ├── README.md                # Human overview & quick start
 ├── AGENTS.md                # Machine-facing guide (this file)
 ├── CLAUDE.md                # Claude Code guidance
-├── docs/
-│   ├── templates/           # Markdown skeletons for per-target notes
-│   └── JVM_GC_TROUBLESHOOTING.md
+├── docs/                    # Reference material (e.g., JVM troubleshooting)
 ├── scripts/                 # Utility helpers (setup, cleanup, jadx wrapper)
 └── apps/
     └── <package>/<version>/ # e.g., tiktok/36.5.4
         ├── apk/             # Pristine APKs (hashes logged)
         ├── decode/          # Tool outputs (apktool/, jadx/, optional dex2jar/, cfr/)
-        ├── notes/           # README, fingerprints, patch-plan (core) + optional tooling, data-flow, etc.
+        ├── notes/           # README, fingerprints, patch-plan, diagnostic-logging, completion reports, etc.
         ├── artifacts/       # Dumps, payloads, screenshots
         └── tmp/             # Scratch data (safe to wipe)
 ```
 
-> **Navigation tip**: keep humans in `README.md`, automation context here, Claude specifics in `CLAUDE.md`, toolkit references under `docs/`, and per-app runbooks inside `apps/<package>/<version>/notes/`.
+> **Navigation tip**: keep humans in `README.md`, automation context here, Claude specifics in `CLAUDE.md`, and per-app runbooks inside `apps/<package>/<version>/notes/`.
 
 > **Naming conventions**
 > - `<app-id>`: lowercase, hyphenated package nickname (match ReVanced module if possible).
 > - `<version>`: raw version string from APK metadata. If multiple channels exist (beta/dev), append `-beta`, `-dev`, etc.
 > - Store alternate architectures under the same version (e.g., `apk/tiktok-arm64-v8a.apk`).
 
-When starting a new investigation, copy the template structure with:
+When starting a new investigation, create the skeleton manually:
 ```
 mkdir -p apps/<package>/<version>/{apk,decode/{apktool,jadx,dex2jar,cfr},notes,artifacts,tmp}
-cp docs/templates/*.md apps/<package>/<version>/notes/
 ```
 
 ## Tooling Baseline
@@ -69,7 +84,14 @@ Tips:
 - For reproducibility, pin tool versions and CLI options in `apps/<package>/<version>/notes/tooling.md` and commit mapping files if generated.
 - **For JADX GC crashes**, see `docs/JVM_GC_TROUBLESHOOTING.md` for detailed diagnosis and recovery strategies.
 
----
+### Common Commands
+
+| Command | Purpose |
+|---------|---------|
+| `apktool -JXmx4g d <apk> -o decode/apktool -f` | Decode resources + smali |
+| `smali assemble decode/apktool/smali_classes18 -o decode/apktool/classes18.dex` | Rebuild modified dex |
+| `adb logcat -s RV-Sanitizer:D -v time` | Stream instrumentation logs |
+| `sha256sum apk/<file>.apk` | Record APK provenance |
 
 ## Generic Workflow
 
@@ -98,8 +120,11 @@ Tips:
 10. **Summarize findings**:
    - Update `apps/<package>/<version>/notes/fingerprints.md` with candidate matchers.
    - Draft patch plan in `apps/<package>/<version>/notes/patch-plan.md` detailing injection points and dependencies.
+   - Capture instrumentation results (if any) in a dedicated note (e.g., `diagnostic-logging.md`) instead of leaving logs in `artifacts/`.
 11. **Diff & determinism**: compare output manifests/smali against previous runs (`diff -ruN`, checksums) to flag unexpected drift.
 12. **Feedback loop**: When patch implementation starts in repo, keep references here for quick lookup.
+
+> **Reference note**: steps 1–12 are the full reverse engineering loop. For quick tasks, skim sections 1–4, 6, and 10, and refer back here only if you need the detailed flow.
 
 ---
 
