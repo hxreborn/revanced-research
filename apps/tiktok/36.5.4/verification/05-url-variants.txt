@@ -1,0 +1,26 @@
+
+=== STEP 6: URL Variant Detection ===
+vm.tiktok.com - JADX:
+7
+vm.tiktok.com - Smali:
+7
+
+vt.tiktok.com - JADX:
+5
+vt.tiktok.com - Smali:
+5
+
+www.tiktok.com/t/ - JADX:
+0
+www.tiktok.com/t/ - Smali:
+0
+
+m.tiktok.com - JADX:
+10
+m.tiktok.com - Smali:
+13
+
+Canonical www.tiktok.com/@user/video/ - JADX:
+6
+Canonical www.tiktok.com/@user/video/ - Smali:
+7

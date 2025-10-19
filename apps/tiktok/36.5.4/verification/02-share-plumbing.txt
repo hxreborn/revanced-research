@@ -1,0 +1,138 @@
+=== STEP 3: Share Plumbing Verification ===
+ACTION_SEND - JADX:
+31
+decompiled-jadx/sources/org/chromium/content/browser/selection/SelectionPopupControllerImpl.java:        Intent intent = new Intent("android.intent.action.SEND");
+decompiled-jadx/sources/p004Y/ACListenerS32S1200000_14.java:                Intent intent = new Intent("android.intent.action.SEND");
+decompiled-jadx/sources/ttwebview/C3437D2.java:                                Intent intent2 = new Intent("android.intent.action.SEND");
+decompiled-jadx/sources/com/p124ss/android/ugc/sdk/channel/third/whatsapp/WhatsappChannel.java:        Intent intent2 = new Intent("android.intent.action.SEND");
+decompiled-jadx/sources/com/p124ss/android/ugc/profile/business/p588ur/platform/business/BioUserWebEmailComponent.java:            Intent intent = new Intent("android.intent.action.SENDTO", UriProtector.parse(strLIZIZ));
+decompiled-jadx/sources/com/p124ss/android/ugc/aweme/commercialize/p173ba/impl/service/BAProfilePageServiceImpl.java:                Intent intent = new Intent("android.intent.action.SENDTO", UriProtector.parse(CD7.LIZIZ(sbLIZ2)));
+decompiled-jadx/sources/com/p124ss/android/ugc/aweme/p300im/sdk/chat/p318ui/base/assems/power/StoryReactionSendLegacyCompatViewHolder.java:        super(EnumC53176It1.STORY_REACTION_SEND);
+decompiled-jadx/sources/com/p124ss/android/ugc/aweme/share/SystemShareActivity.java:        if (!iOpenPlatformService.LIZIZ(intent) && ((Intrinsics.m35114LJ(getIntent().getAction(), "android.intent.action.SEND") && getIntent().getParcelableExtra("android.intent.extra.STREAM") != null) || (Intrinsics.m35114LJ(getIntent().getAction(), "android.intent.action.SEND_MULTIPLE") && getIntent().getParcelableArrayListExtra("android.intent.extra.STREAM") != null))) {
+decompiled-jadx/sources/com/p124ss/android/ugc/aweme/share/SystemShareActivity.java:                if (Intrinsics.m35114LJ(getIntent().getAction(), "android.intent.action.SEND_MULTIPLE")) {
+decompiled-jadx/sources/com/p124ss/android/ugc/aweme/share/systemshare/SystemShareTargetChosenReceiver.java:            Intent intent = new Intent("android.intent.action.SEND");
+decompiled-jadx/sources/com/p124ss/android/ugc/aweme/channel/share/channel/wrap/WrapDefaultWhatsappChannel.java:        Intent intent2 = new Intent("android.intent.action.SEND");
+decompiled-jadx/sources/p003X/UGS.java:        Intent intent = new Intent("android.intent.action.SEND");
+decompiled-jadx/sources/p003X/UGS.java:        Intent intent = new Intent("android.intent.action.SEND");
+decompiled-jadx/sources/p003X/UGS.java:        Intent intent = new Intent("android.intent.action.SEND");
+decompiled-jadx/sources/p003X/UGR.java:        Intent intent = new Intent("android.intent.action.SEND");
+decompiled-jadx/sources/p003X/UGR.java:        Intent intent = new Intent("android.intent.action.SEND");
+decompiled-jadx/sources/p003X/UGR.java:        Intent intent = new Intent("android.intent.action.SEND");
+decompiled-jadx/sources/p003X/UGR.java:        Intent intent = new Intent("android.intent.action.SEND");
+decompiled-jadx/sources/p003X/UGR.java:        Intent intent = new Intent("android.intent.action.SEND");
+decompiled-jadx/sources/p003X/AbstractC82056UGd.java:        Intent intent = new Intent("android.intent.action.SEND");
+
+ACTION_SEND - Smali:
+28
+decompiled-smali-full/smali_classes48/ttwebview/D2.smali:    const-string v0, "android.intent.action.SEND"
+decompiled-smali-full/smali_classes48/org/chromium/content/browser/selection/SelectionPopupControllerImpl.smali:    const-string v0, "android.intent.action.SEND"
+decompiled-smali-full/smali_classes15/com/ss/android/ugc/sdk/channel/third/whatsapp/WhatsappChannel.smali:    const-string v0, "android.intent.action.SEND"
+decompiled-smali-full/smali_classes15/com/ss/android/ugc/aweme/share/systemshare/SystemShareTargetChosenReceiver.smali:    const-string v0, "android.intent.action.SEND"
+decompiled-smali-full/smali_classes15/com/ss/android/ugc/aweme/commercialize/ba/impl/service/BAProfilePageServiceImpl.smali:    const-string v0, "android.intent.action.SENDTO"
+decompiled-smali-full/smali_classes15/com/ss/android/ugc/aweme/channel/share/channel/wrap/WrapDefaultWhatsappChannel.smali:    const-string v0, "android.intent.action.SEND"
+decompiled-smali-full/smali_classes15/Y/ACListenerS32S1200000_14.smali:    const-string v0, "android.intent.action.SEND"
+decompiled-smali-full/smali_classes15/X/Uqx.smali:    const-string v8, "android.intent.action.SEND"
+decompiled-smali-full/smali_classes8/X/HLN.smali:    const-string v0, "android.intent.action.SENDTO"
+decompiled-smali-full/smali_classes15/X/TK8.smali:    const-string v0, "android.intent.action.SENDTO"
+decompiled-smali-full/smali_classes15/X/TXw.smali:    const-string v0, "android.intent.action.SEND"
+decompiled-smali-full/smali_classes15/X/TXw.smali:    const-string v0, "android.intent.action.SEND_MULTIPLE"
+decompiled-smali-full/smali_classes15/X/TXr.smali:    const-string v0, "android.intent.action.SEND"
+decompiled-smali-full/smali_classes15/X/TXr.smali:    const-string v0, "android.intent.action.SEND_MULTIPLE"
+decompiled-smali-full/smali_classes15/X/TXq.smali:    const-string v3, "android.intent.action.SEND"
+decompiled-smali-full/smali_classes15/X/TXq.smali:    const-string v3, "android.intent.action.SEND_MULTIPLE"
+decompiled-smali-full/smali_classes15/X/Tco.smali:    const-string v1, "android.intent.action.SEND"
+decompiled-smali-full/smali_classes15/X/Tco.smali:    const-string v2, "android.intent.action.SEND_MULTIPLE"
+decompiled-smali-full/smali_classes15/X/ThG.smali:    const-string v0, "android.intent.action.SENDTO"
+decompiled-smali-full/smali_classes15/X/TjL.smali:    const-string v0, "android.intent.action.SENDTO"
+
+EXTRA_TEXT - JADX:
+11
+decompiled-jadx/sources/ttwebview/C3437D2.java:                                intent2.putExtra("android.intent.extra.TEXT", strM35637E2);
+decompiled-jadx/sources/com/p124ss/android/ugc/sdk/channel/third/whatsapp/WhatsappChannel.java:        intent2.putExtra("android.intent.extra.TEXT", AbstractC82063UGk.m11879LJ(content));
+decompiled-jadx/sources/com/p124ss/android/ugc/aweme/channel/share/channel/wrap/WrapDefaultWhatsappChannel.java:        intent2.putExtra("android.intent.extra.TEXT", AbstractC82063UGk.m11879LJ(content));
+decompiled-jadx/sources/p003X/UGS.java:        intent.putExtra("android.intent.extra.TEXT", strM11879LJ);
+decompiled-jadx/sources/p003X/UGS.java:            intent.putExtra("android.intent.extra.TEXT", strLIZ);
+decompiled-jadx/sources/p003X/UGS.java:            intent.putExtra("android.intent.extra.TEXT", strLIZ);
+decompiled-jadx/sources/p003X/UGR.java:        intent.putExtra("android.intent.extra.TEXT", strLIZIZ);
+decompiled-jadx/sources/p003X/UGR.java:        intent.putExtra("android.intent.extra.TEXT", content.LIZIZ);
+decompiled-jadx/sources/p003X/UGR.java:            intent.putExtra("android.intent.extra.TEXT", strLIZ);
+decompiled-jadx/sources/p003X/UGR.java:            intent.putExtra("android.intent.extra.TEXT", strLIZ);
+decompiled-jadx/sources/p003X/UGQ.java:        intent.putExtra("android.intent.extra.TEXT", strLIZ);
+decompiled-jadx/sources/p003X/AbstractC82056UGd.java:        intent.putExtra("android.intent.extra.TEXT", AbstractC82063UGk.m11879LJ(content));
+decompiled-jadx/sources/p003X/AbstractC82056UGd.java:            intent.putExtra("android.intent.extra.TEXT", strLIZ);
+decompiled-jadx/sources/p003X/AbstractC82056UGd.java:        intent.putExtra("android.intent.extra.TEXT", strLIZ);
+decompiled-jadx/sources/p003X/UGV.java:        intent.putExtra("android.intent.extra.TEXT", sb.toString());
+decompiled-jadx/sources/p003X/C80475ThG.java:        intent.putExtra("android.intent.extra.TEXT", str2);
+decompiled-jadx/sources/p003X/C82066UGn.java:        intentLJJJLIIL.putExtra("android.intent.extra.TEXT", AbstractC82063UGk.m11879LJ(content));
+decompiled-jadx/sources/p003X/C82066UGn.java:            intentLJJJLIIL.putExtra("android.intent.extra.TEXT", strLIZ);
+decompiled-jadx/sources/p003X/C82066UGn.java:            intentLJJJLIIL.putExtra("android.intent.extra.TEXT", strLIZ);
+decompiled-jadx/sources/p003X/C83624Uqx.java:                    intent.putExtra("android.intent.extra.TEXT", strLIZIZ2);
+
+EXTRA_TEXT - Smali:
+11
+decompiled-smali-full/smali_classes48/ttwebview/D2.smali:    const-string v0, "android.intent.extra.TEXT"
+decompiled-smali-full/smali_classes15/com/ss/android/ugc/sdk/channel/third/whatsapp/WhatsappChannel.smali:    const-string v1, "android.intent.extra.TEXT"
+decompiled-smali-full/smali_classes15/com/ss/android/ugc/aweme/channel/share/channel/wrap/WrapDefaultWhatsappChannel.smali:    const-string v1, "android.intent.extra.TEXT"
+decompiled-smali-full/smali_classes15/X/Uqx.smali:    const-string v5, "android.intent.extra.TEXT"
+decompiled-smali-full/smali_classes15/X/UGn.smali:    const-string v1, "android.intent.extra.TEXT"
+decompiled-smali-full/smali_classes15/X/UGn.smali:    const-string v0, "android.intent.extra.TEXT"
+decompiled-smali-full/smali_classes15/X/UGn.smali:    const-string v0, "android.intent.extra.TEXT"
+decompiled-smali-full/smali_classes15/X/UGd.smali:    const-string v1, "android.intent.extra.TEXT"
+decompiled-smali-full/smali_classes15/X/UGd.smali:    const-string v0, "android.intent.extra.TEXT"
+decompiled-smali-full/smali_classes15/X/UGd.smali:    const-string v0, "android.intent.extra.TEXT"
+decompiled-smali-full/smali_classes15/X/UGV.smali:    const-string v1, "android.intent.extra.TEXT"
+decompiled-smali-full/smali_classes15/X/UGS.smali:    const-string v0, "android.intent.extra.TEXT"
+decompiled-smali-full/smali_classes15/X/UGS.smali:    const-string v0, "android.intent.extra.TEXT"
+decompiled-smali-full/smali_classes15/X/UGS.smali:    const-string v0, "android.intent.extra.TEXT"
+decompiled-smali-full/smali_classes15/X/UGR.smali:    const-string v0, "android.intent.extra.TEXT"
+decompiled-smali-full/smali_classes15/X/UGR.smali:    const-string v0, "android.intent.extra.TEXT"
+decompiled-smali-full/smali_classes15/X/UGR.smali:    const-string v0, "android.intent.extra.TEXT"
+decompiled-smali-full/smali_classes15/X/UGR.smali:    const-string v0, "android.intent.extra.TEXT"
+decompiled-smali-full/smali_classes15/X/UGQ.smali:    const-string v0, "android.intent.extra.TEXT"
+decompiled-smali-full/smali_classes15/X/ThG.smali:    const-string v0, "android.intent.extra.TEXT"
+
+ClipboardManager - JADX:
+42
+decompiled-jadx/sources/org/chromium/p626ui/base/Clipboard.java:import android.content.ClipboardManager;
+decompiled-jadx/sources/org/chromium/p626ui/base/Clipboard.java:import ttwebview.ClipboardManagerOnPrimaryClipChangedListenerC4642n8;
+decompiled-jadx/sources/org/chromium/p626ui/base/Clipboard.java:            ClipboardManager clipboardManager = (ClipboardManager) C107014ccj.LLLLLIL(ContextUtils.getApplicationContext(), "clipboard");
+decompiled-jadx/sources/org/chromium/p626ui/base/Clipboard.java:                f40118b = new ClipboardManagerOnPrimaryClipChangedListenerC4642n8(clipboardManager);
+decompiled-jadx/sources/org/chromium/content/browser/selection/SelectionPopupControllerImpl.java:import ttwebview.ClipboardManagerOnPrimaryClipChangedListenerC4642n8;
+decompiled-jadx/sources/org/chromium/content/browser/selection/SelectionPopupControllerImpl.java:        return (clipboard instanceof ClipboardManagerOnPrimaryClipChangedListenerC4642n8) && this.f39679r;
+decompiled-jadx/sources/org/chromium/content/browser/selection/SelectionPopupControllerImpl.java:        return clipboard instanceof ClipboardManagerOnPrimaryClipChangedListenerC4642n8;
+decompiled-jadx/sources/ttwebview/ClipboardManagerOnPrimaryClipChangedListenerC4642n8.java:import android.content.ClipboardManager;
+decompiled-jadx/sources/ttwebview/ClipboardManagerOnPrimaryClipChangedListenerC4642n8.java:public final class ClipboardManagerOnPrimaryClipChangedListenerC4642n8 extends Clipboard implements ClipboardManager.OnPrimaryClipChangedListener {
+decompiled-jadx/sources/ttwebview/ClipboardManagerOnPrimaryClipChangedListenerC4642n8.java:    public final ClipboardManager f43987d;
+decompiled-jadx/sources/ttwebview/ClipboardManagerOnPrimaryClipChangedListenerC4642n8.java:    @Override // android.content.ClipboardManager.OnPrimaryClipChangedListener
+decompiled-jadx/sources/ttwebview/ClipboardManagerOnPrimaryClipChangedListenerC4642n8.java:        m39008e(ClipData.newPlainText("text", str));
+decompiled-jadx/sources/ttwebview/ClipboardManagerOnPrimaryClipChangedListenerC4642n8.java:        ClipboardManager clipboardManager = this.f43987d;
+decompiled-jadx/sources/ttwebview/ClipboardManagerOnPrimaryClipChangedListenerC4642n8.java:        NNE nneLIZIZ = nnc.LIZIZ(101805, "android/content/ClipboardManager", "hasPrimaryClip", clipboardManager, objArr, "boolean", c39675Dgk);
+decompiled-jadx/sources/ttwebview/ClipboardManagerOnPrimaryClipChangedListenerC4642n8.java:            nnc.LIZ(101805, "android/content/ClipboardManager", "hasPrimaryClip", null, objArr, clipboardManager, c39675Dgk, false);
+decompiled-jadx/sources/ttwebview/ClipboardManagerOnPrimaryClipChangedListenerC4642n8.java:        nnc.LIZ(101805, "android/content/ClipboardManager", "hasPrimaryClip", Boolean.valueOf(zHasPrimaryClip), objArr, clipboardManager, c39675Dgk, true);
+decompiled-jadx/sources/ttwebview/ClipboardManagerOnPrimaryClipChangedListenerC4642n8.java:        m39008e(ClipData.newPlainText(null, null));
+decompiled-jadx/sources/ttwebview/ClipboardManagerOnPrimaryClipChangedListenerC4642n8.java:            boolean r0 = ttwebview.ClipboardManagerOnPrimaryClipChangedListenerC4642n8.isNeedGuard
+decompiled-jadx/sources/ttwebview/ClipboardManagerOnPrimaryClipChangedListenerC4642n8.java:            android.content.ClipboardManager r4 = r5.f43987d
+decompiled-jadx/sources/ttwebview/ClipboardManagerOnPrimaryClipChangedListenerC4642n8.java:        throw new UnsupportedOperationException("Method not decompiled: ttwebview.ClipboardManagerOnPrimaryClipChangedListenerC4642n8.hasHTMLOrStyledText():boolean");
+
+ClipboardManager - Smali:
+70
+decompiled-smali-full/smali_classes48/ttwebview/n8.smali:.implements Landroid/content/ClipboardManager$OnPrimaryClipChangedListener;
+decompiled-smali-full/smali_classes48/ttwebview/n8.smali:.field public final d:Landroid/content/ClipboardManager;
+decompiled-smali-full/smali_classes48/ttwebview/n8.smali:.method public constructor <init>(Landroid/content/ClipboardManager;)V
+decompiled-smali-full/smali_classes48/ttwebview/n8.smali:    iput-object v10, v3, Lttwebview/n8;->d:Landroid/content/ClipboardManager;
+decompiled-smali-full/smali_classes48/ttwebview/n8.smali:    const-string v1, "(Landroid/content/ClipboardManager$OnPrimaryClipChangedListener;)V"
+decompiled-smali-full/smali_classes48/ttwebview/n8.smali:    const-string v14, "android/content/ClipboardManager"
+decompiled-smali-full/smali_classes48/ttwebview/n8.smali:    const-string v6, "android/content/ClipboardManager"
+decompiled-smali-full/smali_classes48/ttwebview/n8.smali:    invoke-virtual {v10, v3}, Landroid/content/ClipboardManager;->addPrimaryClipChangedListener(Landroid/content/ClipboardManager$OnPrimaryClipChangedListener;)V
+decompiled-smali-full/smali_classes48/ttwebview/n8.smali:    const-string v6, "android/content/ClipboardManager"
+decompiled-smali-full/smali_classes48/ttwebview/n8.smali:.method public static INVOKEVIRTUAL_ttwebview_n8_com_ss_android_ugc_aweme_lancet_ClipboardLancet_setPrimaryClip(Landroid/content/ClipboardManager;Landroid/content/ClipData;)V
+decompiled-smali-full/smali_classes48/ttwebview/n8.smali:    invoke-static {p0, p1, v0}, LX/eFY;->LJIILLIIL(Landroid/content/ClipboardManager;Landroid/content/ClipData;Ljava/lang/String;)V
+decompiled-smali-full/smali_classes48/ttwebview/n8.smali:    iget-object v9, v0, Lttwebview/n8;->d:Landroid/content/ClipboardManager;
+decompiled-smali-full/smali_classes48/ttwebview/n8.smali:    const-string v13, "android/content/ClipboardManager"
+decompiled-smali-full/smali_classes48/ttwebview/n8.smali:    const-string v5, "android/content/ClipboardManager"
+decompiled-smali-full/smali_classes48/ttwebview/n8.smali:    invoke-virtual {v9}, Landroid/content/ClipboardManager;->hasPrimaryClip()Z
+decompiled-smali-full/smali_classes48/ttwebview/n8.smali:    const-string v5, "android/content/ClipboardManager"
+decompiled-smali-full/smali_classes48/ttwebview/n8.smali:    iget-object v0, p0, Lttwebview/n8;->d:Landroid/content/ClipboardManager;
+decompiled-smali-full/smali_classes48/ttwebview/n8.smali:    invoke-static {v0}, LX/eFY;->LJIILL(Landroid/content/ClipboardManager;)Landroid/content/ClipDescription;
+decompiled-smali-full/smali_classes48/ttwebview/n8.smali:    iget-object v0, p0, Lttwebview/n8;->d:Landroid/content/ClipboardManager;
+decompiled-smali-full/smali_classes48/ttwebview/n8.smali:    invoke-static {v0}, LX/eFY;->LJIILJJIL(Landroid/content/ClipboardManager;)Landroid/content/ClipData;
