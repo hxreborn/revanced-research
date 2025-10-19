@@ -47,6 +47,27 @@ invoke-static {v1, v2}, LX/UEU;->LIZ(Landroid/os/Bundle;Ljava/lang/String;)Ljava
 ## Critical Finding
 **The shortened URL was created BEFORE being added to the List** - AwemeSharePackage.LJIJJ receives already-shortened URLs.
 
+## 🎉 BREAKTHROUGH: Found Canonical URL Source!
+
+**Date**: 2025-10-19 20:47
+**Discovery**: URL IS CANONICAL at entry point to `AwemeSharePackage.LJIJJLI()`
+
+**Evidence**:
+```
+W CANONICAL_URL: https://www.tiktok.com/@placeplate/video/7550224638861692168?_r=1&u_code=0...
+```
+
+**Method**: `AwemeSharePackage.LJIJJLI()` at line 2795
+```smali
+iget-object v4, p0, Lcom/ss/android/ugc/aweme/share/base/model/BaseSharePackage;->url:Ljava/lang/String;
+```
+
+**Key Finding**: URL arrives as FULL CANONICAL - something AFTER LJIJJLI shortens it to vt.tiktok.com
+
+**Next Step**: Find where LJIJJLI calls the shortening method and replace with canonical
+
+---
+
 ## ✅ Plan V2 - Canonical URL Injection (In Progress)
 
 ### Approach
