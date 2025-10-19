@@ -1,42 +1,5 @@
 # ReVanced Patch Development Runbook
 
-## **Documentation Structure**
-
-This workflow produces a structured set of documentation files. Here's where everything goes:
-
-### **Root Level** (`revanced-research/`)
-- `README.md` - Quick start and overview
-- `WORKFLOW.md` - **THIS FILE** - Complete development guide for all phases
-- `attempt-history.md` - Global tracker of all attempts across all apps/versions
-
-### **Per-App-Version** (`revanced-research/apps/tiktok/36.5.4/`)
-- `base.apk` - Original APK (gitignored)
-- `apk-metadata.txt` - SHA256 and version info
-- `obfuscation-map.md` - Class/method mappings (from Phase 1)
-- `injection-points.md` - Verified injection points (from Phase 1)
-- `decompiled-jadx/` - Java decompilation (Phase 1)
-- `decompiled-smali-full/` - Smali decompilation (Phase 1)
-- `smali-tests/` - Test builds directory
-
-### **Per-Test** (`revanced-research/apps/tiktok/36.5.4/smali-tests/01-canonical-url/`)
-
-**Phase 2 Documentation** (created during patch development):
-- `PATCH-STRATEGY.md` - Detailed patch design and analysis
-- `PHASE-2-STATUS.md` - Build execution status and results
-- `BUILD-COMPLETE.md` - Final build summary and next steps
-
-**Phase 2 Artifacts**:
-- `smali-working/` - Decompiled code with patch applied
-- `patched-tiktok-36.5.4.apk` - Built and signed APK (ready to test)
-- `logs/` - Build and test logs (optional)
-
-### **Submodules** (`revanced-research/revanced-src/`)
-- `revanced-patches/` - ReVanced patches (Phase 3+)
-- `revanced-integrations/` - Integration helpers
-- `revanced-cli.jar` - CLI tool
-
----
-
 ## **Repository Structure**
 ```bash
 revanced-research/
@@ -59,22 +22,6 @@ revanced-research/
     ├── revanced-integrations/   # Submodule (forked)
     └── revanced-cli.jar         # CLI tool
 ```
-
----
-
-## **Quick Navigation**
-
-| Phase | Goal | Key Files | Status |
-|-------|------|-----------|--------|
-| **Phase 0** | Setup | `README.md`, submodules | One-time |
-| **Phase 1** | Discovery | `obfuscation-map.md`, `injection-points.md` | Per-version |
-| **Phase 2** | Smali Patch | `PATCH-STRATEGY.md`, `PHASE-2-STATUS.md`, `BUILD-COMPLETE.md` | Per-test |
-| **Phase 3** | ReVanced | Patch `.kt` files in submodule | Per-phase |
-| **Phase 4** | Patterns | Reference in WORKFLOW.md (section 4.1) | Reference |
-| **Phase 5** | Verify | Test checklist in WORKFLOW.md (section 5.1) | Per-test |
-| **Phase 6** | Production | Multi-version tests | Final |
-
-**Currently**: Working on **Phase 2** - Smali patch for TikTok 36.5.4 canonical URLs ✅
 
 ---
 
@@ -183,200 +130,81 @@ EOF
 
 ---
 
-## **Phase 2: Smali Patch Development**
+## **Phase 2: Smali Testing**
 
-### 2.1 Design Patch Strategy
-
-Before coding, analyze the target method comprehensively:
-
+### 2.1 Create Smali Test
 ```bash
 cd apps/$APP/$VERSION
 
-# Analyze the method in JADX (Java source)
-grep -r "YourMethodName" decompiled-jadx/ --include="*.java" -A 30
-
-# View corresponding Smali bytecode
-cat decompiled-smali/smali_classes*/path/to/Class.smali | grep -A 50 "method public.*YourMethodName"
-```
-
-**Document in `PATCH-STRATEGY.md`**:
-- Method signature and parameters
-- Control flow (all code paths)
-- Conditional branches and their destinations
-- Register allocation and free registers
-- Try-catch blocks
-- Injection point options
-- Expected behavior before and after patch
-
-### 2.2 Implement Patch in Smali
-
-Create test copy with patch applied:
-
-```bash
-# Create test directory
-TEST_NUM="01-canonical-url"  # Descriptive name
-mkdir -p smali-tests/$TEST_NUM
-cp -r decompiled-smali-full/ smali-tests/$TEST_NUM/smali-working/
+# Create test iteration
+TEST_NUM=01-ljijj-bundle
+cp -r decompiled-smali/ smali-tests/$TEST_NUM/
 cd smali-tests/$TEST_NUM/
 
-# Edit the target file
-vim smali-working/smali_classes15/X/UEU.smali
-# Apply bytecode changes at identified injection point
-
-# Verify patch syntax
-grep -n "const/4 v0, 0x0" smali-working/smali_classes15/X/UEU.smali
-# Should show your patch at the correct line
+# Edit target method
+vim smali_classes3/com/ss/android/ugc/aweme/share/improve/pkg/LinkSharePackage.smali
 ```
 
-**Patch design considerations**:
-- Use forced constants (`const/4 v0, 0x0` for false)
-- Don't add extra instructions if possible
-- Keep register allocation safe (use free registers only)
-- Avoid crossing try-catch boundaries
+### 2.2 Insert Test Code
+```smali
+# Find your injection point (e.g., after "const-string v3, share_url")
+# INSERT:
+    const-string v0, "HOTSWAP_TEST"
+    new-instance v1, Ljava/lang/StringBuilder;
+    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
+    const-string v2, "URL before: "
+    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {v1, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+    move-result-object v1
+    invoke-static {v0, v1}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
+    
+    # Your actual modification (hardcoded for test)
+    const-string v4, "https://vm.tiktok.com/CLEANED_TEST"
+```
 
-### 2.3 Fix Manifest Resource Issues
-
-Common error: `'@XXXXXXXX' is incompatible with attribute resource`
-
-**Solution**:
+### 2.3 Build and Verify
 ```bash
-# Find invalid resource in manifest
-grep "@[0-9]\{10\}" smali-working/AndroidManifest.xml
+# Build test APK
+apktool b . -o ../$TEST_NUM.apk
+cd ..
+zipalign -v 4 $TEST_NUM.apk $TEST_NUM-aligned.apk
+apksigner sign --ks ~/.android/debug.keystore --ks-pass pass:android $TEST_NUM-aligned.apk
 
-# Remove the problematic line or set to empty value
-vim smali-working/AndroidManifest.xml
-# Comment out or remove lines with invalid resource references
+# Install and test
+adb install -r $TEST_NUM-aligned.apk
+adb logcat -c
+adb shell am start com.ss.android.ugc.trill/.main.MainActivity
+
+# Trigger share action and capture logs
+adb logcat -d | tee ../logs/smali-test-$TEST_NUM-$(date +%Y%m%d-%H%M%S).log | grep "HOTSWAP_TEST"
 ```
 
-### 2.4 Build Test APK
-
+### 2.4 Document Results
 ```bash
-# Build with optimized settings for your system
-java -Xmx12288M -XX:+UseG1GC -XX:MaxGCPauseMillis=200 \
-  -jar /usr/share/java/android-apktool/apktool.jar b \
-  -f -j 6 smali-working/ \
-  -o patched-$APP-$VERSION.apk
+cd ..
+cat >> injection-points.md << 'EOF'
+# Verified Injection Points - TikTok 36.5.4
 
-# Check result
-if [ -f "patched-$APP-$VERSION.apk" ]; then
-  echo "✅ APK built successfully!"
-  ls -lh patched-$APP-$VERSION.apk
-else
-  echo "❌ Build failed - check error above"
-fi
-```
+## Test 01-ljijj-bundle - 2024-12-25
+- **Target**: LinkSharePackage.a() line 423
+- **Class**: Lcom/ss/android/ugc/aweme/share/improve/pkg/LinkSharePackage;
+- **Method**: a(Ljava/lang/String;Landroid/content/Context;)Landroid/os/Bundle;
+- **Injection**: After `const-string v3, "share_url"`
+- **Registers**: v4 contains URL, v0-v2 free, .locals 8
+- **Try blocks**: None at injection point
+- **Result**: ✅ URL changed successfully
+- **Log**: logs/smali-test-01-ljijj-bundle-20241225-150000.log
 
-### 2.5 Sign APK
+## What Worked
+- String "share_url" exists at line 423
+- Register v4 definitely contains the URL
+- No try-catch conflicts
+- Can safely use v0-v2 as temp registers
+EOF
 
-```bash
-# Create debug keystore if needed
-if [ ! -f ~/.android/debug.keystore ]; then
-  keytool -genkey -v -keystore ~/.android/debug.keystore \
-    -storepass android -alias androiddebugkey -keypass android \
-    -keyalg RSA -keysize 2048 -validity 10000 \
-    -dname "CN=Android Debug,O=Android,C=US"
-fi
-
-# Sign APK
-jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA256 \
-  -keystore ~/.android/debug.keystore -storepass android \
-  "patched-$APP-$VERSION.apk" androiddebugkey
-
-echo "✅ APK signed successfully"
-```
-
-### 2.6 Test on Device
-
-```bash
-# Install
-adb install patched-$APP-$VERSION.apk
-
-# Verify functionality
-# - App launches without crashes
-# - Patch is applied (test the specific feature)
-# - No side effects
-```
-
-### 2.7 Document Results
-
-Create phase documentation files in `smali-tests/$TEST_NUM/`:
-
-**`PATCH-STRATEGY.md`** - Detailed patch design
-```markdown
-# Phase 2: Patch Strategy
-
-## Target Method
-- **File**: Path to smali file
-- **Method**: Signature
-- **Location**: Line numbers
-
-## Control Flow Analysis
-- Diagram of code paths
-- Conditional branches
-- Return statements
-
-## Patch Implementation
-- Strategy selected (which option/why)
-- Exact bytecode changes
-- Register allocation
-- Before/after comparison
-
-## Testing Strategy
-- Device testing plan
-- Success criteria
-- Edge cases
-```
-
-**`PHASE-2-STATUS.md`** - Execution status
-```markdown
-# Phase 2 Status
-
-## Completed Tasks
-- [ ] Method analysis
-- [ ] Patch implementation
-- [ ] Manifest fixes
-- [ ] APK build
-- [ ] APK signing
-- [ ] Device testing
-
-## Build Details
-- APK file: patched-APP-VERSION.apk
-- Size: XXX MB
-- Status: ✅ Ready
-
-## Test Results
-- [ ] App launches
-- [ ] Patch applied
-- [ ] Feature works
-- [ ] No regressions
-```
-
-**`BUILD-COMPLETE.md`** - Build summary and next steps
-```markdown
-# Build Complete
-
-## Summary
-- Patch: Successfully applied at [location]
-- APK: Built and signed
-- Status: Ready for installation/testing
-
-## Installation
-adb install smali-tests/$TEST_NUM/patched-APP-VERSION.apk
-
-## Next Steps
-1. Install on device
-2. Run functional tests
-3. Document results
-```
-
-### 2.8 Update attempt-history.md
-
-At repo root, track this attempt:
-
-```markdown
-| Date | App | Version | Target | Method | Result | Next |
-|------|-----|---------|--------|--------|--------|------|
-| 2025-10-19 | tiktok | 36.5.4 | Canonical URLs | Smali patch (const/4 v0, 0x0) | ✅ Built & signed | Device testing |
+# Update targets
+sed -i 's/❓/✅ Line 423/' obfuscation-map.md
 ```
 
 ---
