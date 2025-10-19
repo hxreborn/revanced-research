@@ -1,0 +1,3 @@
+[submodule "revanced-src/revanced-patches"]
+	path = revanced-src/revanced-patches
+	url = https://github.com/hxreborn/revanced-patches
