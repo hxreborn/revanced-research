@@ -47,22 +47,30 @@ invoke-static {v1, v2}, LX/UEU;->LIZ(Landroid/os/Bundle;Ljava/lang/String;)Ljava
 ## Critical Finding
 **The shortened URL was created BEFORE being added to the List** - AwemeSharePackage.LJIJJ receives already-shortened URLs.
 
-## Next Investigation (Phase 2 Continued)
-Need to trace backwards to find WHERE the URL is shortened/selected:
-- **Aweme object**: Check shareUrl field - canonical or pre-shortened?
-- **C54243JOk.LIZ()**: Gateway that builds AwemeSharePackage from Aweme
-  - Find where List[urls] is populated with shortened links
-- **URL shortening method**: Search for methods that generate vm.tiktok.com/vt.tiktok.com
-- **API calls**: May receive shortened URL from backend
+## ✅ Plan V2 - Canonical URL Injection (In Progress)
 
-## Search Pattern for Next Phase
-```bash
-# Find where List[urls] is populated with shortened URLs
-rg "vm\.tiktok\.com|vt\.tiktok\.com" decompiled-jadx/ -B5 -A5
+### Approach
+Instead of trying to intercept shortened URLs, build canonical URLs directly from Aweme object.
 
-# Find URL shortening API calls
-rg "shorten.*url|getShareLinkShortenUrl" decompiled-jadx/ -B3 -A3
+**Injection Point**: `AwemeSharePackage.LJIJJ()` method at line 2423-2432
+- Get Aweme via `p0.LJJ()` (method exists at line 3012)
+- Extract `aid` (video ID) and `uniqueId` (creator username)
+- Build canonical URL: `https://www.tiktok.com/@{uniqueId}/video/{aid}`
+- Replace v4 (shortened URL) with canonical before `putString("share_url", v4)`
 
-# Trace List creation in C54243JOk
-rg "new ArrayList|\.add\(.*url" decompiled-jadx/sources/X/JOk.java -B2 -A2
-```
+**Test Location**: `apps/tiktok/36.5.4/smali-tests/02-plan-v2/smali_classes15/`
+
+**Patch Status**:
+- ✅ Smali injection applied
+- ✅ Logging added ("PLAN_V2_CANONICAL" tag)
+- ⏳ Awaiting: DEX compilation and device testing
+
+### Why This Works
+1. Bypasses the entire API shortening flow (`/tiktok/share/link/shorten/multi/v1/`)
+2. Canonical URL stored in extras bundle before any downstream processing
+3. All channels (WhatsApp, SMS, clipboard) receive canonical URL automatically
+4. No tracking parameters get baked into backend-shortened URLs
+
+### Documentation
+- See `PLAN-V2-NOTES.md` for complete technical details
+- Expected logs: `adb logcat | grep "PLAN_V2_CANONICAL"`
