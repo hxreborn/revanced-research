@@ -1,0 +1,29 @@
+# APK Files
+*.apk
+*.apks
+
+# Build outputs
+smali-tests/
+revanced-builds/
+decompiled-jadx/
+decompiled-smali/
+
+# Logs and indices
+logs/
+indices/
+*.log
+
+# Build artifacts
+build/
+.gradle/
+*.jar
+!revanced-src/revanced-cli.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# OS
+Thumbs.db
