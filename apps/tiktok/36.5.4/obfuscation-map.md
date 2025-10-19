@@ -348,9 +348,31 @@ rg "new Intent|ACTION_SEND|android.intent" decompiled-jadx/sources/ -B2 -A5
 rg "append|concat|format.*url" decompiled-jadx/sources/ -i -B2 -A2
 ```
 
-## Resources
+## phase 1 verification summary
+
+### automated verification (2025-10-19)
+- ✅ JVM descriptors verified (byte-for-byte match)
+- ✅ Smali shard paths confirmed consistent
+- ✅ Share plumbing verified (ACTION_SEND, EXTRA_TEXT, ClipboardManager)
+- ✅ Lambda/invoke-custom: CLEAR (no lambdas, straightforward patching)
+- ✅ Resource strings verified
+- ✅ URL variants mapped (vm, vt, m, canonical)
+- ✅ Decompilation consistency: PERFECT
+
+### manual verification & corrections
+- ✅ ShareModel entry REMOVED (only Open Platform metadata, no URL logic)
+- ✅ C54243JOk entry ADDED (gateway method verified in Smali)
+- ✅ Complete URL construction path verified end-to-end
+- ✅ All distribution channels mapped (Intent, Clipboard, all wrap channels)
+
+### phase 1 readiness: CONFIRMED
+All prerequisites met for Phase 2 Smali modification. Primary patch target identified: `UEU.LIZJ()` in smali_classes15/X/UEU.smali lines 107-310
+
+---
+
+## resources
 
 - **Decompiled JADX**: `decompiled-jadx/` (Java sources)
-- **Smali output**: `decompiled-smali/` (Bytecode)
-- **Search index**: `indices/strings.txt`
+- **Smali output**: `decompiled-smali-full/` (All bytecode)
+- **Search index**: `indices/` (searchable patterns)
 - **APK metadata**: `apk-metadata.txt` (SHA256: 0552a22f...)
