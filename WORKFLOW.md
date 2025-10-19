@@ -249,6 +249,173 @@ echo "- LJFF: ✅ Works at line 567" >> injection-points.md
 echo "- Both together: ✅ No conflicts" >> injection-points.md
 ```
 
+---
+
+## **Phase 2 Alternative: Targeted DEX Pipeline** (Recommended for Large APKs)
+
+**Use this when**: Full `apktool b` rebuilds cause OOM errors or bloat APK size (379 MB → 631 MB).
+**Benefit**: Surgical patch deployment, preserves original APK size and resources.
+
+### 2A.1 Extract Target DEX Shard
+
+```bash
+cd apps/$APP/$VERSION/smali-tests/01-canonical-url
+
+# Extract only the target DEX shard (e.g., classes15 for X/UEU.smali)
+unzip -j ../../base.apk classes15.dex -d .
+
+# Verify extraction
+ls -lh classes15.dex
+```
+
+### 2A.2 Decompile DEX to Smali
+
+```bash
+# Use baksmali to decompile only the target shard
+baksmali d classes15.dex -o smali-classes15/
+
+# Verify target file exists
+ls -lh smali-classes15/X/UEU.smali
+```
+
+### 2A.3 Apply Patch + Verification Logs
+
+```bash
+# Edit target smali file
+vim smali-classes15/X/UEU.smali
+
+# Find line ~150 (after parameter checks, before invoke-static LJII())
+# PATCH: Force canonical URL path by setting v0 to 0 (false condition)
+# Locate the section:
+#   .line 67108881
+#   const/4 v7, 0x1
+#   invoke-static {}, LX/UhW;->LJII()Z
+#   move-result v0
+
+# Replace with:
+#   const/4 v7, 0x1
+#   const/4 v0, 0x0           # PATCH: Force canonical URL
+#   const-string v2, "REVANCED_CANONICAL"
+#   const-string v3, "Canonical URL patch active"
+#   invoke-static {v2, v3}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
+```
+
+### 2A.4 Recompile to DEX
+
+```bash
+# Assemble patched smali back to DEX
+smali a smali-classes15/ -o classes15-patched.dex
+
+# Verify DEX creation
+ls -lh classes15-patched.dex
+```
+
+### 2A.5 Inject DEX into Original APK
+
+```bash
+# Copy original APK to working version
+cp ../../base.apk patched-working.apk
+
+# Replace the DEX in the APK (use -j to only update the file)
+zip -j patched-working.apk classes15-patched.dex
+
+# Strip stale signature metadata (CRITICAL - prevents install failure)
+zip -d patched-working.apk "META-INF/*"
+
+# Verify structure
+unzip -l patched-working.apk | grep -E "^.*classes15\.dex|^.*META-INF" | head -5
+```
+
+### 2A.6 Align & Sign APK
+
+```bash
+# Align APK to 4-byte boundary (required for installation)
+zipalign -p -f 4 patched-working.apk patched-aligned.apk
+
+# Sign with debug keystore
+apksigner sign \
+  --ks ~/.android/debug.keystore \
+  --ks-pass pass:android \
+  --out patched-tiktok-36.5.4.apk \
+  patched-aligned.apk
+
+# Verify signature is valid
+apksigner verify patched-tiktok-36.5.4.apk
+```
+
+### 2A.7 Install & Test
+
+```bash
+# Install patched APK
+adb install -r patched-tiktok-36.5.4.apk
+
+# Clear logcat to see fresh logs
+adb logcat -c
+
+# Test share functionality:
+# 1. Open TikTok
+# 2. Find a video
+# 3. Tap Share → WhatsApp (or other channel)
+# 4. Observe URL in shared message (should be www.tiktok.com/@user/video/ID, NOT vm.tiktok.com/...)
+# 5. Test copy to clipboard as well
+
+# Capture verification logs
+adb logcat -d | tee ../../logs/targeted-dex-01-canonical-$(date +%Y%m%d-%H%M%S).log | grep "REVANCED_CANONICAL"
+```
+
+### 2A.8 Troubleshooting
+
+**APK install fails with INSTALL_PARSE_FAILED_NO_CERTIFICATES**:
+- Verify you ran `zip -d` to remove META-INF/*
+- Check APK signature: `apksigner verify patched-tiktok-36.5.4.apk`
+- Rebuild if needed
+
+**Patch didn't activate (no log line)**:
+- Verify smali edit was applied correctly
+- Check UEU.smali line ~150 has your patch
+- Rebuild smali → DEX
+
+**URL is still shortened**:
+- Verify patch was actually injected into APK
+- Check logcat for which methods are called during share
+- Verify DEX was correctly injected into APK
+
+### 2A.9 Quick Rebuild After Patch Changes
+
+When debugging or modifying the smali patch, use this pipeline for rapid iteration:
+
+```bash
+cd apps/$APP/$VERSION/smali-tests/01-canonical-url
+
+# Edit target method
+vim smali-classes15/X/UGk.smali  # or other target file
+
+# Compile + Inject + Sign + Install (one command)
+SMALI_THREADS=1 /usr/lib/jvm/java-11-openjdk/bin/java -Xms2G -Xmx16G \
+  -jar /usr/share/java/smali/smali.jar assemble smali-classes15 \
+  -o classes15-patched.dex --api 35 && python3 -c "
+import zipfile, os
+os.system('cp ../../base.apk temp.apk')
+with zipfile.ZipFile('temp.apk', 'r') as orig, \
+     zipfile.ZipFile('patched.apk', 'w', zipfile.ZIP_STORED) as new:
+    for item in orig.infolist():
+        if item.filename != 'classes15.dex' and not item.filename.startswith('META-INF/'):
+            new.writestr(item, orig.read(item.filename))
+    with open('classes15-patched.dex', 'rb') as f:
+        info = zipfile.ZipInfo('classes15.dex')
+        info.compress_type = zipfile.ZIP_STORED
+        new.writestr(info, f.read())
+os.remove('temp.apk')
+" && /home/rafa/Android/Sdk/build-tools/36.1.0/apksigner sign \
+  --ks ~/.android/debug.keystore --ks-pass pass:android \
+  --out patched-tiktok-36.5.4.apk patched.apk && \
+adb shell am force-stop com.ss.android.ugc.trill && \
+adb install -r patched-tiktok-36.5.4.apk && \
+adb shell am start -n com.ss.android.ugc.trill/.MainActivity
+```
+
+---
+
 ### 3.2 Stage 1: LJIJJ Method Only
 
 Create fingerprint from verified code:
