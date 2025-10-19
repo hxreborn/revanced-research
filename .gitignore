@@ -7,11 +7,8 @@ decompiled-smali-full/
 apps/tiktok/36.5.4/decompiled-*/
 apps/tiktok/36.5.4/*.apk
 apps/tiktok/36.5.4/*.ap_
-apps/tiktok/36.5.4/indices/
-apps/tiktok/36.5.4/logs/
 apps/tiktok/36.5.4/smali-tests/
 apps/tiktok/36.5.4/revanced-builds/
-apps/tiktok/36.5.4/verification/
 
 # ReVanced build outputs
 revanced-src/**/*.apk
