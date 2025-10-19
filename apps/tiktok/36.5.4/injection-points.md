@@ -1,21 +1,30 @@
 # Verified Injection Points - TikTok 36.5.4
 
-## Test 01-canonical-url - 2025-10-19
+## Test Results - 2025-10-19
 
-- **Target**: UEU.LIZJ() method
-- **Class**: `Lp003X/UEU;`
-- **Method**: `LIZJ(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;`
-- **Location**: `smali_classes15/X/UEU.smali:150`
-- **Patch**: Force condition false to bypass shortened URL path
-  - Insert: `const/4 v0, 0x0`
-  - Effect: Skip condition at line 160, execute transformation block (lines 162-306)
-- **Result**: ✅ APK built successfully (631 MB)
-- **Deliverable**: `smali-tests/01-canonical-url/patched-tiktok-36.5.4.apk`
+### ❌ FAILED: AwemeSharePackage.LJIJJ() Injection
+- **File**: `smali-classes15/com/ss/android/ugc/aweme/share/improve/pkg/AwemeSharePackage.smali`
+- **Method**: `LJIJJ(Ljava/util/List;LX/UIg;Ljava/lang/String;ILkotlin/jvm/functions/Function2;)V` at line 21638
+- **Attempted Patch**: Hardcoded test URL after line 21729
+  - `const-string v4, "https://www.tiktok.com/@PATCHTEST/video/9999999999999999999"`
+- **Result**: ❌ **URL still came out shortened** (vm.tiktok.com)
+- **Finding**: The shortened URL is already present in the List at line 21682 BEFORE it reaches LJIJJ
+- **Conclusion**: Shortening happens earlier in the pipeline - need to trace back to where URL is selected/shortened
 
-## What This Does
+### Key Observation
+```smali
+# Line 21682: URL comes from List<String>
+invoke-static {p1, p4}...ListProtector;->get(Ljava/util/List;I)Ljava/lang/Object;
+move-result-object v2
+check-cast v2, Ljava/lang/String;
 
-**Before patch**:
-- UhW.LJII() returns true → skips transformation → returns shortened URL
+# Line 21724: URL passed to UEU.LIZ() (adds query params, but doesn't create shortened link)
+invoke-static {v1, v2}, LX/UEU;->LIZ(Landroid/os/Bundle;Ljava/lang/String;)Ljava/lang/String;
+```
 
-**After patch**:
-- Force v0 to 0 (false) → always executes transformation → returns canonical URL
+**The shortened URL was created BEFORE being added to the List** - so LJIJJ is too late in the pipeline.
+
+## Next Investigation
+- Need to find where the Aweme object or SharePackage creates/selects the shortened URL
+- Trace back: Aweme → gateway → builder → List[shortened_url]
+- Search for where shortened URL is generated (likely API call or URL builder)
