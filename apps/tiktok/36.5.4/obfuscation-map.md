@@ -4,9 +4,11 @@
 
 | Obfuscated Class | Purpose | Key Methods | Location | Status |
 |------------------|---------|------------|----------|--------|
-| `com.p124ss.ugc.aweme.creation.base.ShareModel` | Share model data | `getShareUrl()`, `setShareUrl()` | classes10.dex | ✅ Found |
+| `p003X.C54243JOk` | Gateway - builds AwemeSharePackage from Aweme | `LIZ(Aweme, Context, ...)` | classes9.dex | ✅ Found |
 | `com.appsflyer.share.ShareInviteHelper` | AppsFlyerLib share helper | `generateInviteUrl()` | classes20.dex | ✅ Found |
 | `com.bytedance.android.livesdkapi.depend.model.live.Room` | Live room with share_url field | `shareUrl` (field) | - | ✅ Found |
+
+**REMOVED**: ❌ `com.p124ss.ugc.aweme.creation.base.ShareModel` - Only defines Open Platform metadata, no share URL logic (verified 2025-10-19)
 
 ## URL/Link Related
 
@@ -225,14 +227,102 @@ if-nez v0, :cond_1          # If condition false, go to cond_1 (canonical URL pr
 - **Before Line 306/310**: Force return of canonical URL regardless of condition
 - **Strategy**: Modify conditional to ALWAYS take canonical URL path
 
+## Phase 1.4: Cross-Reference Verification COMPLETE ✅
+
+**Date Completed**: 2025-10-19
+**Status**: ✅ PASS - Ready for Phase 2
+**Verification Type**: Automated + Manual + Smali inspection
+
+**Verification Results**:
+- ✅ JVM descriptors verified (byte-for-byte match)
+- ✅ Smali shard paths confirmed consistent
+- ✅ Share plumbing verified (ACTION_SEND, EXTRA_TEXT, ClipboardManager)
+- ✅ Lambda/invoke-custom: CLEAR (no lambdas, straightforward patching)
+- ✅ Resource strings verified
+- ✅ URL variants mapped (vm/vt/m.tiktok.com, canonical patterns)
+- ✅ Decompilation consistency: PERFECT
+- ✅ Complete URL construction path verified end-to-end
+- ✅ Aweme→Builder URL extraction confirmed in Smali
+
+**Detailed Reports**:
+- `VERIFICATION-REPORT.md` (automated verification)
+- `VERIFICATION-FINDINGS-INTEGRATED.md` (manual + Smali findings)
+
+---
+
+## ✅ VERIFIED: Complete URL Construction Path (Aweme → Share → Intent/Clipboard)
+
+### Full Flow Chain
+
+```
+1. ORIGIN: Aweme.getShareUrl()
+   └─ Location: Aweme model object
+   └─ Smali: smali_classes9/X/JOk.smali - invoke-virtual {v3}, Aweme;->getShareUrl()
+   └─ Returns: URL (canonical or pre-shortened)
+
+2. GATEWAY: p003X.C54243JOk.LIZ(Aweme, Context, ...)
+   └─ Location: classes9.dex
+   └─ Purpose: Builds AwemeSharePackage from Aweme
+   └─ Smali: smali_classes9/X/JOk.smali
+   └─ Output: AwemeSharePackage with builder.LJFF = URL
+
+3. RELAY: BaseSharePackage constructor
+   └─ File: com/p124ss/android/ugc/aweme/share/base/model/BaseSharePackage.java:22-54
+   └─ Action: Stores builder URL to this.url (passes through unchanged)
+
+4. TRANSFORMER: p003X.UEU.LIZJ(int, String, String, String) ⭐ PRIMARY PATCH TARGET
+   └─ File: p003X/UEU.java:62-89
+   └─ Smali: smali_classes15/X/UEU.smali:107-310
+   └─ Input: URL from BaseSharePackage.this.url
+   └─ Processing: Runs C82001UEa.LIZ() + C48911HFi.LIZIZ.LJJJJ()
+   └─ Decision: Condition at line 67: if (!C83039UhW.LJII())
+   └─ Output: Canonical or shortened URL
+   ⭐ PATCH STRATEGY: Force canonical URL return regardless of condition
+
+5. PACKAGING: com.p124ss.android.ugc.aweme.relation.share.InviteFriendsSheetPackage
+   └─ File: InviteFriendsSheetPackage.java:31-49
+   └─ Action: Takes UEU.LIZJ() result
+   └─ Creates: UGU/UGT content object with LIZJ=URL
+
+6a. DISTRIBUTION - PATH A (Intent/WhatsApp/Twitter/SMS):
+    └─ Via: p003X.AbstractC82063UGk.m11879LJ(UGU)
+    ├─ File: p003X/AbstractC82063UGk.java:66-93
+    ├─ Action: Combines content.LIZJ + content.LIZIZ + title
+    └─ To: All wrap channels (WhatsApp, Twitter, SMS, etc.)
+
+    └─ Channel: WrapDefaultWhatsappChannel.LJIJ(UGU, Context, InterfaceC54258JOz)
+    ├─ File: com/p124ss/android/ugc/aweme/channel/share/channel/wrap/WrapDefaultWhatsappChannel.java
+    ├─ Line 57 INJECTION POINT:
+    │  intent2.putExtra("android.intent.extra.TEXT", AbstractC82063UGk.m11879LJ(content))
+    └─ Result: WhatsApp receives canonical URL
+
+6b. DISTRIBUTION - PATH B (Clipboard):
+    └─ Via: CopyLinkChannel.LJFF()
+    ├─ File: com/p124ss/android/ugc/aweme/share/improve/channel/CopyLinkChannel.java:101-134
+    ├─ Action: Extracts UGT.LIZJ / UGT.LIZLLL fields
+    └─ To: C81999UDy.LIZLLL()
+
+    └─ Via: p003X.C81999UDy.LIZLLL()
+    ├─ File: p003X/C81999UDy.java:188-226
+    ├─ Action: Writes ClipData.newPlainText(label, url)
+    └─ Result: Clipboard receives canonical URL
+```
+
+### Single Patch Point Effect
+**Patch Location**: `UEU.LIZJ()` return logic (lines 107-310)
+**Effect**: Both Intent AND Clipboard receive same canonical URL from single modification
+**Channels Affected**: WhatsApp, Twitter, SMS, Clipboard, and ANY other channels using same URL extraction
+
+---
+
 ## Next Steps (Phase 2) - Canonical URL Patch Implementation
 
-- [ ] **Locate UEU.LIZJ() in Smali** - ✅ FOUND: `smali_classes15/X/UEU.smali:107-310`
-- [ ] **Analyze return path** - ✅ ANALYZED: Two return points (v1=canonical, p1=original)
-- [ ] **Create patch logic** - Modify conditional or force v1 return
-- [ ] **Create smali-tests/01-canonical-url/** - Test interception
-- [ ] **Implement Smali modifications** - Override URL return logic
-- [ ] **Test across channels** - Verify canonical URLs in WhatsApp, Twitter, copy, etc.
+- [ ] **Create smali-tests/01-canonical-url/** - Test environment
+- [ ] **Copy decompiled-smali-full to test** - Prepare for modification
+- [ ] **Patch UEU.LIZJ()** - Force canonical URL return (lines 107-310)
+- [ ] **Rebuild APK with apktool** - Integrate patched Smali
+- [ ] **Test on emulator/device** - Verify share functionality
+- [ ] **Validate URL format** - Confirm canonical URLs in all channels
 - [ ] **Port to ReVanced** - Create fingerprint-based patch
 
 ## Search Patterns for Phase 2
