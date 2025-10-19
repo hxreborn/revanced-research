@@ -27,3 +27,6 @@ AGENTS.md
 *_verification.sh
 comprehensive_verification.sh
 verification-checklist.txt
+
+# Editor settings
+.vscode/
