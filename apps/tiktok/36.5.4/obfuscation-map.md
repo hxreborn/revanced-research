@@ -22,90 +22,98 @@
 - **JADX output**: `decompiled-jadx/sources/` (166,751 sources decompiled)
 - **Indices**: `indices/strings.txt` (39,246 lines of relevant hits)
 
-## Canonical Share Flow Architecture (Reference)
+## Share Intent Link Sanitizer - Patch Goal
 
-Based on older package analysis, the TikTok share flow follows this pattern:
+**Objective**: Remove tracking parameters from share URLs before they're passed to external apps via Intent
 
+**URL Sanitization Pattern**:
+- Remove query parameters: `utm_*`, `tt_*`, `enter_*` and other tracking vectors
+- Keep canonical short link structure: `https://vm.tiktok.com/{VIDEO_ID}`
+- Result: Clean, shareable URLs without analytics tracking
+
+**Patch Strategy**:
+1. **Identify share intent creation**: Find where URLs are attached to share Intents
+2. **Locate URL parameter**: Get the tracking URL string before it's sent to external apps
+3. **Sanitize**: Strip tracking parameters using regex or string operations
+4. **Pass clean URL**: Let cleaned URL flow through to Intent.putExtra() or clipboard
+
+**Expected flow**:
 ```
-Share Request (user initiates)
-        ↓
-   aQC.LJFF()               ← ENTRY POINT (100% coverage)
-        ├─ Logs channel: copy, more, whatsapp, …
-        └─ Captures full tracking URL
-                ↓
-   TikTok Shortener API     ← NETWORK CALL (TARGET: bypass)
-                ↓
-   Clipboard path → aTc.LIZLLL()  ← EXIT POINT (clipboard writes only)
-   External app paths → Direct intents (no local exit)
+User taps Share → URL with tracking params
+                    ↓
+            Patch interception point
+                    ↓
+            Sanitize tracking params
+                    ↓
+            Create/update Intent with clean URL
+                    ↓
+            Send to external app / clipboard
 ```
 
-### Injection Strategy
+**Reference architecture** (from older package analysis - method names may differ):
+- Entry point: Share orchestrator (100% coverage across all channels)
+- Injection point: Before Intent.putExtra() or clipboard write
+- Exit point: External app receives clean URL
 
-**Goal**: Replace shortened URL with canonical link before network call
-
-**Approach**:
-1. **Entry point** (`aQC.LJFF`): Intercept share request with full tracking URL
-2. **Sanitize**: Remove utm_*, tt_*, enter_* parameters
-3. **Bypass shortener**: Return canonical URL directly
-4. **Exit points**:
-   - Clipboard: Write clean URL to clipboard
-   - External apps: Send clean URL via intent
-
-**Key insight**: Single entry point = single method to patch for full coverage
+**Key principle**: Single-point sanitization for consistent behavior across all share channels
 
 ## Phase 1 Findings
 
-### Share Flow Entry Points
-1. **aQC.LJFF()** (LJIJ J - IDENTIFIED FROM REFERENCE)
-   - Type: Entry method
-   - Purpose: **Primary share flow orchestrator**
-   - Coverage: 100% (all share channels)
-   - Status: **HIGH PRIORITY**
+### Share Flow Candidates for Patching
 
-2. **ShareModel** (classes10.dex)
+1. **Intent.putExtra() calls** (Android framework)
+   - Type: System API
+   - Purpose: Passes URL to external apps
+   - Pattern: `putExtra("android.intent.extra.TEXT", urlString)`
+   - Status: **SEARCH TARGET**
+
+2. **Clipboard writes** (ClipboardManager)
+   - Type: System API
+   - Purpose: Copies URL to clipboard
+   - Pattern: `ClipData.newPlainText(label, urlString)`
+   - Status: **SEARCH TARGET**
+
+3. **ShareModel** (classes10.dex)
    - Type: Data model
    - Purpose: Encapsulates share content and metadata
    - Key field: URL storage
+   - Status: Investigate
 
-3. **Room.java** (live API)
+4. **Room.java** (live API)
    - Annotation: `@InterfaceC37646Cp7("share_url")`
    - Direct URL field reference
-   - **Promising for injection point**
+   - Status: Investigate
 
-4. **AppsFlyerLib helper**
-   - Third-party analytics
-   - May intercept/modify URLs
-   - Check if bypassed
+## Next Steps (Phase 2) - Share Intent Sanitizer
 
-5. **aTc.LIZLLL()** (LJIFF - EXIT POINT)
-   - Type: Clipboard write method
-   - Purpose: Writes final URL to clipboard
-   - Status: Verify in Smali
+- [ ] **Find Intent.putExtra() calls** - Where URLs are passed to external apps
+- [ ] **Find ClipboardManager writes** - Where URLs are copied to clipboard
+- [ ] **Locate URL parameter** - Get the tracking URL string before Intent/clipboard use
+- [ ] **Verify parameter location** - Ensure URL is in a modifiable register/variable
+- [ ] **Create smali-tests/01-intent-sanitizer/** - Test URL parameter sanitization
+- [ ] **Implement sanitization** - Remove utm_*, tt_*, enter_* before Intent/clipboard
+- [ ] **Test across channels** - Verify clean URLs in WhatsApp, Twitter, copy, etc.
 
-## Next Steps (Phase 2)
-
-- [ ] **Find `aQC.LJFF()` in Smali** - Primary entry point for patching
-- [ ] **Find `aTc.LIZLLL()` in Smali** - Verify exit point
-- [ ] Search for URL builder/shortener call between entry and exit
-- [ ] Find parameter appending functions (utm_, tt_, enter_)
-- [ ] Create smali-tests/01-ljijj-entry-point/ for entry interception
-- [ ] Verify register allocation for URL parameter
-- [ ] Test URL sanitization before shortener API call
-
-## Search Patterns to Use
+## Search Patterns for Phase 2
 
 ```bash
+# Find Intent.putExtra() calls with URLs (PRIMARY TARGET)
+rg "putExtra.*TEXT|putExtra.*url" decompiled-jadx/sources/ -B3 -A3
+
+# Find ClipboardManager clipboard writes (PRIMARY TARGET)
+rg "ClipboardManager|ClipData.newPlainText" decompiled-jadx/sources/ -B3 -A3
+
+# Find where tracking parameters are added
+rg "utm_|tt_|enter_" decompiled-jadx/sources/ -B2 -A2
+
 # Find all share-related classes
 rg "class.*Share" decompiled-jadx/sources/ -l
 
-# Find utm/tt_ parameter handling
-rg "utm_|tt_|enter_" decompiled-jadx/sources/ -B2 -A2
+# Find Intent creation patterns
+rg "new Intent|ACTION_SEND|android.intent" decompiled-jadx/sources/ -B2 -A5
 
-# Find Intent.putExtra for URL
-rg "putExtra.*url|putExtra.*link" decompiled-jadx/sources/ -i
-
-# Find URL construction
-rg "append|format|concat" decompiled-jadx/sources/ -l | xargs rg "url|link"
+# Find URL string manipulation
+rg "append|concat|format.*url" decompiled-jadx/sources/ -i -B2 -A2
 ```
 
 ## Resources
