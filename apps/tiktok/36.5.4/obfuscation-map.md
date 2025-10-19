@@ -22,32 +22,75 @@
 - **JADX output**: `decompiled-jadx/sources/` (166,751 sources decompiled)
 - **Indices**: `indices/strings.txt` (39,246 lines of relevant hits)
 
+## Canonical Share Flow Architecture (Reference)
+
+Based on older package analysis, the TikTok share flow follows this pattern:
+
+```
+Share Request (user initiates)
+        ↓
+   aQC.LJFF()               ← ENTRY POINT (100% coverage)
+        ├─ Logs channel: copy, more, whatsapp, …
+        └─ Captures full tracking URL
+                ↓
+   TikTok Shortener API     ← NETWORK CALL (TARGET: bypass)
+                ↓
+   Clipboard path → aTc.LIZLLL()  ← EXIT POINT (clipboard writes only)
+   External app paths → Direct intents (no local exit)
+```
+
+### Injection Strategy
+
+**Goal**: Replace shortened URL with canonical link before network call
+
+**Approach**:
+1. **Entry point** (`aQC.LJFF`): Intercept share request with full tracking URL
+2. **Sanitize**: Remove utm_*, tt_*, enter_* parameters
+3. **Bypass shortener**: Return canonical URL directly
+4. **Exit points**:
+   - Clipboard: Write clean URL to clipboard
+   - External apps: Send clean URL via intent
+
+**Key insight**: Single entry point = single method to patch for full coverage
+
 ## Phase 1 Findings
 
 ### Share Flow Entry Points
-1. **ShareModel** (classes10.dex)
+1. **aQC.LJFF()** (LJIJ J - IDENTIFIED FROM REFERENCE)
+   - Type: Entry method
+   - Purpose: **Primary share flow orchestrator**
+   - Coverage: 100% (all share channels)
+   - Status: **HIGH PRIORITY**
+
+2. **ShareModel** (classes10.dex)
    - Type: Data model
    - Purpose: Encapsulates share content and metadata
    - Key field: URL storage
 
-2. **Room.java** (live API)
+3. **Room.java** (live API)
    - Annotation: `@InterfaceC37646Cp7("share_url")`
    - Direct URL field reference
    - **Promising for injection point**
 
-3. **AppsFlyerLib helper**
+4. **AppsFlyerLib helper**
    - Third-party analytics
    - May intercept/modify URLs
    - Check if bypassed
 
+5. **aTc.LIZLLL()** (LJIFF - EXIT POINT)
+   - Type: Clipboard write method
+   - Purpose: Writes final URL to clipboard
+   - Status: Verify in Smali
+
 ## Next Steps (Phase 2)
 
-- [ ] Search for URL builder methods in decompiled code
-- [ ] Find share action click handlers
-- [ ] Locate parameter appending functions
-- [ ] Identify exact injection points
-- [ ] Verify register allocation in Smali
-- [ ] Create numbered smali tests
+- [ ] **Find `aQC.LJFF()` in Smali** - Primary entry point for patching
+- [ ] **Find `aTc.LIZLLL()` in Smali** - Verify exit point
+- [ ] Search for URL builder/shortener call between entry and exit
+- [ ] Find parameter appending functions (utm_, tt_, enter_)
+- [ ] Create smali-tests/01-ljijj-entry-point/ for entry interception
+- [ ] Verify register allocation for URL parameter
+- [ ] Test URL sanitization before shortener API call
 
 ## Search Patterns to Use
 
