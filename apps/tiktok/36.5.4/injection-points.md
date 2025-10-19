@@ -92,6 +92,27 @@ Instead of trying to intercept shortened URLs, build canonical URLs directly fro
 3. All channels (WhatsApp, SMS, clipboard) receive canonical URL automatically
 4. No tracking parameters get baked into backend-shortened URLs
 
-### Documentation
-- See `PLAN-V2-NOTES.md` for complete technical details
-- Expected logs: `adb logcat | grep "PLAN_V2_CANONICAL"`
+### technical implementation details
+
+**file**: `apps/tiktok/36.5.4/smali-tests/03-minimal/smali_classes15/com/ss/android/ugc/aweme/share/improve/pkg/AwemeSharePackage.smali`
+
+**actual injection point**: LJIJJLI() line 2795 (not LJIJJ or LJII)
+- Gets URL: `iget-object v4, p0, Lcom/ss/android/ugc/aweme/share/base/model/BaseSharePackage;->url:Ljava/lang/String;`
+- URL is CANONICAL at entry: `https://www.tiktok.com/@user/video/ID?params...`
+- Gets shortened by: `UEU.LIZLLL()` at line 2889
+
+**registers available** (within .locals 5):
+- v0-v3: used by existing logic
+- v4: URL (what we intercept)
+- temporary registers can be reused safely
+
+**safety checks**:
+- No try-catch violations
+- No lambda/invoke-custom
+- Single-entry method
+- Fallback to original if any field null
+
+**expected outcome**:
+- All channels (WhatsApp, SMS, clipboard) get canonical URL
+- API shortening still called but with canonical URL
+- No tracking params baked into shortened URLs
