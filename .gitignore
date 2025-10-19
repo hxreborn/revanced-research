@@ -2,6 +2,8 @@ decompiled-jadx/
 decompiled-smali-full/
 *.apk
 *.ap_
+*.log
+hs_err_*.log
 
 # TikTok research outputs
 apps/tiktok/36.5.4/decompiled-*/
@@ -9,7 +11,18 @@ apps/tiktok/36.5.4/*.apk
 apps/tiktok/36.5.4/*.ap_
 apps/tiktok/36.5.4/smali-tests/
 apps/tiktok/36.5.4/revanced-builds/
+apps/tiktok/36.5.4/indices/
+apps/tiktok/36.5.4/logs/
+apps/tiktok/36.5.4/verification/
+apps/tiktok/36.5.4/manual-inject/
 
 # ReVanced build outputs
 revanced-src/**/*.apk
 revanced-src/**/*.ap_
+
+# Generated scripts and analysis
+AGENTS.md
+*_bruteforce.sh
+*_verification.sh
+comprehensive_verification.sh
+verification-checklist.txt

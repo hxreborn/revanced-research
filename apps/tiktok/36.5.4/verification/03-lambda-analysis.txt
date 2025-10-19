@@ -1,8 +1,0 @@
-
-=== STEP 4: Invoke-Custom/Lambda Analysis ===
-invoke-custom in Smali UEU:
-
-Lambda classes in Smali:
-
-JADX Lambda/Anonymous usage in UEU:
-rg: unrecognized flag ->
