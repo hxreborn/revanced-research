@@ -34,6 +34,31 @@ revanced-research/
 
 **Key Insight**: `apps/tiktok/36.5.4/` contains your research workspace. Smali tests happen here. Only after validation do you touch `revanced-src/`.
 
+## Build Tools Setup
+
+### apktool
+
+**Location**: `/usr/share/java/android-apktool/apktool.jar`
+
+**Optimized for AMD Ryzen 7 5700X3D** (16 cores, 31GB RAM):
+```bash
+java -Xmx16384M -XX:+UseG1GC -XX:MaxGCPauseMillis=200 \
+  -jar /usr/share/java/android-apktool/apktool.jar b \
+  -f -j 14 <smali-directory> -o <output.apk>
+```
+
+**Parameters**:
+- `-Xmx16384M`: 16GB heap (50% of system RAM)
+- `-XX:+UseG1GC`: G1GC for large heaps
+- `-XX:MaxGCPauseMillis=200`: 200ms GC pause target
+- `-j 14`: 14 threads (2 reserved for system)
+
+**Known Issues**:
+- `/usr/bin/apktool` wrapper may fail - use direct jar invocation above
+- PNG/JPEG mismatches: rename misidentified files (e.g., bs6.png → bs6.jpg)
+
+---
+
 ## Development Workflow
 
 ### Phase 1: Version-Specific Discovery
