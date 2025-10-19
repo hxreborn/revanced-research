@@ -49,6 +49,31 @@ Ship a working ReVanced patch using proven Smali edits. **Always test Smali firs
 - **@WORKFLOW.md** - Complete phase-by-phase instructions
 - **@attempt-history.md** - All attempts and results
 
+## Build Tools
+
+### apktool
+
+**Location**: `/usr/share/java/android-apktool/apktool.jar`
+
+**Command for Arch Linux with AMD Ryzen 7 5700X3D (16 cores, 31GB RAM)**:
+```bash
+java -Xmx16384M -XX:+UseG1GC -XX:MaxGCPauseMillis=200 \
+  -jar /usr/share/java/android-apktool/apktool.jar b \
+  -f -j 14 <smali-directory> -o <output.apk>
+```
+
+**Settings Breakdown**:
+- `-Xmx16384M`: 16GB heap (half system RAM for optimal GC)
+- `-XX:+UseG1GC`: G1 Garbage Collector (best for large heaps)
+- `-XX:MaxGCPauseMillis=200`: GC pause target (200ms)
+- `-j 14`: 14 threads (leave 2 cores for system on 16-core CPU)
+
+**Common Issues**:
+- **PNG/JPEG mismatch**: Decompiled resources may have wrong extensions (e.g., bs6.png actually JPEG)
+  - Solution: Rename to correct extension or delete non-critical files
+
+**Note**: `/usr/bin/apktool` wrapper script may have issues - use jar directly with full java command
+
 ## Quick Commands
 
 ```bash
