@@ -1,0 +1,42 @@
+
+=== STEP 5: Resource Strings Side-Channel ===
+Share-related strings in res/:
+decompiled-smali-full/res/values-zh/strings.xml
+decompiled-smali-full/res/values-ro-rRO/strings.xml
+decompiled-smali-full/res/values-iw/strings.xml
+decompiled-smali-full/res/values-ja-rJP/strings.xml
+decompiled-smali-full/res/values-hi/strings.xml
+decompiled-smali-full/res/values-jv-rID/strings.xml:    <string name="eox">Iki pratinjo. Hyperlink ora sumadhiya.</string>
+decompiled-smali-full/res/values-jv-rID/strings.xml:    <string name="effect_tool_copy">Duplikat</string>
+decompiled-smali-full/res/values-jv-rID/strings.xml:    <string name="effect_tool_copy_suffix">(Salin)</string>
+decompiled-smali-full/res/values-jv-rID/strings.xml:    <string name="ikn">[link]</string>
+decompiled-smali-full/res/values-jv-rID/strings.xml:    <string name="qpu">[link]</string>
+decompiled-smali-full/res/values-jv-rID/strings.xml:    <string name="tae">Invalid link</string>
+decompiled-smali-full/res/values-vi-rVN/strings.xml:    <string name="effect_tool_copy">Sao chép</string>
+decompiled-smali-full/res/values-vi-rVN/strings.xml:    <string name="effect_tool_copy_suffix">(Sao chép)</string>
+decompiled-smali-full/res/values-vi-rVN/strings.xml:    <string name="ikn">[link]</string>
+decompiled-smali-full/res/values-vi-rVN/strings.xml:    <string name="tae">Invalid link</string>
+decompiled-smali-full/res/values-fi-rFI/strings.xml:    <string name="rk">Lisää linkkejä</string>
+decompiled-smali-full/res/values-fi-rFI/strings.xml:    <string name="s3">Kiinnitä LIVE-videoon linkkejä ja jaa niitä katsojien kanssa!</string>
+decompiled-smali-full/res/values-fi-rFI/strings.xml:    <string name="y8">Poistetaanko mainoslinkkihistoria?</string>
+decompiled-smali-full/res/values-fi-rFI/strings.xml:    <string name="ye">Esittelyssä mainoslinkkihistoria</string>
+decompiled-smali-full/res/values-fi-rFI/strings.xml:    <string name="yf">Mainoslinkkihistorian tarkastelu</string>
+decompiled-smali-full/res/values-fi-rFI/strings.xml:    <string name="yg">Tarkastele mainoslinkkihistoriaasi valitsemalla profiilista Asetukset ja yksityisyys > Toimintakeskus > Mainoslinkkihistoria.</string>
+decompiled-smali-full/res/values-fi-rFI/strings.xml:    <string name="yj">Tarkastele verkkosivuja, joilla olet vieraillut TikTokin mainoksissa olleiden linkkien kautta viimeisten 30 päivän aikana.%s</string>
+decompiled-smali-full/res/values-fi-rFI/strings.xml:    <string name="yk">Tarkastele mainoslinkkihistoriaa</string>
+decompiled-smali-full/res/values-fi-rFI/strings.xml:    <string name="yl">Ei mainoslinkkihistoriaa</string>
+decompiled-smali-full/res/values-fi-rFI/strings.xml:    <string name="ym">Tässä näytetään verkkosivut, joilla olet vieraillut viimeisten 30 päivän aikana napsauttamalla TikTokin mainoksissa olleita linkkejä.</string>
+
+Tracking parameters in res/:
+
+Assets URL patterns:
+decompiled-smali-full/assets/10k_dark_web_filtered.txt
+decompiled-smali-full/assets/I18N_sys_emoji.json
+decompiled-smali-full/assets/MetadataProto_default
+decompiled-smali-full/assets/algo_refresh_tux_lottie.json
+decompiled-smali-full/assets/api_key.txt
+decompiled-smali-full/assets/arrow_double_up_tux_lottie.json
+decompiled-smali-full/assets/auto_cut_button1_dark.json
+decompiled-smali-full/assets/autocut_01.json
+decompiled-smali-full/assets/av_ic_water_mark_16_9.png
+decompiled-smali-full/assets/av_ic_water_mark_9_16.png

@@ -4,6 +4,7 @@
 
 | Obfuscated Class | Purpose | Key Methods | Location | Status |
 |------------------|---------|------------|----------|--------|
+| `p003X.UEU` | **PRIMARY: Canonical URL transformer** | `LIZJ(int, String, String, String)` | classes15.dex | ✅ **Patched** |
 | `p003X.C54243JOk` | Gateway - builds AwemeSharePackage from Aweme | `LIZ(Aweme, Context, ...)` | classes9.dex | ✅ Found |
 | `com.appsflyer.share.ShareInviteHelper` | AppsFlyerLib share helper | `generateInviteUrl()` | classes20.dex | ✅ Found |
 | `com.bytedance.android.livesdkapi.depend.model.live.Room` | Live room with share_url field | `shareUrl` (field) | - | ✅ Found |
