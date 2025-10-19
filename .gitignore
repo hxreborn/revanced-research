@@ -9,6 +9,7 @@ hs_err_*.log
 apps/tiktok/36.5.4/decompiled-*/
 apps/tiktok/36.5.4/*.apk
 apps/tiktok/36.5.4/*.ap_
+apps/tiktok/36.5.4/*.idsig
 apps/tiktok/36.5.4/smali-tests/
 apps/tiktok/36.5.4/revanced-builds/
 apps/tiktok/36.5.4/indices/
