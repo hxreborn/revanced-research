@@ -1,2 +1,0 @@
-# APK Hashes
-SHA-256: b560a53fcea5246f03416556fead581cb49e37ff938c60ed10c8ec53defadb3c
