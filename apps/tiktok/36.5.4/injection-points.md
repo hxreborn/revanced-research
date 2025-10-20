@@ -68,34 +68,18 @@ iget-object v4, p0, Lcom/ss/android/ugc/aweme/share/base/model/BaseSharePackage;
 
 ---
 
-## plan v2 approach - abandoned
+## Plan V2 Post-Mortem (Superseded 2025-10-19)
 
-attempted to build canonical URLs from Aweme object in LJIJJ method. approach failed - LJIJJ is not called during share flow. see test 3 failure for context. superseded by LJIJJLI discovery below.
+**Approach:** Build canonical URLs from Aweme object in LJIJJ method
+**Outcome:** ❌ Failed - LJIJJ not called during share flow
+**Test Reference:** Test 3 (attempt-history.md:9)
+**Lesson:** Injection point was too late in the pipeline; shortened URL already materialized in List before LJIJJ received it
 
-### technical implementation details
-
-**file**: `apps/tiktok/36.5.4/smali-tests/03-minimal/smali_classes15/com/ss/android/ugc/aweme/share/improve/pkg/AwemeSharePackage.smali`
-
-**actual injection point**: LJIJJLI() line 2795 (not LJIJJ or LJII)
-- Gets URL: `iget-object v4, p0, Lcom/ss/android/ugc/aweme/share/base/model/BaseSharePackage;->url:Ljava/lang/String;`
-- URL is CANONICAL at entry: `https://www.tiktok.com/@user/video/ID?params...`
-- Gets shortened by: `UEU.LIZLLL()` at line 2889
-
-**registers available** (within .locals 5):
-- v0-v3: used by existing logic
-- v4: URL (what we intercept)
-- temporary registers can be reused safely
-
-**safety checks**:
-- No try-catch violations
-- No lambda/invoke-custom
-- Single-entry method
-- Fallback to original if any field null
-
-**expected outcome**:
-- All channels (WhatsApp, SMS, clipboard) get canonical URL
-- API shortening still called but with canonical URL
-- No tracking params baked into shortened URLs
+**Correct Entry Point Found:** `AwemeSharePackage.LJIJJLI()` line 2795
+- URL arrives canonical: `https://www.tiktok.com/@user/video/ID?params...`
+- Shortened by: `UEU.LIZLLL()` at line 2889
+- All 5 registers in use, no temp space available
+- Next phase: Find bypass for shortening orchestrator or earlier interception
 
 ---
 

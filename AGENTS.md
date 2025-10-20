@@ -1,5 +1,7 @@
 # Repository Guidelines
 
+**Changelog:** 2025-10-20 - Phase 1 hypotheses superseded; canonical URL found at LJIJJLI. See `docs/status.md` for current facts and open questions.
+
 ## Project Structure & Module Organization
 The `apps/<app>/<version>/` tree is your sandbox for reverse-engineering: store APKs, Jadx and smali outputs, injection notes, logs, and experimental builds there so each attempt stays reproducible. Upstream sources live in `revanced-src/`; the `revanced-patches` submodule is a Gradle multi-module project where `patches/` defines metadata and common utilities, while `extensions/<app>/` contains the Android libraries that ship patch logic per host app (manifest, Java/Kotlin sources, and optional stubs). Keep shared tooling like `revanced-cli.jar` in place.
 
