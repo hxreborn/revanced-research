@@ -14,6 +14,7 @@ apps/tiktok/36.5.4/smali-tests/
 apps/tiktok/36.5.4/revanced-builds/
 apps/tiktok/36.5.4/indices/
 apps/tiktok/36.5.4/logs/
+!apps/tiktok/36.5.4/logs/phase*.log
 apps/tiktok/36.5.4/verification/
 apps/tiktok/36.5.4/manual-inject/
 
