@@ -68,29 +68,9 @@ iget-object v4, p0, Lcom/ss/android/ugc/aweme/share/base/model/BaseSharePackage;
 
 ---
 
-## ✅ Plan V2 - Canonical URL Injection (In Progress)
+## plan v2 approach - abandoned
 
-### Approach
-Instead of trying to intercept shortened URLs, build canonical URLs directly from Aweme object.
-
-**Injection Point**: `AwemeSharePackage.LJIJJ()` method at line 2423-2432
-- Get Aweme via `p0.LJJ()` (method exists at line 3012)
-- Extract `aid` (video ID) and `uniqueId` (creator username)
-- Build canonical URL: `https://www.tiktok.com/@{uniqueId}/video/{aid}`
-- Replace v4 (shortened URL) with canonical before `putString("share_url", v4)`
-
-**Test Location**: `apps/tiktok/36.5.4/smali-tests/02-plan-v2/smali_classes15/`
-
-**Patch Status**:
-- ✅ Smali injection applied
-- ✅ Logging added ("PLAN_V2_CANONICAL" tag)
-- ⏳ Awaiting: DEX compilation and device testing
-
-### Why This Works
-1. Bypasses the entire API shortening flow (`/tiktok/share/link/shorten/multi/v1/`)
-2. Canonical URL stored in extras bundle before any downstream processing
-3. All channels (WhatsApp, SMS, clipboard) receive canonical URL automatically
-4. No tracking parameters get baked into backend-shortened URLs
+attempted to build canonical URLs from Aweme object in LJIJJ method. approach failed - LJIJJ is not called during share flow. see test 3 failure for context. superseded by LJIJJLI discovery below.
 
 ### technical implementation details
 
