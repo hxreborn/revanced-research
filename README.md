@@ -2,6 +2,22 @@
 
 Workspace for researching app patches for ReVanced. Every bytecode change is validated in Smali before we even think about packaging it for wider use.
 
+**Status:** Phase 2 | **Last Updated:** 2025-10-20 | **Current:** Canonical URL interception at LJIJJLI (blocked by LIZLLL)
+
+## Quick Start
+
+```bash
+# Clone and setup
+git clone https://github.com/revanced/revanced-research
+cd revanced-research
+git submodule update --init --recursive
+
+# Read workflow
+cat WORKFLOW.md      # Phase-by-phase runbook
+cat CLAUDE.md        # LLM agent instructions
+cat docs/status.md   # Current state dashboard
+```
+
 ## Scope & Current Focus
 - **Target app:** TikTok 36.5.4  
 - **Objective:** Remove TikTok’s tracking parameters from outbound share URLs while preserving functionality.  

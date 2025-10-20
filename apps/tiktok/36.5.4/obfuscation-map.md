@@ -1,10 +1,6 @@
 # TikTok 36.5.4 - Obfuscated Class Mapping
 
-## phase 1 hypothesis (superseded)
-
-initial analysis identified UEU.LIZJ as primary interception point. **this was disproven by test 1** (method never called during share). actual method is LJIJJLI in AwemeSharePackage - see injection-points.md breakthrough section.
-
----
+> **Changelog:** 2025-10-20 - Phase 1 hypothesis superseded; canonical URL found at LJIJJLI. See injection-points.md and attempt-history.md for details.
 
 ## Share-Related Classes
 
@@ -72,10 +68,6 @@ Send to external app / clipboard with full URL
 
 ## Phase 1 Findings
 
-
-## phase 1.3 - ueu.lizj hypothesis (disproven)
-
-Initial detailed analysis of UEU.LIZJ() as canonical URL builder. **Test 1 proved this method is NOT called during share flow.** See injection-points.md for actual findings (LJIJJLI is the correct entry point).
 
 ## Phase 1.4: Cross-Reference Verification COMPLETE ✅
 
@@ -185,6 +177,16 @@ Initial detailed analysis of UEU.LIZJ() as canonical URL builder. **Test 1 prove
 
 ### phase 1 readiness: CONFIRMED
 All prerequisites met for Phase 2 Smali modification. Primary patch target identified: `UEU.LIZJ()` in smali_classes15/X/UEU.smali lines 107-310
+
+---
+
+## Superseded Approaches
+
+### Phase 1 Hypothesis (Disproven)
+Initial analysis identified `UEU.LIZJ()` as primary interception point. **Disproven by Test 1** – method never called during share. Actual method is `LJIJJLI` in `AwemeSharePackage`. See `injection-points.md` and `attempt-history.md:1-2` for test results.
+
+### UEU.LIZJ Hypothesis (Disproven)
+Detailed analysis of `UEU.LIZJ()` as canonical URL builder. **Test 1 proved this method is NOT called during share flow.** Correct entry point is `LJIJJLI`.
 
 ---
 
