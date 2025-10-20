@@ -180,6 +180,60 @@ All prerequisites met for Phase 2 Smali modification. Primary patch target ident
 
 ---
 
+## Phase 5: Option C Bypass - Canonical URL Swap ✅
+
+**Date**: 2025-10-20
+**Status**: WORKING - Patch compiles, DEX verifies, app runs stable
+
+### Patch Applied
+**Location**: `smali_classes15/X/UEU.smali:3866-3886`
+**Method**: `UEU.LIZLLL(int, String, String, String)LX/Wu4;`
+**Strategy**: Post-result interception - detect shortened URLs after `UEa.LIZ()` call and swap to canonical
+
+**Register Allocation (CRITICAL)**:
+- `.registers 6` means 2 local (v0-v1), 4 parameter (v2-v5)
+- ✅ Using v0 for all temporaries (true local register)
+- ❌ ERROR: Using v2/v4 caused DEX verifier type conflicts
+
+### Patch Code
+```smali
+# After: invoke-static {p2, p1, p3}, LX/UEa;->LIZ(...)  [line 3859]
+move-result-object v1  # v1 = shortened URL result
+
+if-eqz v1, :keep_shortened_c  # null guard
+
+const-string v0, "https://vm.tiktok.com"
+invoke-virtual {v1, v0}, Ljava/lang/String;->startsWith(...)Z
+move-result v0
+if-nez v0, :swap_canonical_c
+
+const-string v0, "https://vt.tiktok.com"
+invoke-virtual {v1, v0}, Ljava/lang/String;->startsWith(...)Z
+move-result v0
+if-eqz v0, :keep_shortened_c
+
+:swap_canonical_c
+const-string v0, "TikTokCanonicalSwap"
+invoke-static {v0, p1}, Landroid/util/Log;->d(...)  # Debug tag
+move-object v1, p1  # Swap: v1 = canonical (p1)
+
+:keep_shortened_c
+# Continue to isEmpty check (line 3889)
+```
+
+### Build Results
+- ✅ `classes15-final.dex` compiles cleanly (103MB)
+- ✅ DEX passes Android runtime verification
+- ✅ App launches and runs without crashes
+- ✅ No VerifyError or type mismatches
+
+### Test Status
+- ✅ APK installed successfully
+- ✅ App process runs stable (no FATAL exceptions)
+- ⏳ Pending: Trigger share action and verify logs
+
+---
+
 ## Superseded Approaches
 
 ### Phase 1 Hypothesis (Disproven)
