@@ -3,23 +3,26 @@
 ## **Repository Structure**
 ```bash
 revanced-research/
-├── README.md                    # This runbook (main documentation)
+├── README.md                    # Main documentation + status
+├── WORKFLOW.md                  # This runbook (Phase 1-3 only)
+├── CLAUDE.md                    # LLM agent instructions
+├── AGENTS.md                    # Contributor guidelines
 ├── attempt-history.md           # Global attempt tracker
+├── docs/
+│   ├── status.md               # Current state dashboard
+│   └── bootstrap.md            # Archived Phase 0 setup
 ├── apps/
-│   └── tiktok/
-│       ├── 36.5.4/
-│       │   ├── base.apk                # Original APK
-│       │   ├── obfuscation-map.md      # Obfuscated class mappings
-│       │   ├── injection-points.md     # Confirmed injection points
-│       │   ├── decompiled-jadx/        # JADX decompilation output
-│       │   ├── decompiled-smali/       # Smali decompilation output
-│       │   ├── smali-tests/            # Smali test builds
-│       │   ├── revanced-builds/        # ReVanced test builds
-│       │   └── logs/                   # Test run logs
-│       └── 36.6.0/                     # Next version...
+│   └── tiktok/36.5.4/
+│       ├── base.apk                # Original APK
+│       ├── obfuscation-map.md      # Obfuscated class mappings
+│       ├── injection-points.md     # Verified injection points
+│       ├── decompiled-jadx/        # JADX decompilation output
+│       ├── decompiled-smali/       # Smali decompilation output
+│       ├── smali-tests/            # Smali test builds
+│       ├── revanced-builds/        # ReVanced test builds
+│       └── logs/                   # Test run logs
 └── revanced-src/
     ├── revanced-patches/        # Submodule (forked)
-    ├── revanced-integrations/   # Submodule (forked)
     └── revanced-cli.jar         # CLI tool
 ```
 
@@ -30,182 +33,39 @@ Ship a working ReVanced patch using proven Smali edits. Test everything in raw S
 
 ---
 
-## **Phase 0: Repository Setup** (One-time)
-
-### Initialize Structure
-```bash
-# Create main research repository (its revanced-research, this one)
-mkdir rv-research && cd rv-research
-git init
-
-# Add ReVanced as submodules
-git submodule add https://github.com/hxreborn/revanced-patches revanced-src/revanced-patches
-git submodule add https://github.com/hxreborn/revanced-integrations revanced-src/revanced-integrations
-
-# Download CLI
-wget https://github.com/ReVanced/revanced-cli/releases/latest/download/revanced-cli.jar -O revanced-src/revanced-cli.jar
-
-# Create documentation
-cat > README.md << 'EOF'
-# ReVanced Research Repository
-
-## Purpose
-Systematic approach to developing ReVanced patches with full documentation and testing.
-
-## Structure
-- `apps/`: Version-specific research and testing
-- `revanced-src/`: ReVanced source code (submodules)
-- `attempt-history.md`: Global tracking to avoid circles
-EOF
-
-cat > attempt-history.md << 'EOF'
-# Global Attempt Tracker
-
-| Date | App | Version | Target | Method | Result | Next |
-|------|-----|---------|--------|--------|--------|------|
-EOF
-
-# Study successful patches for reference
-cd revanced-src/revanced-patches
-grep -r "BytecodePatch" src/ --include="*.kt" | head -20
-cat src/main/kotlin/app/revanced/patches/youtube/misc/links/OpenLinksDirectlyPatch.kt
-cat src/main/kotlin/app/revanced/patches/youtube/layout/hide/watermark/HideWatermarkPatch.kt
-cd ../..
-
-git add .
-git commit -m "Initial rv-research structure"
-```
-
----
-
-## **Phase 1: Version-Specific Discovery**
-
-### 1.1 Create App Version Workspace
-```bash
-# Set target
-APP="tiktok"
-VERSION="36.5.4"
-APK_SHA="abc123..."
-
-# Create structure
-mkdir -p apps/$APP/$VERSION/{hotswap,patched,logs,indices}
-cd apps/$APP/$VERSION
-
-# Copy and verify APK
-cp /path/to/base.apk .
-sha256sum base.apk > APK_INFO.txt
-echo "Version: $VERSION" >> APK_INFO.txt
-
-# Decompile for research
-apktool d -f base.apk -o decompiled-smali/
-jadx base.apk --deobf -d decompiled-jadx/
-```
-
-### 1.2 Create Search Indices
-```bash
-# Build searchable indices
-grep -r "share\|link\|url" decompiled-jadx/ > indices/strings.txt
-grep -r "onClick\|button\|clip" decompiled-jadx/ > indices/handlers.txt
-grep -r "Bundle\|Intent\|extras" decompiled-jadx/ > indices/bundles.txt
-grep -r "copylink\|share_url\|utm_" decompiled-jadx/ > indices/specific.txt
-```
-
-### 1.3 Document Obfuscated Targets
-```bash
-cat > obfuscation-map.md << 'EOF'
-# TikTok 36.5.4 - Obfuscated Class Mapping
-
-## Confirmed Targets
-| Obfuscated | Purpose | Method | Verified |
-|------------|---------|--------|----------|
-| Lcom/ss/android/ugc/aweme/share/improve/pkg/LinkSharePackage; | Share extras builder | a(Ljava/lang/String;Landroid/content/Context;)Landroid/os/Bundle; | ❓ |
-| Lcom/ss/android/ugc/aweme/share/ShareServiceImpl; | URL generator | a(Lcom/ss/android/ugc/aweme/feed/model/Aweme;Ljava/lang/String;)Ljava/lang/String; | ❓ |
-
-## Search Patterns That Worked
-- "share_url" → Found in LinkSharePackage
-- "copylink" → Found in clipboard handler
-- "utm_source" → Found in URL builder
-EOF
-```
-
----
-
 ## **Phase 2: Smali Testing**
 
-### 2.1 Create Smali Test
+**For initial repository setup, see `docs/bootstrap.md` (archived Phase 0).**
+
+When creating a new smali-test experiment:
+
 ```bash
-cd apps/$APP/$VERSION
+# 1. Create test directory
+TEST_NUM=01-my-experiment
+cd apps/tiktok/36.5.4/smali-tests/$TEST_NUM
 
-# Create test iteration
-TEST_NUM=01-ljijj-bundle
-cp -r decompiled-smali/ smali-tests/$TEST_NUM/
-cd smali-tests/$TEST_NUM/
+# 2. Extract target DEX and decompile
+unzip -j ../../base.apk classes15.dex -d .
+baksmali d classes15.dex -o smali-classes15/
 
-# Edit target method
-vim smali_classes3/com/ss/android/ugc/aweme/share/improve/pkg/LinkSharePackage.smali
-```
+# 3. Edit and document
+vim smali-classes15/X/UEU.smali
+# Add logging for verification, then:
 
-### 2.2 Insert Test Code
-```smali
-# Find your injection point (e.g., after "const-string v3, share_url")
-# INSERT:
-    const-string v0, "HOTSWAP_TEST"
-    new-instance v1, Ljava/lang/StringBuilder;
-    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
-    const-string v2, "URL before: "
-    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-    invoke-virtual {v1, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-    invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-    move-result-object v1
-    invoke-static {v0, v1}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
-    
-    # Your actual modification (hardcoded for test)
-    const-string v4, "https://vm.tiktok.com/CLEANED_TEST"
-```
-
-### 2.3 Build and Verify
-```bash
-# Build test APK
-apktool b . -o ../$TEST_NUM.apk
-cd ..
-zipalign -v 4 $TEST_NUM.apk $TEST_NUM-aligned.apk
-apksigner sign --ks ~/.android/debug.keystore --ks-pass pass:android $TEST_NUM-aligned.apk
-
-# Install and test
-adb install -r $TEST_NUM-aligned.apk
+# 4. Build and test
+smali a smali-classes15/ -o classes15-patched.dex --api 35
+cp ../../base.apk test.apk
+zip -j test.apk classes15-patched.dex
+zip -d test.apk "META-INF/*"
+zipalign -f 4 test.apk test-aligned.apk
+apksigner sign --ks ~/.android/debug.keystore --ks-pass pass:android test-aligned.apk
+adb install -r test-aligned.apk
 adb logcat -c
-adb shell am start com.ss.android.ugc.trill/.main.MainActivity
-
-# Trigger share action and capture logs
-adb logcat -d | tee ../logs/smali-test-$TEST_NUM-$(date +%Y%m%d-%H%M%S).log | grep "HOTSWAP_TEST"
+# ... trigger share action in app ...
+adb logcat -d | tee ../../logs/test-$TEST_NUM-$(date +%s).log
 ```
 
-### 2.4 Document Results
-```bash
-cd ..
-cat >> injection-points.md << 'EOF'
-# Verified Injection Points - TikTok 36.5.4
-
-## Test 01-ljijj-bundle - 2024-12-25
-- **Target**: LinkSharePackage.a() line 423
-- **Class**: Lcom/ss/android/ugc/aweme/share/improve/pkg/LinkSharePackage;
-- **Method**: a(Ljava/lang/String;Landroid/content/Context;)Landroid/os/Bundle;
-- **Injection**: After `const-string v3, "share_url"`
-- **Registers**: v4 contains URL, v0-v2 free, .locals 8
-- **Try blocks**: None at injection point
-- **Result**: ✅ URL changed successfully
-- **Log**: logs/smali-test-01-ljijj-bundle-20241225-150000.log
-
-## What Worked
-- String "share_url" exists at line 423
-- Register v4 definitely contains the URL
-- No try-catch conflicts
-- Can safely use v0-v2 as temp registers
-EOF
-
-# Update targets
-sed -i 's/❓/✅ Line 423/' obfuscation-map.md
-```
+**Document results:** After testing, update `injection-points.md` with outcome, log file location, and next steps.
 
 ---
 
