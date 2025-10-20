@@ -2,6 +2,8 @@
 
 **Purpose:** Instructions for Claude Code when working in this repository. Keeps edits reproducible, focused, and reviewable.
 
+**Changelog:** 2025-10-20 - Phase 1 hypotheses superseded; canonical URL found at LJIJJLI. See `docs/status.md` for current state.
+
 ---
 
 ## Repository Mission
@@ -109,3 +111,4 @@ Detailed commands in `WORKFLOW.md` Phase 2. Essential pipeline:
 - **Detailed workflow:** `WORKFLOW.md` (phase-by-phase runbook)
 - **Human contributor guide:** `AGENTS.md` (coding standards, PR process)
 - **Project overview:** `README.md`
+- **Current state:** `docs/status.md` (verified facts, open questions, next steps)
