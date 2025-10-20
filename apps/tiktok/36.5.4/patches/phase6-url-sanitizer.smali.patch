@@ -1,0 +1,105 @@
+# Phase 6: URL Parameter Sanitizer Patch
+# Target: X/UEU.smali LIZLLL method
+# Location: smali_classes15/X/UEU.smali starting at line 3864
+# Date: 2025-10-20
+
+## Changes Summary
+- Strips all query parameters (everything after '?') from canonical URLs
+- Removes tracking: utm_*, share_*, _d, _r, etc.
+- Returns clean URLs: https://www.tiktok.com/@user/video/ID
+
+## Register Allocation
+- v0: int (indexOf result)
+- v1: String (URL - modified in-place)
+- v2: String (const-string literals)
+- v3: String (log messages)
+
+## Method Signature
+.method public static final LIZLLL(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)LX/Wu4;
+    .registers 8  # Changed from 6 to 8 for additional local registers
+
+## Patch Code (Insert after line 3882 - LIZLLL_RESULT log)
+
+```smali
+    # PHASE 6: URL Parameter Sanitizer - Strip everything after '?'
+    const-string v2, "URL_BEFORE_CLEAN"
+    invoke-static {v2, v1}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
+
+    # Find '?' character (use v0 for int result)
+    const-string v2, "?"
+    invoke-virtual {v1, v2}, Ljava/lang/String;->indexOf(Ljava/lang/String;)I
+    move-result v0
+
+    # Skip cleaning if no '?' or '?' at position 0 (v0 <= 0)
+    if-lez v0, :url_already_clean
+
+    # Substring from 0 to '?' position
+    const/4 v2, 0x0
+    invoke-virtual {v1, v2, v0}, Ljava/lang/String;->substring(II)Ljava/lang/String;
+    move-result-object v1
+
+    # Log sanitization (only when actually cleaned)
+    const-string v2, "SANITIZER"
+    const-string v3, "Tracking parameters removed"
+    invoke-static {v2, v3}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
+
+    :url_already_clean
+    const-string v2, "URL_AFTER_CLEAN"
+    invoke-static {v2, v1}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
+
+    # Continue to shortened-URL checks
+    goto :check_shortened
+```
+
+## Integration Notes
+
+1. **Prerequisites**:
+   - Phase 5 logging infrastructure already in place
+   - Method has .registers 8 (modified from original 6)
+
+2. **Flow**:
+   - Line 3864: `move-result-object v1` (URL from UEa.LIZ shortener)
+   - Line 3882: Log LIZLLL_RESULT
+   - **INSERT PATCH HERE**
+   - Line 3918+: :check_shortened (vm./vt. detection)
+   - Line 3941+: :keep_shortened_c
+   - Line 3943+: TextUtils.isEmpty check
+
+3. **Label Safety**:
+   - New label `:url_already_clean` does not conflict with existing labels
+   - Existing labels: :log_null_result, :check_shortened, :swap_canonical_c, :keep_shortened_c
+
+4. **Type Safety**:
+   - v0 exclusively used for int (indexOf result, startsWith results)
+   - v1 exclusively String (URL throughout)
+   - v2 exclusively String (const-string, then reused)
+   - v3 exclusively String (log messages, boolean results from startsWith)
+
+## Test Results
+
+**Expected Logcat Output**:
+```
+D/URL_BEFORE_CLEAN: https://www.tiktok.com/@user/video/123?utm_source=copy&...
+D/SANITIZER: Tracking parameters removed
+D/URL_AFTER_CLEAN: https://www.tiktok.com/@user/video/123
+```
+
+**Edge Cases Handled**:
+- ✅ URL without `?` → indexOf returns -1 → if-lez jumps → no substring → URL unchanged
+- ✅ URL with `?` at position 0 → indexOf returns 0 → if-lez jumps → URL unchanged
+- ✅ URL with `?` at position > 0 → substring(0, index) → tracking removed
+- ✅ Null URL → handled by earlier :log_null_result guard
+
+## Build Information
+
+**APK**: phase6-sanitizer-fixed-aligned.apk
+**DEX Size**: 103MB
+**Build Date**: 2025-10-20
+**Test Status**: Ready for validation
+
+## Related Files
+
+- PHASE6-SANITIZER-PLAN.md - Detailed pre-implementation analysis
+- attempt-history.md - Phase 6 execution log
+- injection-points.md - Updated with Phase 6 details
+- obfuscation-map.md - Phase 6 status tracking
