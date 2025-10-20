@@ -10,6 +10,8 @@ Research and develop ReVanced patches through **Smali-first validation**. Every 
 
 **Current Focus:** TikTok 36.5.4 share URL sanitization (remove `utm_*`, `tt_*`, `enter_*` parameters)
 
+**Phase 2 Status:** Breakthrough - canonical URL found at `AwemeSharePackage.LJIJJLI()` line 2795. URL is canonical at entry, shortened by `UEU.LIZLLL()` at line 2889. Next: bypass shortening orchestrator.
+
 ---
 
 ## Core Principles
