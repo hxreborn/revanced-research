@@ -29,6 +29,15 @@
 
 ## 2. Parameter Rules Definition
 
+### The Problem: Massive Tracking Blob
+
+TikTok appends a **massive tracking blob** to every share URL:
+```
+https://www.tiktok.com/@user/video/ID?_r=1&u_code=0&...utm_source=copy&...
+                                      ↑
+                        505 bytes of tracking parameters!
+```
+
 ### Strategy: **WHITELIST** (safer, future-proof)
 
 **Keep ONLY**:
@@ -36,7 +45,7 @@
 Base URL: https://www.tiktok.com/@{username}/video/{video_id}
 ```
 
-**Remove EVERYTHING after `?`** - This includes:
+**Remove EVERYTHING after `?`** (the entire massive tracking blob) - This includes:
 - ❌ `utm_*` (utm_source, utm_campaign, utm_medium)
 - ❌ `share_*` (share_iid, share_link_id, share_app_id, share_item_id)
 - ❌ `_d`, `_r` (TikTok internal tracking)
