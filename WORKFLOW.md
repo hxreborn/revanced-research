@@ -33,6 +33,31 @@ Ship a working ReVanced patch using proven Smali edits. Test everything in raw S
 
 ---
 
+## **Documentation Guidelines**
+
+**File Purpose & Boundaries:**
+- `attempt-history.md` (app-specific): Discovery, implementation notes, test results
+- `injection-points.md`: Technical details (registers, injection points, edge cases)
+- `obfuscation-map.md`: Class mappings and method signatures
+- `*-TEST-RESULTS.md`: Test validation evidence
+
+**Rules:**
+1. **Plan in existing files** - Use attempt-history.md for planning, don't create separate planning docs
+2. **Professional tone** - No emojis, use [PASS]/[FAIL]/[SUPERSEDED] markers instead
+3. **Update, don't duplicate** - If content exists elsewhere, link to it instead of copying
+4. **Archive superseded work** - Don't delete failed attempts, move to "Archive" section
+5. **Delete temporary artifacts** - Remove planning docs after implementation is documented
+
+**File Lifecycle:**
+```
+Plan → (in attempt-history.md)
+Implement → (document in injection-points.md)
+Test → (results in *-TEST-RESULTS.md)
+Cleanup → (consolidate, remove planning docs, archive superseded approaches)
+```
+
+---
+
 ## **Phase 2: Smali Testing**
 
 **For initial repository setup, see `docs/bootstrap.md` (archived Phase 0).**
@@ -228,26 +253,62 @@ sha256sum apps/$APP/$VERSION/revanced-builds/your-patch-aligned.apk \
     > apps/$APP/$VERSION/revanced-builds/your-patch-aligned.apk.sha256
 ```
 
-### 3.6 Document Results
+### 3.6 Document Results & Cleanup
 
-Update research repo:
+Update research repo and clean up temporary artifacts:
+
 ```bash
-# Update attempt-history.md (root)
-echo "| $(date +%Y-%m-%d) | $APP | $VERSION | ReVanced Port | ... | ✅ SUCCESS | ..." >> attempt-history.md
+# 1. Delete planning artifacts (if any were created during development)
+rm apps/$APP/$VERSION/*-PLAN.md 2>/dev/null || true
+rm apps/$APP/$VERSION/*-NOTES.md 2>/dev/null || true
 
-# Update app-specific attempt-history.md
-# Add Phase 7 section with implementation details
+# 2. Update core documentation files
+# - attempt-history.md (root): Add Phase 7 entry to global tracker
+# - attempt-history.md (app): Add Phase 7 section with implementation summary
+# - injection-points.md: Update with final injection details (if changed from Smali)
+# - *-TEST-RESULTS.md: Add ReVanced validation section
 
-# Update test results
-# Add ReVanced validation section to test results file
+# Example for attempt-history.md (app-specific):
+cat >> apps/$APP/$VERSION/attempt-history.md << 'EOF'
+## Phase 7: ReVanced Port
 
-# Commit to research repo
+**Date**: $(date +%Y-%m-%d)
+**Branch**: feat/your-patch-name
+**Status**: [SUCCESS]
+
+### Implementation
+- Extension: YourHelper.clean() (Java)
+- Patch: yourPatch (Kotlin BytecodePatch)
+- Register handling: Dynamic extraction
+
+### Validation
+- Build: [PASS]
+- Runtime: [PASS]
+- Behavior: Identical to Phase 6 Smali patch
+
+### Files Created
+- extensions/.../YourHelper.java
+- patches/.../Fingerprints.kt
+- patches/.../YourPatch.kt
+EOF
+
+# 3. Commit to research repo
 git add apps/$APP/$VERSION/logs/*.log \
         apps/$APP/$VERSION/revanced-builds/*.sha256 \
         attempt-history.md \
-        apps/$APP/$VERSION/attempt-history.md
-git commit -m "docs($APP): document ReVanced port validation"
+        apps/$APP/$VERSION/attempt-history.md \
+        apps/$APP/$VERSION/injection-points.md \
+        apps/$APP/$VERSION/*-TEST-RESULTS.md
+git commit -m "docs($APP): document ReVanced port validation for $VERSION"
 ```
+
+**Consolidation checklist:**
+- [ ] Planning documents deleted (none should remain after implementation)
+- [ ] All cross-references updated and working
+- [ ] Professional tone maintained (no emojis unless explicitly requested)
+- [ ] Superseded approaches archived in "Archive" section, not deleted
+- [ ] Test evidence captured in logs/ directory
+- [ ] Build artifacts documented with SHA256 hashes only (no binaries in git)
 
 ### 3.7 Key Patterns
 
