@@ -113,7 +113,7 @@ move-result-object v1
 ### Build Artifacts
 
 - **Patch file**: `patches/phase6-url-sanitizer.smali.patch` - Complete implementation
-- **Test results**: `PHASE6-TEST-RESULTS.md` - Validation evidence
+- **Test results**: `test-results.md` - Validation evidence
 - **Test logs**: `logs/phase6-test-clipboard.log` - Logcat capture with URL_BEFORE_CLEAN/URL_AFTER_CLEAN tags
 - **APK**: `smali-tests/05-option-c-bypass/phase6-sanitizer-fixed-aligned.apk`
 
@@ -124,11 +124,12 @@ move-result-object v1
 3. **Label Hygiene**: Suffix `:_c` on labels (`:keep_shortened_c`, `:check_shortened`) prevents collisions
 4. **Single Operation**: One `indexOf` + one `substring` - minimal performance impact
 5. **Production Ready**: Debug logs removed, core logic validated
+6. **Always-On Behavior**: Uses shared patch name ("Sanitize sharing links") but is **always enabled by default** with no settings toggle (unlike Spotify/Instagram implementations). This is a privacy-first approach for TikTok.
 
 ### References
 
 - **Complete patch**: `patches/phase6-url-sanitizer.smali.patch`
-- **Test matrix**: `PHASE6-TEST-RESULTS.md`
+- **Test matrix**: `test-results.md`
 - **Attempt log**: `attempt-history.md` - Phase 6 section
 - **Obfuscation map**: `obfuscation-map.md` - UEU/UEa method details
 - **ReVanced port**: Phase 7 implementation in `attempt-history.md`

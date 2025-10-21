@@ -78,7 +78,7 @@ move-result-object v1  # v1 now contains clean URL
 ### References
 
 - **Patch file**: `patches/phase6-url-sanitizer.smali.patch` - Complete implementation
-- **Test results**: `PHASE6-TEST-RESULTS.md` - Validation evidence
+- **Test results**: `test-results.md` - Validation evidence
 - **Logs**: `logs/phase6-test-clipboard.log` - Test evidence
 - **Injection details**: `injection-points.md` - Phase 6 injection point
 - **Status**: `obfuscation-map.md` - Phase 6 results

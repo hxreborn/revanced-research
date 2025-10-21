@@ -131,7 +131,7 @@ move-result-object v1  # v1 now contains clean URL
 ### Documentation
 
 - **Patch file**: `patches/phase6-url-sanitizer.smali.patch`
-- **Test results**: `PHASE6-TEST-RESULTS.md`
+- **Test results**: `test-results.md`
 - **Test logs**: `logs/phase6-test-clipboard.log`, `logs/phase6-revanced-*.log`
 - **Injection details**: `injection-points.md` - Phase 6 section
 - **ReVanced port**: `attempt-history.md` - Phase 7 section
@@ -142,6 +142,10 @@ move-result-object v1  # v1 now contains clean URL
 - Simpler logic (one indexOf + substring)
 - Clean URLs are predictable: `@user/video/ID`
 - No parameter enumeration needed
+
+### Implementation Notes
+
+**Always-On Behavior**: This patch uses the shared patch name "Sanitize sharing links" (from `PATCH_NAME_SANITIZE_SHARING_LINKS`) for consistency with other apps (Spotify, Instagram), but unlike those implementations, the TikTok version is **always enabled** with no settings toggle. This is a privacy-first approach given the extensive tracking (18+ parameters) in TikTok share URLs.
 
 ---
 
