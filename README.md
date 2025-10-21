@@ -1,8 +1,21 @@
-# ReVanced Research Repository
+# revanced-research
 
-Workspace for researching app patches for ReVanced. Every bytecode change is validated in Smali before we even think about packaging it for wider use.
+![GitHub](https://img.shields.io/github/license/your-username/revanced-research)
+![GitHub last commit](https://img.shields.io/github/last-commit/your-username/revanced-research)
+![GitHub issues](https://img.shields.io/github/issues/your-username/revanced-research)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/your-username/revanced-research/CI)
 
-**Status:** Phase 2 | **Last Updated:** 2025-10-20 | **Current:** Canonical URL interception at LJIJJLI (blocked by LIZLLL)
+> **Research workspace for developing ReVanced patches through Smali-first validation.**
+>
+> Every bytecode change is validated in raw Smali before porting to ReVanced framework.
+
+**Status:** Phase 7 Complete | **Last Updated:** 2025-10-21 | **Current:** TikTok URL sanitizer patch validated (Smali + ReVanced)
+
+---
+
+## Disclaimer
+
+⚠️ **No APKs or binaries are provided in this repository.** This is a research workspace for patch development. All builds and tests are performed locally. APK hashes are documented in `apk-metadata.txt` for verification purposes only.
 
 ## Quick Start
 
@@ -18,10 +31,12 @@ cat CLAUDE.md        # LLM agent instructions
 cat docs/status.md   # Current state dashboard
 ```
 
-## Scope & Current Focus
-- **Target app:** TikTok 36.5.4  
-- **Objective:** Remove TikTok’s tracking parameters from outbound share URLs while preserving functionality.  
-- **Phase:** 2 (Smali validation and canonical URL verification).
+## Current Focus
+
+- **Target App:** TikTok 36.5.4
+- **Objective:** Remove tracking parameters (utm_*, share_*, etc.) from shared URLs
+- **Achievement:** URL sanitizer patch complete (89% size reduction, 18 parameters removed)
+- **Status:** Phase 7 complete - ReVanced port validated and ready for upstream PR consideration
 
 ## Repository Layout
 | Path | Purpose |
