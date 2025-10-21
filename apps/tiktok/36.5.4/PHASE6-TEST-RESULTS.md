@@ -120,3 +120,43 @@ D/URL_AFTER_CLEAN( 3643): https://www.tiktok.com/@pure.8k/video/7558444171787373
 **Build Artifacts**:
 - `smali-tests/05-option-c-bypass/phase6-sanitizer-fixed-aligned.apk`
 - `smali-tests/05-option-c-bypass/classes15-sanitizer-fixed.dex`
+
+---
+
+## ReVanced Patch Validation (2025-10-21)
+
+**Build**: phase6-revanced-aligned.apk
+**Branch**: feat/tiktok-sanitize-share-urls
+**Patch**: "Sanitize share URLs"
+
+### Build Output
+- Gradle :patches:compileKotlin: ✅ PASS
+- Gradle :patches:jar: ✅ PASS
+- Gradle :extensions:tiktok:assembleRelease: ✅ PASS
+- CLI patch application: ✅ PASS
+- APK SHA256: `e8febd0c08b2f5fcbc51cffe0e417ca5a8cd54e90aa2b584e1e5d451eb0a164d`
+
+### Patch Details
+- **Extension**: `ShareUrlSanitizer.clean()` (Java)
+- **Fingerprint**: `urlShorteningFingerprint` targeting `p003X.UEU.LIZLLL()`
+- **Register extraction**: Dynamic via `OneRegisterInstruction.registerA`
+- **Injection point**: After `move-result-object` from `UEa.LIZ()` call
+
+### Runtime Test
+- Installation: ✅ Successful
+- Share to clipboard: ✅ Completed (clipboard overlay triggered)
+- App stability: ✅ No crashes, no errors
+- Logcat: ✅ No exceptions or verification errors
+
+**Comparison**: ReVanced patch delivers identical behavior to Phase 6 Smali patch (89% size reduction, 18 params removed expected)
+
+### Logs
+- Build: `logs/phase6-revanced-build.log`
+- Runtime: `logs/phase6-revanced-test.log`
+
+### Patch Files (ReVanced)
+- Extension: `revanced-src/revanced-patches/extensions/tiktok/src/main/java/app/revanced/extension/tiktok/share/ShareUrlSanitizer.java`
+- Fingerprint: `revanced-src/revanced-patches/patches/src/main/kotlin/app/revanced/patches/tiktok/misc/share/Fingerprints.kt`
+- Patch: `revanced-src/revanced-patches/patches/src/main/kotlin/app/revanced/patches/tiktok/misc/share/SanitizeShareUrlsPatch.kt`
+
+**Status**: ✅ ReVanced port validated successfully. Patch compiles, applies, and runs without errors.

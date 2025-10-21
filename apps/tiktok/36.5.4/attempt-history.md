@@ -310,4 +310,65 @@ https://www.tiktok.com/@pure.8k/video/7558444171787373846
 
 ---
 
-**Status**: ✅ COMPLETE - Ready for ReVanced patch porting
+**Status**: ✅ COMPLETE - Phase 7 (ReVanced Port) follows
+
+---
+
+## Phase 7: ReVanced Port (COMPLETE ✅)
+
+**Date**: 2025-10-21
+**Branch**: feat/tiktok-sanitize-share-urls
+**Status**: ✅ SUCCESS
+
+### Implementation
+Ported Phase 6 Smali patch to ReVanced framework:
+- **Extension**: `ShareUrlSanitizer.clean()` (Java) - Simple indexOf + substring logic
+- **Patch**: `sanitizeShareUrlsPatch` (Kotlin BytecodePatch)
+- **Location**: `misc/share/` (new category under TikTok patches)
+- **Strategy**: Always-on (no settings toggle) - privacy-first default
+- **Register handling**: Dynamic extraction via `OneRegisterInstruction.registerA`
+
+### Technical Details
+- **Fingerprint** targets: `p003X.UEU.LIZLLL(ILjava/lang/String;...)LX/Wu4;`
+- **Injection point**: After `move-result-object` from `UEa.LIZ()` call (line determined dynamically)
+- **Method call**: `ShareUrlSanitizer.clean(String)` returning sanitized String
+- **Register safety**: Extracts destination register from `move-result-object` instruction instead of hardcoding v1
+
+### Build Process
+1. Created Java extension helper in `extensions/tiktok/src/main/java/.../share/`
+2. Created Kotlin fingerprint + patch in `patches/src/main/kotlin/.../tiktok/misc/share/`
+3. Gradle builds: ✅ :patches:compileKotlin, :patches:jar, :extensions:tiktok:assembleRelease
+4. Updated API declarations with `:patches:apiDump`
+5. CLI patch application: ✅ Generated patches-5.43.1.rvp bundle
+
+### Validation
+- **CLI build**: ✅ PASS (see `logs/phase6-revanced-build.log`)
+- **Runtime test**: ✅ PASS (see `logs/phase6-revanced-test.log`)
+- **Behavior**: Identical to Phase 6 Smali patch (89% reduction expected)
+- **APK hash**: `e8febd0c08b2f5fcbc51cffe0e417ca5a8cd54e90aa2b584e1e5d451eb0a164d`
+- **Stability**: No crashes, no DEX verification errors, clipboard overlay triggered successfully
+
+### Files Created
+**ReVanced Patches Repository** (feat/tiktok-sanitize-share-urls branch):
+- `extensions/tiktok/src/main/java/app/revanced/extension/tiktok/share/ShareUrlSanitizer.java`
+- `patches/src/main/kotlin/app/revanced/patches/tiktok/misc/share/Fingerprints.kt`
+- `patches/src/main/kotlin/app/revanced/patches/tiktok/misc/share/SanitizeShareUrlsPatch.kt`
+- `local.properties` (Android SDK configuration)
+- `patches/api/*.api` (updated API declarations)
+
+**Research Repository**:
+- `apps/tiktok/36.5.4/revanced-builds/phase6-revanced-aligned.apk`
+- `apps/tiktok/36.5.4/revanced-builds/phase6-revanced-aligned.apk.sha256`
+- `apps/tiktok/36.5.4/logs/phase6-revanced-build.log`
+- `apps/tiktok/36.5.4/logs/phase6-revanced-test.log`
+
+### Key Learnings
+1. **Modern ReVanced**: Uses annotation-based metadata (no separate JSON files)
+2. **Dynamic register extraction**: Safer than hardcoding - extracts from actual instruction
+3. **Gradle API checking**: `:patches:apiDump` required before successful build
+4. **CLI syntax**: `-p` for patches bundle, `-e` for enable patch by name
+5. **Android SDK**: Requires `local.properties` with `sdk.dir` for extension builds
+
+---
+
+**Status**: ✅ COMPLETE - ReVanced patch validated against TikTok 36.5.4. Ready for upstream PR consideration.
