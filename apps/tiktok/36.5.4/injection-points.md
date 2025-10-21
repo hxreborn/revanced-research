@@ -170,3 +170,100 @@ invoke-static {v5, v2}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/Strin
 3. Option C: Add fallback detection after LIZLLL
 
 **Confidence Level**: HIGH - Injection point is proven to work at bytecode level
+
+---
+
+## Phase 6: URL Parameter Sanitizer - 2025-10-20
+
+### ✅ IMPLEMENTATION COMPLETE
+
+**Approach**: Modified Option C - URL parameter sanitization instead of shortened URL detection
+**Discovery**: UEa.LIZ() returns canonical URLs with massive tracking blob, NOT shortened URLs
+
+### Injection Location
+
+**File**: `smali_classes15/X/UEU.smali`
+**Method**: `LIZLLL(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)LX/Wu4;`
+**Line**: After 3882 (LIZLLL_RESULT log, before :check_shortened)
+**Directive Change**: `.registers 6` → `.registers 8` (added v2-v3 local registers)
+
+### Implementation Strategy
+
+**Strip ALL query parameters** (whitelist approach):
+```smali
+# Find '?' character
+const-string v2, "?"
+invoke-virtual {v1, v2}, Ljava/lang/String;->indexOf(Ljava/lang/String;)I
+move-result v0
+
+# Only clean if '?' at position > 0
+if-lez v0, :url_already_clean
+
+# Substring from 0 to '?'
+const/4 v2, 0x0
+invoke-virtual {v1, v2, v0}, Ljava/lang/String;->substring(II)Ljava/lang/String;
+move-result-object v1
+```
+
+**Register Allocation**:
+- v0: int (indexOf result)
+- v1: String (URL - modified in-place)
+- v2: String (const-string temps)
+- v3: String (log messages)
+
+**Label Safety**: New label `:url_already_clean` does not conflict with existing control flow
+
+### Test Results
+
+**Build**: phase6-sanitizer-fixed-aligned.apk (103MB DEX)
+**Test Date**: 2025-10-20
+**Status**: ✅ PASS
+
+**Test 1: Copy Link (Clipboard)**
+- Channel: `aweme`
+- Before: 568 chars (massive tracking blob with 18 parameters)
+- After: 63 chars (clean canonical URL)
+- Size reduction: **89%** (505 bytes removed)
+- Logcat: URL_BEFORE_CLEAN → SANITIZER → URL_AFTER_CLEAN confirmed
+
+**Parameters Removed**:
+- `utm_*` (utm_source, utm_campaign, utm_medium)
+- `share_*` (share_iid, share_link_id, share_app_id, share_item_id)
+- TikTok tracking: `_d`, `_r`, `u_code`, `timestamp`, `social_share_type`
+- Business tracking: `ugbiz_name`, `ug_btm`
+- JSON blob: `link_reflow_popup_iteration_sharer`
+
+**Evidence**: `logs/phase6-test-clipboard.log`
+
+### Key Findings
+
+1. **No Shortened URLs**: UEa.LIZ() returns canonical URLs, shortening doesn't happen at this layer
+2. **Massive Tracking Blob**: Every URL has 18+ tracking parameters appended
+3. **Whitelist Safer**: Stripping everything after `?` is future-proof against new tracking params
+4. **Register Discipline**: Type-safe register allocation prevents DEX verification errors
+5. **Branch Logic**: `if-lez` correctly handles no-`?` (-1), `?`-at-start (0), and valid-`?` (>0) cases
+
+### Documentation
+
+- **Patch File**: `patches/phase6-url-sanitizer.smali.patch` (complete implementation)
+- **Planning**: `PHASE6-SANITIZER-PLAN.md` (pre-implementation analysis)
+- **Test Results**: `PHASE6-TEST-RESULTS.md` (validation evidence)
+- **Test Logs**: `logs/phase6-test-clipboard.log` (logcat capture)
+
+### Production Readiness
+
+**Debug Logging**:
+- LIZLLL_ENTRY, SHARE_CHANNEL, CANONICAL_INPUT, LIZLLL_RESULT (Phase 5)
+- URL_BEFORE_CLEAN, SANITIZER, URL_AFTER_CLEAN (Phase 6)
+- **Decision**: Keep sanitizer logs for validation, gate behind build type for production
+
+**Stability**: ✅ No crashes, no DEX verification errors, app functions normally
+
+**Next Steps**:
+1. Complete test matrix (WhatsApp, Twitter, Discord, Email, SMS, null handling)
+2. Remove or gate debug logs for production build
+3. Port to ReVanced patch format
+
+---
+
+**Phase 6 Status**: ✅ **COMPLETE - Ready for ReVanced Porting**
