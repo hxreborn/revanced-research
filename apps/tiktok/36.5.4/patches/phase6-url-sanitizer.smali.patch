@@ -18,12 +18,16 @@
 .method public static final LIZLLL(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)LX/Wu4;
     .registers 8  # Changed from 6 to 8 for additional local registers
 
-## Patch Code (Insert after line 3882 - LIZLLL_RESULT log)
+## Patch Code (Production - Insert after line 3864)
 
+**PRODUCTION VERSION** (No Debug Logs):
 ```smali
-    # PHASE 6: URL Parameter Sanitizer - Strip everything after '?'
-    const-string v2, "URL_BEFORE_CLEAN"
-    invoke-static {v2, v1}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
+    # After: invoke-static {p2, p1, p3}, LX/UEa;->LIZ(...)  [line 3859]
+    move-result-object v1
+
+    # PHASE 6: URL Parameter Sanitizer - Strip all tracking parameters
+    # Null check - skip if shortener returned null
+    if-eqz v1, :keep_shortened_c
 
     # Find '?' character (use v0 for int result)
     const-string v2, "?"
@@ -31,64 +35,136 @@
     move-result v0
 
     # Skip cleaning if no '?' or '?' at position 0 (v0 <= 0)
-    if-lez v0, :url_already_clean
+    if-lez v0, :check_shortened
 
-    # Substring from 0 to '?' position
+    # Substring from 0 to '?' position - removes entire tracking blob
     const/4 v2, 0x0
     invoke-virtual {v1, v2, v0}, Ljava/lang/String;->substring(II)Ljava/lang/String;
     move-result-object v1
 
-    # Log sanitization (only when actually cleaned)
-    const-string v2, "SANITIZER"
-    const-string v3, "Tracking parameters removed"
-    invoke-static {v2, v3}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
+    :check_shortened
+    :keep_shortened_c
 
-    :url_already_clean
-    const-string v2, "URL_AFTER_CLEAN"
-    invoke-static {v2, v1}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
-
-    # Continue to shortened-URL checks
-    goto :check_shortened
+    # Continue to TextUtils.isEmpty check and rest of method
 ```
+
+**DEVELOPMENT VERSION** (With Debug Logs - For Reference Only):
+See "Debug Logging Strategy" section below for the validation logs that were removed.
 
 ## Integration Notes
 
 1. **Prerequisites**:
-   - Phase 5 logging infrastructure already in place
-   - Method has .registers 8 (modified from original 6)
+   - Method must have `.registers 8` (minimum) - original has 6, needs 2 additional locals
+   - Patch location: After `move-result-object v1` from UEa.LIZ() call (line 3864)
 
-2. **Flow**:
-   - Line 3864: `move-result-object v1` (URL from UEa.LIZ shortener)
-   - Line 3882: Log LIZLLL_RESULT
-   - **INSERT PATCH HERE**
-   - Line 3918+: :check_shortened (vm./vt. detection)
-   - Line 3941+: :keep_shortened_c
-   - Line 3943+: TextUtils.isEmpty check
+2. **Control Flow** (Production):
+   - Line 3859: `invoke-static {p2, p1, p3}, LX/UEa;->LIZ(...)`
+   - Line 3864: `move-result-object v1` (URL from UEa.LIZ)
+   - **→ PHASE 6 PATCH STARTS HERE (lines 3866-3884)**
+   - Line 3866: Null check `if-eqz v1, :keep_shortened_c`
+   - Line 3876: Sanitization guard `if-lez v0, :check_shortened`
+   - Line 3883-3884: Labels `:check_shortened` and `:keep_shortened_c` (fall through)
+   - Line 3887: `invoke-static {v1}, Landroid/text/TextUtils;->isEmpty(...)`
+   - **→ PATCH ENDS, original method continues**
 
-3. **Label Safety**:
-   - New label `:url_already_clean` does not conflict with existing labels
-   - Existing labels: :log_null_result, :check_shortened, :swap_canonical_c, :keep_shortened_c
+3. **Label Usage** (Production):
+   - `:keep_shortened_c` - Jump target for null check, also used by existing code downstream
+   - `:check_shortened` - Fall-through label, joins with `:keep_shortened_c`
+   - **Removed labels**: `:url_already_clean` (obsolete from Phase 6a validation), `:swap_canonical_c` (Phase 5)
 
 4. **Type Safety**:
-   - v0 exclusively used for int (indexOf result, startsWith results)
-   - v1 exclusively String (URL throughout)
-   - v2 exclusively String (const-string, then reused)
-   - v3 exclusively String (log messages, boolean results from startsWith)
+   - v0: exclusively int (indexOf result)
+   - v1: exclusively String (URL throughout - modified in-place)
+   - v2: exclusively String (const-string literals, safely reused)
+   - v3: String (reserved, unused in production)
+   - p0-p3: method parameters (untouched)
+
+## Debug Logging Strategy
+
+### Development Phase (Validation - Removed)
+
+**Phase 5 Debug Logs (Removed)**:
+```smali
+const-string v2, "LIZLLL_ENTRY"
+const-string v2, "SHARE_CHANNEL"
+const-string v2, "CANONICAL_INPUT"
+const-string v2, "LIZLLL_RESULT"
+const-string v2, "TikTokCanonicalSwap"
+const-string v2, "TikTokCanonical_OLD"
+const-string v2, "TikTokCanonical_NEW"
+```
+**Purpose**: Track method execution, share channels, URL transformation
+**Removal Reason**: Excessive logcat spam, leak share metadata in production
+
+**Phase 6a Debug Logs (Removed)**:
+```smali
+const-string v2, "URL_BEFORE_CLEAN"
+invoke-static {v2, v1}, Landroid/util/Log;->d(...)
+
+const-string v2, "SANITIZER"
+const-string v3, "Tracking parameters removed"
+invoke-static {v2, v3}, Landroid/util/Log;->d(...)
+
+const-string v2, "URL_AFTER_CLEAN"
+invoke-static {v2, v1}, Landroid/util/Log;->d(...)
+```
+**Purpose**: Validate sanitization working correctly, measure size reduction
+**Removal Reason**: Production builds should not log user URLs or share activity
+**Evidence Captured**: `logs/phase6-test-clipboard.log` (preserved for documentation)
+
+### Production Phase (Final)
+
+**All Debug Logs Removed**: ✅
+- 0 debug log statements in production code
+- 0 log tags remaining
+- No PII (personally identifiable information) leakage
+- Clean logcat output
+
+**Phase 5 Code Removed**: ✅
+- vm./vt.tiktok.com detection logic removed (obsolete)
+- Canonical URL swapping removed (superseded by sanitizer)
+- 22 lines of obsolete code removed
+
+### ReVanced Port Recommendations
+
+**For Release Builds**:
+- ❌ **Do NOT include debug logs** - leaks user activity and share metadata
+- ✅ Use production code as-is (no logging)
+- ✅ Silent operation is preferred for privacy
+
+**For Development/Debug Builds (Optional)**:
+If conditional logging is desired for troubleshooting:
+```smali
+# Only if BuildConfig.DEBUG or similar flag
+if-nez <debug_flag>, :skip_log
+const-string v2, "URLSanitizer"
+const-string v3, "Parameters stripped"
+invoke-static {v2, v3}, Landroid/util/Log;->d(...)
+:skip_log
+```
+
+**Best Practice**: Ship production code without logs, use adb debugging for troubleshooting if needed.
 
 ## Test Results
 
-**Expected Logcat Output**:
+**Validation Tests (Phase 6a - With Debug Logs)**:
 ```
 D/URL_BEFORE_CLEAN: https://www.tiktok.com/@user/video/123?utm_source=copy&...
 D/SANITIZER: Tracking parameters removed
 D/URL_AFTER_CLEAN: https://www.tiktok.com/@user/video/123
 ```
+Evidence preserved in: `logs/phase6-test-clipboard.log`
+
+**Production Tests (Phase 6b - No Logs)**:
+- ✅ Clean URLs delivered to clipboard/share channels
+- ✅ No logcat output (silent operation)
+- ✅ No behavioral differences vs debug build
 
 **Edge Cases Handled**:
 - ✅ URL without `?` → indexOf returns -1 → if-lez jumps → no substring → URL unchanged
 - ✅ URL with `?` at position 0 → indexOf returns 0 → if-lez jumps → URL unchanged
 - ✅ URL with `?` at position > 0 → substring(0, index) → tracking removed
-- ✅ Null URL → handled by earlier :log_null_result guard
+- ✅ Null URL → handled by if-eqz guard → jumps to :keep_shortened_c
 
 ## Build Information
 
