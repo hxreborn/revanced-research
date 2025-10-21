@@ -69,45 +69,205 @@ adb logcat -d | tee ../../logs/test-$TEST_NUM-$(date +%s).log
 
 ---
 
-## **Phase 3: Staged ReVanced Implementation**
+## **Phase 3: ReVanced Patch Porting**
 
-### 3.1 Smali Validation
-Before creating any ReVanced code, ensure your Smali modifications work perfectly:
+**Prerequisites**: Phase 2 Smali testing complete with validated patch
+
+### 3.1 Review Existing Patches for House Style
 
 ```bash
-cd apps/$APP/$VERSION
+cd revanced-src/revanced-patches
 
-# Create smali-validated test with both LJIJJ and LJFF methods
-cp -r decompiled-smali/ smali-tests/smali-validated/
-cd smali-tests/smali-validated/
+# Review TikTok patches to understand patterns
+cat patches/src/main/kotlin/app/revanced/patches/tiktok/interaction/downloads/DownloadsPatch.kt
+cat patches/src/main/kotlin/app/revanced/patches/tiktok/misc/settings/SettingsPatch.kt
 
-# Edit LJIJJ method (LinkSharePackage)
-vim smali_classes3/com/ss/android/ugc/aweme/share/improve/pkg/LinkSharePackage.smali
-# Add your URL cleaning logic after verification
-
-# Edit LJFF method (ShareServiceImpl)
-vim smali_classes3/com/ss/android/ugc/aweme/share/ShareServiceImpl.smali
-# Add your URL cleaning logic after verification
-
-# Build and test both modifications together
-apktool b . -o ../smali-validated.apk
-cd ..
-zipalign -v 4 smali-validated.apk smali-validated-aligned.apk
-apksigner sign --ks ~/.android/debug.keystore --ks-pass pass:android smali-validated-aligned.apk
-
-# Verify both methods work
-adb install -r smali-validated-aligned.apk
-adb logcat -c
-# Test sharing
-adb logcat -d > ../logs/smali-validated-$(date +%Y%m%d-%H%M%S).log
-
-# Document exactly what works
-cd ..
-echo "## Smali Validated - Both Methods" >> injection-points.md
-echo "- LJIJJ: ✅ Works at line 423" >> injection-points.md
-echo "- LJFF: ✅ Works at line 567" >> injection-points.md
-echo "- Both together: ✅ No conflicts" >> injection-points.md
+# Key observations:
+# - Uses bytecodePatch DSL (annotation-based, no JSON metadata)
+# - dependsOn(sharedExtensionPatch) for TikTok
+# - compatibleWith("com.ss.android.ugc.trill"("36.5.4"), ...)
+# - Extension helpers in extensions/tiktok/src/main/java/
 ```
+
+### 3.2 Create Feature Branch
+
+```bash
+cd revanced-src/revanced-patches
+git checkout dev
+git pull origin dev
+git checkout -b feat/your-patch-name
+```
+
+### 3.3 Create Extension Helper (Java)
+
+```bash
+mkdir -p extensions/tiktok/src/main/java/app/revanced/extension/tiktok/yourfeature
+```
+
+Create helper class (example for URL sanitization):
+```java
+package app.revanced.extension.tiktok.yourfeature;
+
+@SuppressWarnings("unused")
+public final class YourHelper {
+    public static String yourMethod(String input) {
+        // Your logic here (matches Smali implementation)
+        return cleanedResult;
+    }
+}
+```
+
+### 3.4 Create Fingerprint & Patch (Kotlin)
+
+```bash
+mkdir -p patches/src/main/kotlin/app/revanced/patches/tiktok/category/feature
+```
+
+**Fingerprints.kt**:
+```kotlin
+package app.revanced.patches.tiktok.category.feature
+
+import app.revanced.patcher.fingerprint
+import com.android.tools.smali.dexlib2.AccessFlags
+
+internal val yourFingerprint = fingerprint {
+    accessFlags(AccessFlags.PUBLIC, AccessFlags.STATIC, AccessFlags.FINAL)
+    returns("LX/ReturnType;")
+    parameters("I", "Ljava/lang/String;", ...)
+    custom { method, classDef ->
+        classDef.endsWith("/YourClass;") && method.name == "yourMethod"
+    }
+}
+```
+
+**YourPatch.kt**:
+```kotlin
+package app.revanced.patches.tiktok.category.feature
+
+import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
+import app.revanced.patcher.patch.bytecodePatch
+import app.revanced.patches.tiktok.misc.extension.sharedExtensionPatch
+import app.revanced.util.getReference
+import app.revanced.util.indexOfFirstInstructionOrThrow
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+
+@Suppress("unused")
+val yourPatch = bytecodePatch(
+    name = "Your patch name",
+    description = "What it does",
+) {
+    dependsOn(sharedExtensionPatch)
+
+    compatibleWith(
+        "com.ss.android.ugc.trill"("36.5.4"),
+        "com.zhiliaoapp.musically"("36.5.4"),
+    )
+
+    execute {
+        yourFingerprint.method.apply {
+            // Find injection point dynamically
+            val targetIndex = indexOfFirstInstructionOrThrow {
+                val ref = getReference<MethodReference>()
+                ref?.definingClass == "LX/TargetClass;" && ref.name == "targetMethod"
+            }
+
+            // Extract register dynamically (safer than hardcoding)
+            val moveResultIndex = targetIndex + 1
+            val urlRegister = (implementation!!.instructions[moveResultIndex]
+                as OneRegisterInstruction).registerA
+
+            // Insert patch code
+            addInstructions(
+                moveResultIndex + 1,
+                """
+                    invoke-static {v$urlRegister}, Lapp/revanced/extension/tiktok/yourfeature/YourHelper;->yourMethod(Ljava/lang/String;)Ljava/lang/String;
+                    move-result-object v$urlRegister
+                """
+            )
+        }
+    }
+}
+```
+
+### 3.5 Build & Test
+
+```bash
+cd revanced-src/revanced-patches
+
+# Configure Android SDK (first time only)
+echo "sdk.dir=$HOME/Android/Sdk" > local.properties
+
+# Build patches
+./gradlew :patches:compileKotlin
+./gradlew :extensions:tiktok:assembleRelease
+
+# Update API declarations (required)
+./gradlew :patches:apiDump
+
+# Build final JAR
+./gradlew :patches:build
+# Output: patches/build/libs/patches-*.rvp
+
+# Test with CLI
+cd ../..  # back to research root
+java -jar revanced-src/revanced-cli.jar patch \
+    -p revanced-src/revanced-patches/patches/build/libs/patches-*.rvp \
+    -o apps/$APP/$VERSION/revanced-builds/your-patch-aligned.apk \
+    -e "Your patch name" \
+    apps/$APP/$VERSION/base.apk
+
+# Install and test
+adb install -r apps/$APP/$VERSION/revanced-builds/your-patch-aligned.apk
+adb logcat -c
+# Trigger feature
+adb logcat -d > apps/$APP/$VERSION/logs/revanced-test.log
+
+# Capture APK hash
+sha256sum apps/$APP/$VERSION/revanced-builds/your-patch-aligned.apk \
+    > apps/$APP/$VERSION/revanced-builds/your-patch-aligned.apk.sha256
+```
+
+### 3.6 Document Results
+
+Update research repo:
+```bash
+# Update attempt-history.md (root)
+echo "| $(date +%Y-%m-%d) | $APP | $VERSION | ReVanced Port | ... | ✅ SUCCESS | ..." >> attempt-history.md
+
+# Update app-specific attempt-history.md
+# Add Phase 7 section with implementation details
+
+# Update test results
+# Add ReVanced validation section to test results file
+
+# Commit to research repo
+git add apps/$APP/$VERSION/logs/*.log \
+        apps/$APP/$VERSION/revanced-builds/*.sha256 \
+        attempt-history.md \
+        apps/$APP/$VERSION/attempt-history.md
+git commit -m "docs($APP): document ReVanced port validation"
+```
+
+### 3.7 Key Patterns
+
+**Dynamic Register Extraction** (safer than hardcoding):
+```kotlin
+val moveResultInstruction = implementation!!.instructions[moveResultIndex]
+val targetRegister = (moveResultInstruction as OneRegisterInstruction).registerA
+```
+
+**CLI Syntax**:
+- `-p` for patches bundle (RVP file)
+- `-e` for enable patch by name (exact match)
+- `-o` for output APK path
+
+**Common Pitfalls**:
+- ❌ Forgetting `:patches:apiDump` → build fails with API mismatch
+- ❌ Hardcoding registers (v1, v2) → breaks if code changes
+- ❌ Missing `local.properties` → extension build fails
+- ✅ Extract registers dynamically from instructions
+- ✅ Use descriptive patch names (used in CLI `-e` flag)
 
 ---
 
