@@ -202,4 +202,6 @@ Build successful, runtime tested, behavior identical to Phase 6 (89% size reduct
 ---
 
 **APK Tested**: TikTok 36.5.4
-**APK Hash**: e8febd0c08b2f5fcbc51cffe0e417ca5a8cd54e90aa2b584e1e5d451eb0a164d
+```
+e8febd0c08b2f5fcbc51cffe0e417ca5a8cd54e90aa2b584e1e5d451eb0a164d  revanced-builds/phase6-revanced-aligned.apk
+```
