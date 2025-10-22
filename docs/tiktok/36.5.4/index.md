@@ -1,8 +1,8 @@
 # TikTok 36.5.4 - Share URL Sanitization Patch
 
-**Status**: [COMPLETE] Phase 7 - ReVanced port validated and ready for upstream PR
+**Status**: [COMPLETE] Phase 7 - ReVanced port validated
 
-**Target**: Remove tracking parameters from share URLs (`utm_*`, `tt_*`, `share_*`, etc.)
+**Target**: Remove tracking parameters from share URLs
 
 **Result**: 89% size reduction (568 → 63 chars), 100% tracking parameter removal
 
@@ -34,7 +34,7 @@
 
 ## Documentation Index
 
-- **[overview.md](overview.md)** - APK metadata, objectives, and key learnings
+- **[overview.md](overview.md)** - APK metadata, objectives, notes
 - **[phases.md](phases.md)** - Phase 4-7 development narratives (discovery through validation)
 - **[injection-points.md](injection-points.md)** - Technical reference for injection location
 - **[obfuscation-map.md](obfuscation-map.md)** - Class/method mappings and tracking parameters
@@ -75,14 +75,6 @@
 - APK SHA256: `e8febd0c08b2f5fcbc51cffe0e417ca5a8cd54e90aa2b584e1e5d451eb0a164d`
 - Branch: `feat/tiktok-sanitize-share-urls`
 - Status: Validated against TikTok 36.5.4, ready for upstream PR
-
----
-
-## Next Steps
-
-- **Submit upstream PR** to revanced-patches with files from Phase 7
-- **Extended testing** with additional share channels (WhatsApp, Twitter, SMS - should all use same URL path)
-- **Future versions** (36.6+): Verify fingerprint still matches, adjust if needed
 
 ---
 

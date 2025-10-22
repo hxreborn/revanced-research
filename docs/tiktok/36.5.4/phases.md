@@ -87,7 +87,7 @@ iget-object v4, p0, Lcom/ss/android/ugc/aweme/share/base/model/BaseSharePackage;
 
 **No lambdas or complex indirection** - straightforward patching possible
 
-### Key Learnings
+### Notes
 
 1. **Smali inspection is reliable**: Following the actual method call graph in bytecode reveals truth better than Java decompilation
 2. **Canonical URLs persist longer than expected**: Share URLs maintain full canonical form until final distribution
@@ -227,11 +227,11 @@ Phase 5 testing revealed:
 
 | Register | Type | Purpose |
 |----------|------|---------|
-| v0 | int | indexOf result (position of '?') |
-| v1 | String | URL (modified in-place, initially contains result from UEa.LIZ()) |
-| v2 | String | const-string temporaries ("?") and substring index |
-| v3 | String | Reserved/unused |
-| v4-v5 | String | Method parameters (p0-p3) - not used by sanitizer |
+| v0 | int | indexOf result |
+| v1 | String | URL (from UEa.LIZ(), modified in-place) |
+| v2 | String | Temporaries (const-string, substring) |
+| v3 | String | Reserved |
+| v4-v5 | String | Method parameters (unused) |
 
 **Smali Code**:
 
@@ -263,55 +263,18 @@ move-result-object v1              # v1 now contains clean URL
 # Fall through to rest of method (null case)
 ```
 
-**Edge Cases Handled**:
+**Edge Cases**:
 
-1. **Null URL** (`v1 == null`)
-   - Guard: `if-eqz v1, :keep_shortened_c`
-   - Action: Skip sanitization entirely
-   - Ensures no NullPointerException
+1. **Null URL**: `if-eqz` guard skips sanitization
+2. **No query string** (`indexOf` → -1): `if-lez` guard skips operation
+3. **Malformed URL** (`indexOf` → 0): `if-lez` guard skips sanitization
+4. **Valid query string** (position > 0): Executes `substring(0, v0)`
 
-2. **No query string** (`indexOf` returns -1)
-   - Guard: `if-lez v0` (jump if v0 <= 0)
-   - Action: Skip substring operation
-   - URL already clean, no operation needed
+### Validation
 
-3. **Query string at position 0** (`indexOf` returns 0, malformed URL like "?param=value")
-   - Guard: `if-lez v0` (jump if v0 <= 0)
-   - Action: Skip sanitization
-   - Unlikely but handled safely
+89% size reduction (568 → 63 chars), 100% parameter removal. See [validation-log.md](validation-log.md) for test details.
 
-4. **Valid query string** (position > 0)
-   - Action: Execute `substring(0, v0)` to extract base URL
-   - Result: Query string removed, tracking parameters eliminated
-
-### Test Results
-
-**Environment**: Android emulator (API 35, arm64-v8a)
-
-| Metric | Before | After | Reduction |
-|--------|--------|-------|-----------|
-| URL Length | 568 chars | 63 chars | **89%** |
-| Parameter Count | 18 tracking params | 0 params | **100%** |
-
-**Before**:
-```
-https://www.tiktok.com/@pure.8k/video/7558444171787373846?_r=1&u_code=0&preview_pb=0&sharer_language=en&_d=f01b3cehlc22d5&share_item_id=7558444171787373846&source=h5_m&timestamp=1760976423&social_share_type=0&utm_source=copy&utm_campaign=client_share&utm_medium=android&share_iid=7563309489895655181&share_link_id=dee1bbdf-0e16-4192-843c-1c412928ba2f&share_app_id=1180&ugbiz_name=MAIN&ug_btm=b2001&link_reflow_popup_iteration_sharer=%7B...%7D
-```
-
-**After**:
-```
-https://www.tiktok.com/@pure.8k/video/7558444171787373846
-```
-
-**Parameters Removed**: utm_* (marketing), share_* (analytics), _d/_r/u_code (internal), timestamp, social_share_type, ugbiz_name, ug_btm, JSON blobs (18 total)
-
-**Validation**:
-- DEX compilation: No errors
-- APK installation: No VerifyError
-- Runtime: No crashes, normal app operation
-- Parameter removal: All 18 removed successfully
-
-### Key Learnings
+### Notes
 
 1. **Whitelist Approach**: Future-proof against new tracking parameters TikTok may add
 2. **Register Type Safety**: v0 exclusively int, v1/v2 exclusively String - prevents DEX verification conflicts
@@ -389,7 +352,7 @@ object urlShorteningFingerprint : MethodFingerprint(
 )
 ```
 
-**Advantage**: Fingerprints survive obfuscation because they match **bytecode structure**, not names. Even if `LIZLLL` gets renamed in future versions, the fingerprint should still match if the call pattern remains the same.
+**Advantage**: Fingerprints match bytecode structure, not names, surviving obfuscation across versions.
 
 **Patch: SanitizeShareUrlsPatch.kt**
 
@@ -430,73 +393,9 @@ result.mutableMethod.addInstruction(
 - Register safe: Preserves type and usage constraints
 - Minimal code injection: Only 2 instructions added
 
-### Build Process
+### Validation
 
-**Phase 1: Gradle Compilation**:
-```bash
-cd revanced-src/revanced-patches
-
-./gradlew :patches:compileKotlin          # ✓ Kotlin compiler validates syntax and types
-./gradlew :extensions:tiktok:assembleRelease  # ✓ Java compiler validates logic
-./gradlew :patches:jar                    # ✓ Creates patches.jar with all metadata
-```
-
-**Phase 2: CLI Patch Application**:
-```bash
-java -jar revanced-src/revanced-cli.jar patch \
-  -p revanced-src/revanced-patches/patches/build/libs/patches-*.rvp \
-  -o patched.apk \
-  base.apk
-
-# ✓ CLI successfully:
-#   1. Loads original APK
-#   2. Applies fingerprint matching
-#   3. Injects ShareUrlSanitizer.clean() call
-#   4. Validates DEX bytecode
-#   5. Rebuilds APK
-#   6. Signs APK
-```
-
-**Phase 3: Runtime Validation**:
-```bash
-adb install -r patched.apk
-# ✓ APK installation successful
-# ✓ `adb install` completed without errors
-
-# On device:
-# Open TikTok
-# Navigate to a video
-# Share to clipboard
-# ✓ Verify: No tracking parameters in clipboard URL
-# ✓ APK SHA256: e8febd0c08b2f5fcbc51cffe0e417ca5a8cd54e90aa2b584e1e5d451eb0a164d
-```
-
-### Validation Results
-
-**Build Metrics**:
-
-| Metric | Result | Notes |
-|--------|--------|-------|
-| Gradle compilation | [PASS] | No errors, clean build |
-| CLI patch application | [PASS] | Fingerprint matched, bytecode injected |
-| APK size | ~323MB | Comparable to original |
-| APK signature | [PASS] | Valid, installable |
-| DEX verification | [PASS] | No bytecode errors |
-
-**Runtime Metrics**:
-
-| Test | Result | Evidence |
-|------|--------|----------|
-| Installation | [PASS] | adb install completed |
-| App launch | [PASS] | No crashes, normal startup |
-| Share to clipboard | [PASS] | Clipboard overlay appeared |
-| URL sanitization | [PASS] | No tracking params in clipboard |
-| Stability | [PASS] | No exceptions in logcat |
-
-**Behavior**: Identical to Phase 6 Smali patch
-- Before: `https://www.tiktok.com/@user/video/ID?utm_source=copy&...` (568 chars, 18 params)
-- After: `https://www.tiktok.com/@user/video/ID` (63 chars, 0 params)
-- Reduction: 89% size reduction, 100% parameter removal
+Build successful, runtime tested, behavior identical to Phase 6 (89% size reduction, 100% parameter removal). See [validation-log.md](validation-log.md) for full build and test results.
 
 ### Design Decisions
 
@@ -588,7 +487,7 @@ revanced-builds/
 - Test with various video types: Short-form, music, live streams
 - Regression testing: Ensure share functionality still works
 
-### Key Learnings
+### Notes
 
 1. **Smali-to-ReVanced Pattern**: Validate in Smali first, then port to framework. Framework handles complexity (fingerprinting, signing), but core logic should work in both contexts.
 
