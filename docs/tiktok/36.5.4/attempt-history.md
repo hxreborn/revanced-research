@@ -68,7 +68,7 @@ move-result-object v1  # v1 now contains clean URL
 - `patches/phase6-url-sanitizer.smali.patch` - Clean patch file
 - `logs/phase6-test-clipboard.log` - Test evidence
 
-### Key Learnings
+### Notes
 
 1. **Whitelist Over Blacklist**: Future-proof against new tracking parameters
 2. **Single-Purpose Registers**: v0=int, v2=String consistently throughout patch
@@ -129,7 +129,7 @@ Ported Phase 6 Smali patch to ReVanced framework with annotation-based metadata:
 - `apps/tiktok/36.5.4/logs/phase6-revanced-build.log`
 - `apps/tiktok/36.5.4/logs/phase6-revanced-test.log`
 
-### Key Learnings
+### Notes
 
 1. **Modern ReVanced**: Uses annotation-based metadata (no separate JSON files)
 2. **Dynamic register extraction**: Safer than hardcoding - extracts from actual instruction

@@ -37,7 +37,7 @@ Remove tracking parameters from TikTok share URLs to protect user privacy. Targe
 | `apps/tiktok/36.5.4/logs/` | Test execution logs and evidence |
 | `apps/tiktok/36.5.4/verification/` | Analysis notes and obfuscation mappings |
 
-## Key Learnings
+## Notes
 
 ### 1. Whitelist Over Blacklist
 Future-proof approach: Strip everything after `?` character (all tracking lives in query string). Prevents breakage when TikTok adds new tracking parameters.
