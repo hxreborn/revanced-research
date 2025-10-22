@@ -10,7 +10,7 @@
 
 Discovered that `UEa.LIZ()` returns canonical URLs with massive tracking blobs (18 parameters, 505 bytes). Implemented URL parameter sanitizer using whitelist approach: strip everything after '?' character.
 
-**Key Achievement**: Clean, tracking-free URLs (`https://www.tiktok.com/@user/video/ID`) delivered to all share channels.
+**Result**: Clean, tracking-free URLs (`https://www.tiktok.com/@user/video/ID`) delivered to all share channels.
 
 ### Technical Details
 

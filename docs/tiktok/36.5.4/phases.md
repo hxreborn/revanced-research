@@ -8,7 +8,7 @@ Complete development timeline from discovery through framework integration.
 
 **Focus**: Locate canonical URL entry point and verify injection location safety
 
-**Result**: [PASS] Breakthrough discovery - canonical URL found at AwemeSharePackage.LJIJJLI(), line 2795
+**Result**: [PASS] Discovery - canonical URL found at AwemeSharePackage.LJIJJLI(), line 2795
 
 ### Failed Attempts (Context)
 
@@ -25,7 +25,7 @@ These early attempts taught us:
 2. Verifying execution flow via Smali inspection is critical
 3. Need to trace the **complete call chain**, not just find methods by name
 
-### Breakthrough: URL Entry Point
+## Discovery: URL Entry Point
 
 **Critical Finding at `AwemeSharePackage.LJIJJLI()` line 2795**:
 
@@ -192,11 +192,11 @@ Even though the functional goal was wrong, the implementation revealed several p
 
 ### Summary
 
-This phase was **not wasted** - it provided:
-1. Proof that the injection point is safe and accessible
-2. Register allocation patterns for Phase 6
-3. Understanding of what data actually flows through UEU.LIZLLL()
-4. Direction for Phase 6's simpler, more effective approach
+Learnings from this phase:
+1. Confirmed injection point is safe and accessible
+2. Established register allocation patterns reused in Phase 6
+3. Identified actual data flow through UEU.LIZLLL()
+4. Informed Phase 6 implementation approach
 
 ---
 
@@ -204,11 +204,11 @@ This phase was **not wasted** - it provided:
 
 **Focus**: Implement whitelist sanitization in raw Smali
 
-**Status**: [VALIDATED] Production-ready, 89% size reduction (568 → 63 chars), 100% tracking parameter removal
+**Status**: [VALIDATED] 89% size reduction (568 → 63 chars), 100% tracking parameter removal
 
-### Breakthrough
+### Discovery from Phase 5
 
-Discovery from Phase 5 testing revealed:
+Phase 5 testing revealed:
 - URLs arriving at UEa.LIZ() are **canonical** (not shortened)
 - They contain a **massive tracking blob** (18 parameters, 505 bytes)
 - Solution: **Strip everything after `?` character** (whitelist approach)
