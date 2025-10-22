@@ -181,7 +181,7 @@ D/URL_AFTER( 1234): https://www.tiktok.com/@user/video/ID
 | Maintenance | Single patch file | Extensible framework |
 | User experience | Manual APK build | One-click via CLI |
 
-**Conclusion**: Both implementations achieve identical functionality. Phase 7 (ReVanced) is production-recommended for distribution.
+**Conclusion**: Both implementations achieve identical functionality. Phase 7 (ReVanced) is recommended for distribution.
 
 ---
 
@@ -230,6 +230,6 @@ D/URL_AFTER( 1234): https://www.tiktok.com/@user/video/ID
 
 ---
 
-**Status**: [PASS] - Both implementations validated. Ready for production use.
+**Status**: [PASS] - Both implementations validated. Ready for distribution.
 
 See [injection-points.md](injection-points.md) for technical reference and [phases/](phases/) for detailed narratives.

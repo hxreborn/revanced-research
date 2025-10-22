@@ -1,6 +1,6 @@
 # Injection Points Reference - TikTok 36.5.4
 
-**Status**: [PASS] Phase 6 production implementation - verified and tested
+**Status**: [PASS] Phase 6 implementation - verified and tested
 
 **For discovery narrative**: See [phases/phase-4-discovery.md](phases/phase-4-discovery.md)
 
@@ -46,7 +46,7 @@ Distribution
 | v0 | int | indexOf result (position of '?') |
 | v1 | String | URL (modified in-place, initially contains result from UEa.LIZ()) |
 | v2 | String | const-string temporaries and substring parameters |
-| v3 | String | Reserved/unused in production |
+| v3 | String | Reserved/unused |
 | v4-v5 | String | Method parameters (p0-p3 mapping) - not used by sanitizer |
 
 ### Implementation Code
