@@ -67,12 +67,12 @@ goto :continue
 
 ### Build Results
 
-- ✅ **Gradle compile**: Success - valid Kotlin bytecode
-- ✅ **DEX assembly**: Success - baksmali/smali cycle valid
-- ✅ **APK installation**: Success - no VerifyError
-- ✅ **App launch**: Success - no crashes
+- **Gradle compile**: Success - valid Kotlin bytecode
+- **DEX assembly**: Success - baksmali/smali cycle valid
+- **APK installation**: Success - no VerifyError
+- **App launch**: Success - no crashes
 
-**But functionally**: ❌ **[BROKEN]** - No shortened URLs detected
+**But functionally**: **[BROKEN]** - No shortened URLs detected
 
 ---
 
