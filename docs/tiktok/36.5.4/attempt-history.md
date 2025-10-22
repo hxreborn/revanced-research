@@ -151,7 +151,7 @@ Ported Phase 6 Smali patch to ReVanced framework with annotation-based metadata:
 **Status**: [DISPROVEN] by Phase 6
 **Why Superseded**: Discovered that `UEa.LIZ()` returns canonical URLs with tracking blobs, not shortened URLs. Approach of detecting/swapping shortened URLs was based on incorrect assumption about what LIZLLL returns.
 
-**Summary**: Attempted to detect shortened vm./vt.tiktok.com URLs and replace with canonical URLs. Patch compiled and DEX verified successfully, but testing revealed the premise was wrong - no shortened URLs appear at this layer. Instead, canonical URLs arrive with massive tracking parameters that need removal (89% of URL size). This discovery led directly to Phase 6's parameter sanitization approach.
+**Summary**: Attempted to detect shortened vm./vt.tiktok.com URLs and replace with canonical URLs. Patch compiled and DEX verified successfully, but testing revealed the premise was wrong - no shortened URLs appear at this layer. Instead, canonical URLs arrive with massive tracking parameters that need removal (89% of URL size). Informed Phase 6's parameter sanitization approach.
 
 **Key Technical Achievements** (carried forward to Phase 6):
 - Proper register allocation: `.registers 6` with v0-v1 local, v2-v5 parameters

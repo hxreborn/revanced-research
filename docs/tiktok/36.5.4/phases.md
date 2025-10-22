@@ -12,7 +12,7 @@ Complete development timeline from discovery through framework integration.
 
 ### Failed Attempts (Context)
 
-Before finding the correct injection point, we tested several hypotheses:
+Before finding the correct injection point, several hypotheses were tested:
 
 | Attempt | Target Method | Location | Result | Reason |
 |---------|--------------|----------|--------|--------|
@@ -20,14 +20,14 @@ Before finding the correct injection point, we tested several hypotheses:
 | Test 2 | `UGk.LJ()` | `X/UGk.smali:3142` | [BROKEN] | Method exists in bytecode but not executed |
 | Test 3 | `AwemeSharePackage.LJIJJ()` | `AwemeSharePackage.smali:21638` | [BROKEN] | Shortened URL already in List - too late in pipeline |
 
-These early attempts taught us:
+Key findings from early attempts:
 1. Static method hooks may not be called at expected times
-2. Verifying execution flow via Smali inspection is critical
-3. Need to trace the **complete call chain**, not just find methods by name
+2. Verifying execution flow via Smali inspection is necessary
+3. Trace the **complete call chain**, not just find methods by name
 
 ## Discovery: URL Entry Point
 
-**Critical Finding at `AwemeSharePackage.LJIJJLI()` line 2795**:
+**Finding at `AwemeSharePackage.LJIJJLI()` line 2795**:
 
 ```smali
 iget-object v4, p0, Lcom/ss/android/ugc/aweme/share/base/model/BaseSharePackage;->url:Ljava/lang/String;
@@ -58,7 +58,7 @@ iget-object v4, p0, Lcom/ss/android/ugc/aweme/share/base/model/BaseSharePackage;
    ↓ Sent to Intent (WhatsApp/Twitter/SMS) or Clipboard
 ```
 
-**Strategic Insight**: The URL gets tracking parameters **added** at step 4, not shortened. This means we need to **sanitize parameters**, not detect/remove shortened URLs.
+The URL gets tracking parameters **added** at step 4, not shortened. Sanitize parameters instead of detecting/removing shortened URLs.
 
 ### Verification (Phase 4)
 
@@ -172,13 +172,13 @@ When comparing URLs before and after patching:
 - **Expected**: `vm.tiktok.com/...` or `vt.tiktok.com/...`
 - **Actual**: `https://www.tiktok.com/@user/video/ID?_r=1&u_code=0&utm_source=copy&...share_link_id=...`
 
-**Realization**: The URL at UEa.LIZ() **is not shortened**. It's a **canonical URL with massive tracking blob** (505 bytes, 18 parameters).
+The URL at UEa.LIZ() **is not shortened**. It's a **canonical URL with massive tracking blob** (505 bytes, 18 parameters).
 
 The "shortening orchestrator" doesn't actually shorten URLs at this layer - it **adds tracking information**.
 
-### What This Phase Taught Us
+### Notes
 
-Even though the functional goal was wrong, the implementation revealed several patterns used in Phase 6:
+The implementation established patterns reused in Phase 6:
 
 1. **Register allocation strategy**: `.registers 6` with proper parameter mapping
 2. **DEX type safety**: Using v0 for int results, v1 for String operations
@@ -213,7 +213,7 @@ Phase 5 testing revealed:
 - They contain a **massive tracking blob** (18 parameters, 505 bytes)
 - Solution: **Strip everything after `?` character** (whitelist approach)
 
-**Strategic Shift**: Instead of detecting/replacing shortened URLs, sanitize the canonical URL by removing query parameters.
+Changed approach: sanitize the canonical URL by removing query parameters instead of detecting/replacing shortened URLs.
 
 ### Technical Implementation
 
