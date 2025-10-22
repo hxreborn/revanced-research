@@ -21,23 +21,25 @@
 
 ## Phase Timeline
 
-| Phase | Date | Focus | Status | Details |
-|-------|------|-------|--------|---------|
-| **Phase 4** | 2025-10-19 | Discovery & verification | [PASS] | [phase-4-discovery.md](phases/phase-4-discovery.md) |
-| **Phase 5** | 2025-10-20 | Bypass shortening orchestrator | [DISPROVEN] | [phase-5-bypass.md](phases/phase-5-bypass.md) |
-| **Phase 6** | 2025-10-20 | URL parameter sanitizer (Smali) | [VALIDATED] | [phase-6-sanitizer.md](phases/phase-6-sanitizer.md) |
-| **Phase 7** | 2025-10-21 | ReVanced port | [VALIDATED] | [phase-7-revanced.md](phases/phase-7-revanced.md) |
+| Phase | Date | Focus | Status |
+|-------|------|-------|--------|
+| **Phase 4** | 2025-10-19 | Discovery & verification | [PASS] |
+| **Phase 5** | 2025-10-20 | Bypass shortening orchestrator | [DISPROVEN] |
+| **Phase 6** | 2025-10-20 | URL parameter sanitizer (Smali) | [VALIDATED] |
+| **Phase 7** | 2025-10-21 | ReVanced port | [VALIDATED] |
+
+**See [phases.md](phases.md) for complete development narratives.**
 
 ---
 
 ## Documentation Index
 
 - **[overview.md](overview.md)** - APK metadata, objectives, and key learnings
+- **[phases.md](phases.md)** - Phase 4-7 development narratives (discovery through validation)
 - **[injection-points.md](injection-points.md)** - Technical reference for injection location
 - **[obfuscation-map.md](obfuscation-map.md)** - Class/method mappings and tracking parameters
 - **[validation-log.md](validation-log.md)** - Test scenarios and results summary
 - **[attempt-history.md](attempt-history.md)** - Complete attempt timeline and learnings
-- **phases/** - Phase-specific narratives and implementation details
 
 ---
 
