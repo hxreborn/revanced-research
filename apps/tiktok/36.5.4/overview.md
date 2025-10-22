@@ -23,7 +23,7 @@ Remove tracking parameters from TikTok share URLs to protect user privacy. Targe
 
 ### Original APK Hash (SHA256)
 ```
-[See apps/tiktok/36.5.4/apk-metadata.txt]
+0552a22f1fb944b42bd265d5d5c6e342404396517e94ec1f2809f8bbfcb4d80d  base.apk
 ```
 
 ## Research Workspace

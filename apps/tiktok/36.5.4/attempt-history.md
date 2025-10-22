@@ -114,7 +114,9 @@ Ported Phase 6 Smali patch to ReVanced framework with annotation-based metadata:
 - **CLI build**: [PASS] - Generated patches-5.43.1.rvp bundle (see `logs/phase6-revanced-build.log`)
 - **Runtime test**: [PASS] - Clipboard overlay triggered, no crashes (see `logs/phase6-revanced-test.log`)
 - **Behavior**: Identical to Phase 6 Smali patch (89% reduction expected)
-- **APK hash**: `e8febd0c08b2f5fcbc51cffe0e417ca5a8cd54e90aa2b584e1e5d451eb0a164d`
+```
+e8febd0c08b2f5fcbc51cffe0e417ca5a8cd54e90aa2b584e1e5d451eb0a164d  revanced-builds/phase6-revanced-aligned.apk
+```
 
 ### Files Created
 

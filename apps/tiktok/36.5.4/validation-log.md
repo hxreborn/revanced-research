@@ -121,7 +121,9 @@ CLI Output:
 > Signed APK: SHA256 signature valid
 ```
 
-**APK Hash**: `e8febd0c08b2f5fcbc51cffe0e417ca5a8cd54e90aa2b584e1e5d451eb0a164d`
+```
+e8febd0c08b2f5fcbc51cffe0e417ca5a8cd54e90aa2b584e1e5d451eb0a164d  revanced-builds/phase6-revanced-aligned.apk
+```
 
 ### Runtime Validation
 
