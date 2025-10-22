@@ -1,229 +1,43 @@
-# Phase Narratives - TikTok 36.5.4 Share URL Sanitization
-
-Complete development timeline from discovery through framework integration.
+# Phase Reference - TikTok 36.5.4 Share URL Sanitization
 
 ---
 
-## Phase 4: Discovery & Verification (2025-10-19)
+## Phase 4: Injection Point Verification
 
-**Focus**: Locate canonical URL entry point and verify injection location safety
+**Status**: [PASS]
+**Finding**: Canonical URL at `AwemeSharePackage.LJIJJLI()`, line 2795
 
-**Result**: [PASS] Discovery - canonical URL found at AwemeSharePackage.LJIJJLI(), line 2795
+### Failed Injection Attempts
 
-### Failed Attempts (Context)
+| Target Method | Location | Result |
+|--------------|----------|--------|
+| `UEU.LIZJ()` | `X/UEU.smali:150` | [BROKEN] Method not called during share |
+| `UGk.LJ()` | `X/UGk.smali:3142` | [BROKEN] Not in call stack |
+| `AwemeSharePackage.LJIJJ()` | `AwemeSharePackage.smali:21638` | [BROKEN] URL already shortened |
 
-Before finding the correct injection point, several hypotheses were tested:
+### Verified Injection Point
 
-| Attempt | Target Method | Location | Result | Reason |
-|---------|--------------|----------|--------|--------|
-| Test 1 | `UEU.LIZJ()` | `X/UEU.smali:150` | [BROKEN] | Method never called during share flow |
-| Test 2 | `UGk.LJ()` | `X/UGk.smali:3142` | [BROKEN] | Method exists in bytecode but not executed |
-| Test 3 | `AwemeSharePackage.LJIJJ()` | `AwemeSharePackage.smali:21638` | [BROKEN] | Shortened URL already in List - too late in pipeline |
+**File**: `smali_classes15/X/UEU.smali`
+**Method**: `LIZLLL(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)LX/Wu4;`
+**Line**: 3866 (after `move-result-object` from `UEa.LIZ()`)
 
-Key findings from early attempts:
-1. Static method hooks may not be called at expected times
-2. Verifying execution flow via Smali inspection is necessary
-3. Trace the **complete call chain**, not just find methods by name
-
-## Discovery: URL Entry Point
-
-**Finding at `AwemeSharePackage.LJIJJLI()` line 2795**:
-
-```smali
-iget-object v4, p0, Lcom/ss/android/ugc/aweme/share/base/model/BaseSharePackage;->url:Ljava/lang/String;
-# v4 = "https://www.tiktok.com/@user/video/ID?params..."
-```
-
-**URL arrives CANONICAL**, meaning:
-- No shortening has occurred yet
-- No tracking parameters stripped
-- Complete control over what gets distributed to share channels
-
-### URL Processing Flow
-
-```
-1. AwemeSharePackage.LJIJJLI()          (line 2795)
-   ↓ Receives canonical URL from BaseSharePackage
-
-2. ULX.LIZ(v4, p0)                      (formats URL, still canonical)
-   ↓
-
-3. UEU.LIZLLL(v3, v2, v1, v0)           (line 2932, shortening orchestrator)
-   ↓ Calls UEa.LIZ()
-
-4. UEa.LIZ()                            (ADDS tracking blob)
-   ↓ Returns URL with 18 parameters, 505 bytes
-
-5. Distribution
-   ↓ Sent to Intent (WhatsApp/Twitter/SMS) or Clipboard
-```
-
-The URL gets tracking parameters **added** at step 4, not shortened. Sanitize parameters instead of detecting/removing shortened URLs.
-
-### Verification (Phase 4)
-
-**Test Environment**: Fresh decompilation with minimal logging patch at line 3866 in `X/UEU.smali`
-
-**Verification Results**:
-- **Compilation**: No errors, valid bytecode (103MB DEX)
-- **Installation**: No DEX verification errors or VerifyError exceptions
-- **DEX verification**: Passed without issues
-- **App launch**: Normal operation, no crashes
-- **Share function**: Trigger share, observe execution reaches patched location
-
-**Obfuscation Mappings Verified**:
-- `p003X.UEU` - URL transformer (classes15.dex)
-- `p003X.UEa` - URL builder with tracking (classes15.dex)
-- `p003X.C54243JOk` - AwemeSharePackage factory (classes9.dex)
-- Share plumbing - Intent (ACTION_SEND, EXTRA_TEXT), ClipboardManager
-
-**Call Chain Verification**:
-1. User taps "Share"
-2. AwemeSharePackage.LJIJJLI() called with Aweme object
-3. Canonical URL retrieved from BaseSharePackage
-4. UEU.LIZLLL() orchestrator called
-5. Inside LIZLLL: UEa.LIZ() adds tracking parameters
-6. Result distributed to share channels
-
-**No lambdas or complex indirection** - straightforward patching possible
-
-### Notes
-
-1. **Smali inspection is reliable**: Following the actual method call graph in bytecode reveals truth better than Java decompilation
-2. **Canonical URLs persist longer than expected**: Share URLs maintain full canonical form until final distribution
-3. **Tracking happens late**: The last method in the chain (UEa.LIZ()) is where parameters are added
-4. **Register pressure is manageable**: LIZLLL uses only v0-v5, leaving room for temporary operations
-5. **DEX verification is strict but predictable**: Following type safety rules prevents failures
+URL arrives canonical at `AwemeSharePackage.LJIJJLI()` and is passed through `UEU.LIZLLL()` where `UEa.LIZ()` adds 18 tracking parameters before distribution.
 
 ---
 
-## Phase 5: Bypass Shortening Orchestrator (2025-10-20)
+## Phase 6: Smali Implementation
 
-**Focus**: Replace shortened URLs with canonical URLs to remove tracking
+**Status**: [VALIDATED]
+**Result**: 89% size reduction (568 → 63 chars), 100% parameter removal
 
-**Status**: [DISPROVEN] by Phase 6 - Approach based on incorrect assumption
+### Injection Location
 
-### Hypothesis
+**File**: `smali_classes15/X/UEU.smali`
+**Method**: `LIZLLL(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)LX/Wu4;`
+**Line**: 3866
+**Register Change**: `.registers 6` → `.registers 8`
 
-**Original Assumption**: UEU.LIZLLL() returns shortened URLs (vm./vt.tiktok.com) that need to be replaced with canonical URLs
-
-**Implementation Plan**:
-1. Detect if URL is shortened (starts with vm./vt.tiktok.com)
-2. Replace with canonical form (www.tiktok.com/@user/video/ID)
-3. Bypass the shortening orchestrator entirely
-
-### Technical Implementation
-
-**Injection Point**:
-- **File**: `smali_classes15/X/UEU.smali`
-- **Method**: `LIZLLL(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)LX/Wu4;`
-- **Line**: 3866 (after `move-result-object` from `UEa.LIZ()` call)
-
-**Register Allocation**:
-```
-.registers 6
-v0 = local (int - detection result)
-v1 = local (String - URL)
-v2-v5 = method parameters (p0-p3)
-```
-
-**Smali Code Attempted**:
-```smali
-move-result-object v1           # v1 = URL from UEa.LIZ()
-
-# Null check
-if-eqz v1, :keep_shortened
-
-# Check if URL is shortened (vm. or vt. prefix)
-const-string v0, "vm.tiktok.com"
-invoke-virtual {v1, v0}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
-move-result v0
-
-if-nez v0, :check_vt            # If not vm., check vt.
-
-# Replace with canonical form
-const-string v1, "https://www.tiktok.com/@user/video/ID"
-goto :continue
-
-:check_vt
-# Similar check for vt.tiktok.com...
-# (pattern repeated)
-
-:keep_shortened
-# Continue to rest of method
-
-:continue
-# Method continues...
-```
-
-**Build Results**:
-- **Gradle compile**: Success - valid Kotlin bytecode
-- **DEX assembly**: Success - baksmali/smali cycle valid
-- **APK installation**: Success - no VerifyError
-- **App launch**: Success - no crashes
-
-**But functionally**: **[BROKEN]** - No shortened URLs detected
-
-### Why This Approach Failed
-
-**Discovery During Testing**:
-
-When comparing URLs before and after patching:
-- **Expected**: `vm.tiktok.com/...` or `vt.tiktok.com/...`
-- **Actual**: `https://www.tiktok.com/@user/video/ID?_r=1&u_code=0&utm_source=copy&...share_link_id=...`
-
-The URL at UEa.LIZ() **is not shortened**. It's a **canonical URL with massive tracking blob** (505 bytes, 18 parameters).
-
-The "shortening orchestrator" doesn't actually shorten URLs at this layer - it **adds tracking information**.
-
-### Notes
-
-The implementation established patterns reused in Phase 6:
-
-1. **Register allocation strategy**: `.registers 6` with proper parameter mapping
-2. **DEX type safety**: Using v0 for int results, v1 for String operations
-3. **Label naming**: Suffix labels with `_c` or unique identifiers (`:keep_shortened_c`, `:check_shortened`) to prevent collisions
-4. **Null safety pattern**: Always `if-eqz` before calling methods
-5. **Control flow**: Using `goto` and conditional branches together
-
-**The Real Problem**: URLs already **contain** the tracking parameters by the time they reach LIZLLL(). The solution isn't to detect and replace URLs, but to **strip the query parameters** from the canonical URL.
-
-**Result**: Leads directly to Phase 6's parameter sanitization approach.
-
-### Summary
-
-Learnings from this phase:
-1. Confirmed injection point is safe and accessible
-2. Established register allocation patterns reused in Phase 6
-3. Identified actual data flow through UEU.LIZLLL()
-4. Informed Phase 6 implementation approach
-
----
-
-## Phase 6: URL Parameter Sanitizer - Smali Implementation (2025-10-20)
-
-**Focus**: Implement whitelist sanitization in raw Smali
-
-**Status**: [VALIDATED] 89% size reduction (568 → 63 chars), 100% tracking parameter removal
-
-### Discovery from Phase 5
-
-Phase 5 testing revealed:
-- URLs arriving at UEa.LIZ() are **canonical** (not shortened)
-- They contain a **massive tracking blob** (18 parameters, 505 bytes)
-- Solution: **Strip everything after `?` character** (whitelist approach)
-
-Changed approach: sanitize the canonical URL by removing query parameters instead of detecting/replacing shortened URLs.
-
-### Technical Implementation
-
-**Injection Point**:
-- **File**: `smali_classes15/X/UEU.smali`
-- **Method**: `LIZLLL(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)LX/Wu4;`
-- **Line**: 3866 (immediately after `move-result-object v1` from `UEa.LIZ()` call)
-- **Directive Change**: `.registers 6` → `.registers 8` (add v2-v3 for temporaries)
-
-**Register Allocation**:
+### Register Allocation
 
 | Register | Type | Purpose |
 |----------|------|---------|
@@ -233,7 +47,7 @@ Changed approach: sanitize the canonical URL by removing query parameters instea
 | v3 | String | Reserved |
 | v4-v5 | String | Method parameters (unused) |
 
-**Smali Code**:
+### Smali Code
 
 ```smali
 move-result-object v1              # v1 = canonical URL from UEa.LIZ()
@@ -263,7 +77,7 @@ move-result-object v1              # v1 now contains clean URL
 # Fall through to rest of method (null case)
 ```
 
-**Edge Cases**:
+### Edge Cases
 
 1. **Null URL**: `if-eqz` guard skips sanitization
 2. **No query string** (`indexOf` → -1): `if-lez` guard skips operation
@@ -274,69 +88,37 @@ move-result-object v1              # v1 now contains clean URL
 
 89% size reduction (568 → 63 chars), 100% parameter removal. See [validation-log.md](validation-log.md) for test details.
 
-### Notes
-
-1. **Whitelist Approach**: Future-proof against new tracking parameters TikTok may add
-2. **Register Type Safety**: v0 exclusively int, v1/v2 exclusively String - prevents DEX verification conflicts
-3. **Label Hygiene**: Suffix `:_c` on labels prevents collisions when multiple patches are applied
-4. **Single Operation**: One `indexOf` + one `substring` = minimal performance impact
-5. **Validated**: No debug logging removal needed - validated immediately after validation
-6. **Always-On Behavior**: Privacy-first approach with no settings toggle (unlike Spotify/Instagram implementations)
-
 ---
 
-## Phase 7: ReVanced Port - Framework Integration (2025-10-21)
+## Phase 7: ReVanced Port
 
-**Focus**: Port Phase 6 Smali implementation to ReVanced framework
+**Status**: [WORKING]
+**Result**: Compiled, CLI built, runtime tested (identical to Phase 6)
 
-**Status**: [WORKING] Compiled, CLI built, runtime validated
+### Extension: ShareUrlSanitizer.java
 
-### Overview
+**Location**: `extensions/tiktok/src/main/java/app/revanced/extension/tiktok/share/ShareUrlSanitizer.java`
 
-Ported the Smali sanitizer from Phase 6 into the ReVanced framework using:
-- **Java Extension**: `ShareUrlSanitizer.clean()` - contains logic extracted from Smali
-- **Kotlin BytecodePatch**: `SanitizeShareUrlsPatch` - fingerprint-based injection
-- **Fingerprint**: Targets `p003X.UEU.LIZLLL()` method signature
-- **Strategy**: Always-on (no settings toggle) - privacy-first default
-
-### Architecture
-
-**Extension: ShareUrlSanitizer.java**
-
-Purpose: Encapsulate the URL sanitization logic in Java
-
-Location: `extensions/tiktok/src/main/java/app/revanced/extension/tiktok/share/ShareUrlSanitizer.java`
-
-Logic (mirrors Smali implementation):
 ```java
 public static String clean(String url) {
     if (url == null) {
-        return url;  // Null safety
+        return url;
     }
 
     int questionMarkIndex = url.indexOf("?");
 
     if (questionMarkIndex <= 0) {
-        return url;  // No query string or malformed URL
+        return url;
     }
 
-    return url.substring(0, questionMarkIndex);  // Remove everything after '?'
+    return url.substring(0, questionMarkIndex);
 }
 ```
 
-**Key Properties**:
-- Static method for simplicity
-- No side effects, pure function
-- Identical behavior to Smali version
-- Thread-safe (immutable String operations)
+### Fingerprint
 
-**Fingerprint: urlShorteningFingerprint**
+**Location**: `patches/src/main/kotlin/app/revanced/patches/tiktok/misc/share/Fingerprints.kt`
 
-Purpose: Identify the target method reliably across app versions
-
-Location: `patches/src/main/kotlin/app/revanced/patches/tiktok/misc/share/Fingerprints.kt`
-
-Bytecode Signature:
 ```kotlin
 object urlShorteningFingerprint : MethodFingerprint(
     returnType = "Lx/Wu4;",
@@ -352,22 +134,18 @@ object urlShorteningFingerprint : MethodFingerprint(
 )
 ```
 
-**Advantage**: Fingerprints match bytecode structure, not names, surviving obfuscation across versions.
+Fingerprints match bytecode structure, not names, surviving obfuscation across versions.
 
-**Patch: SanitizeShareUrlsPatch.kt**
+### Patch: SanitizeShareUrlsPatch.kt
 
-Purpose: Inject the sanitizer call into the bytecode
+**Location**: `patches/src/main/kotlin/app/revanced/patches/tiktok/misc/share/SanitizeShareUrlsPatch.kt`
 
-Location: `patches/src/main/kotlin/app/revanced/patches/tiktok/misc/share/SanitizeShareUrlsPatch.kt`
-
-Strategy:
 1. Use fingerprint to find the target method
 2. Locate the `move-result-object` instruction that receives UEa.LIZ() result
 3. Extract the destination register dynamically: `OneRegisterInstruction.registerA`
 4. Inject a call to `ShareUrlSanitizer.clean()`
 5. Continue with original method flow
 
-Key Code:
 ```kotlin
 val instruction = result.mutableMethod.implementation!!
     .instructions[indexOfMoveResultObject]
@@ -387,118 +165,41 @@ result.mutableMethod.addInstruction(
 )
 ```
 
-**Advantages**:
-- Dynamic register extraction: Doesn't hardcode v0, v1, v2
-- Version-resilient: If method structure changes, fingerprint fails gracefully (with clear error)
-- Register safe: Preserves type and usage constraints
-- Minimal code injection: Only 2 instructions added
+Dynamic register extraction. No hardcoding of register numbers.
+
+### Build
+
+```bash
+cd revanced-src/revanced-patches
+./gradlew :patches:compileKotlin
+./gradlew :extensions:tiktok:assembleRelease
+./gradlew :patches:jar
+```
+
+```bash
+java -jar revanced-src/revanced-cli.jar patch \
+  -p revanced-src/revanced-patches/patches/build/libs/patches-*.rvp \
+  -o patched.apk \
+  base.apk
+```
 
 ### Validation
 
 Build successful, runtime tested, behavior identical to Phase 6 (89% size reduction, 100% parameter removal). See [validation-log.md](validation-log.md) for full build and test results.
 
-### Design Decisions
+---
 
-**1. Always-On (No Settings Toggle)**
+## Design Notes
 
-Decision: Privacy-first default, no user configuration
+**Always-On**: No settings toggle. Privacy-first default.
 
-Reasoning:
-- URL tracking is inherently deceptive (users rarely expect it)
-- Privacy protection shouldn't require user intervention
-- TikTok's share feature should not include tracking by default
-- Consistent with privacy patches (not feature toggles)
+**Register Extraction**: Dynamic via `OneRegisterInstruction.registerA`, not hardcoded.
 
-**2. Extension vs. Inline Logic**
+**Whitelist Approach**: Remove everything after `?` character. Future-proof against new tracking parameters.
 
-Decision: Extracted logic to `ShareUrlSanitizer.clean()` extension
-
-Advantages:
-- Reusable across multiple patches (if needed)
-- Easier to test independently
-- Clear separation of concerns
-- Matches ReVanced conventions
-
-**3. Dynamic Register Extraction**
-
-Decision: Use `OneRegisterInstruction.registerA` to extract destination register at runtime
-
-Advantages:
-- Version-resilient: Works even if register allocation changes
-- Safer than hardcoding: No assumption about register numbering
-- Follows modern ReVanced best practices
-
-**4. Fingerprint Over Line Numbers**
-
-Decision: Bytecode fingerprint instead of hardcoded line numbers
-
-Advantages:
-- Line numbers change with any code edit (fragile)
-- Fingerprints survive obfuscation (TikTok obfuscates heavily)
-- Graceful failure: Fingerprint mismatch = clear error, not silent breakage
-
-### Compatibility & Future Versions
-
-**TikTok 36.5.4**: Validated - Fingerprint matched, patch applied, runtime tested
-
-**TikTok 36.6 and Later**: Unknown - Fingerprint may or may not match depending on:
-- Whether `p003X.UEU.LIZLLL()` method signature changes
-- Whether obfuscation mapping changes
-- Whether call structure (the `invoke-static` → `move-result-object` pattern) remains same
-
-**Testing Required**: Apply patch to new version, observe:
-- Does fingerprint match? → Patch applies automatically
-- Does fingerprint fail? → Recompile, update fingerprint if needed
-- Does patched app work? → Manual testing on new version
-
-### Files Created
-
-**ReVanced Patches Repository** (feat/tiktok-sanitize-share-urls):
-```
-extensions/tiktok/src/main/java/app/revanced/extension/tiktok/share/
-├── ShareUrlSanitizer.java              # Extension with clean() method
-
-patches/src/main/kotlin/app/revanced/patches/tiktok/misc/share/
-├── Fingerprints.kt                     # urlShorteningFingerprint
-└── SanitizeShareUrlsPatch.kt            # Patch with injection logic
-```
-
-**Research Repository** (apps/tiktok/36.5.4/):
-```
-logs/
-├── phase6-revanced-build.log           # Gradle & CLI build output
-└── phase6-revanced-test.log            # Runtime test evidence
-
-revanced-builds/
-└── phase6-revanced-aligned.apk         # Signed, testable APK
-```
-
-### Next Steps
-
-**Upstream Submission**:
-1. PR to revanced-patches with ShareUrlSanitizer.java, Fingerprints.kt, SanitizeShareUrlsPatch.kt
-2. Code review for fingerprint accuracy, register handling, edge cases
-3. Merge & release in next revanced-patches version
-4. Available via ReVanced CLI as "Sanitize share URLs"
-
-**Extended Testing** (Recommended):
-- Test with additional share channels: WhatsApp, Twitter, SMS, Email
-- Verify URL sanitization consistent across all channels
-- Test with various video types: Short-form, music, live streams
-- Regression testing: Ensure share functionality still works
-
-### Notes
-
-1. **Smali-to-ReVanced Pattern**: Validate in Smali first, then port to framework. Framework handles complexity (fingerprinting, signing), but core logic should work in both contexts.
-
-2. **Modern ReVanced Uses Fingerprints**: Line numbers are fragile. Fingerprints based on bytecode patterns are future-proof (within reason).
-
-3. **Dynamic Register Extraction Matters**: Don't hardcode register numbers. Extract from actual instructions - more resilient to changes.
-
-4. **Extensions Simplify Logic**: Extracting logic to Java makes the patch cleaner and the extension reusable.
-
-5. **Always-On Privacy Patches**: Privacy/security fixes don't need user toggles. They should be default behavior.
+**Type Safety**: v0 always int, v1/v2 always String. DEX verifier requirement.
 
 ---
 
-**Status**: [COMPLETE] - Phases 4-7 documented. Ready for reference, extension, or upstream submission.
+**APK Tested**: TikTok 36.5.4
+**APK Hash**: e8febd0c08b2f5fcbc51cffe0e417ca5a8cd54e90aa2b584e1e5d451eb0a164d
