@@ -230,7 +230,7 @@ Discovery from Phase 5 testing revealed:
 | v0 | int | indexOf result (position of '?') |
 | v1 | String | URL (modified in-place, initially contains result from UEa.LIZ()) |
 | v2 | String | const-string temporaries ("?") and substring index |
-| v3 | String | Reserved/unused in production |
+| v3 | String | Reserved/unused |
 | v4-v5 | String | Method parameters (p0-p3) - not used by sanitizer |
 
 **Smali Code**:
@@ -317,7 +317,7 @@ https://www.tiktok.com/@pure.8k/video/7558444171787373846
 2. **Register Type Safety**: v0 exclusively int, v1/v2 exclusively String - prevents DEX verification conflicts
 3. **Label Hygiene**: Suffix `:_c` on labels prevents collisions when multiple patches are applied
 4. **Single Operation**: One `indexOf` + one `substring` = minimal performance impact
-5. **Production Ready**: No debug logging removal needed - production-ready immediately after validation
+5. **Validated**: No debug logging removal needed - validated immediately after validation
 6. **Always-On Behavior**: Privacy-first approach with no settings toggle (unlike Spotify/Instagram implementations)
 
 ---
