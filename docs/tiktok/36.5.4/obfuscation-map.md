@@ -124,7 +124,7 @@ Distribution
 
 **Build Artifacts**: `smali-tests/05-option-c-bypass/phase5-final-aligned.apk`
 
-See [phases/phase-5-bypass.md](phases/phase-5-bypass.md) for detailed narrative.
+Superseded by Phase 6 (see [phases.md](phases.md) for full timeline).
 
 ---
 
@@ -157,10 +157,10 @@ See [phases/phase-5-bypass.md](phases/phase-5-bypass.md) for detailed narrative.
 ## Related Documentation
 
 - **Injection point details**: [injection-points.md](injection-points.md)
-- **Phase narratives**: [phases/](phases/) directory
+- **Phase narratives**: [phases.md](phases.md)
 - **Validation evidence**: [validation-log.md](validation-log.md)
-- **Phase 6 walkthrough**: [phases/phase-6-sanitizer.md](phases/phase-6-sanitizer.md)
-- **Phase 7 ReVanced**: [phases/phase-7-revanced.md](phases/phase-7-revanced.md)
+- **Phase 6 walkthrough**: [phases.md#phase-6-smali-implementation](phases.md)
+- **Phase 7 ReVanced**: [phases.md#phase-7-revanced-port](phases.md)
 
 ---
 
