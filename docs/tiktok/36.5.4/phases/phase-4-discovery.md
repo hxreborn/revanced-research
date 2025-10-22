@@ -14,9 +14,9 @@ Before finding the correct injection point, we tested several hypotheses:
 
 | Attempt | Target Method | Location | Result | Reason |
 |---------|--------------|----------|--------|--------|
-| Test 1 | `UEU.LIZJ()` | `X/UEU.smali:150` | [FAIL] | Method never called during share flow |
-| Test 2 | `UGk.LJ()` | `X/UGk.smali:3142` | [FAIL] | Method exists in bytecode but not executed |
-| Test 3 | `AwemeSharePackage.LJIJJ()` | `AwemeSharePackage.smali:21638` | [FAIL] | Shortened URL already in List - too late in pipeline |
+| Test 1 | `UEU.LIZJ()` | `X/UEU.smali:150` | [BROKEN] | Method never called during share flow |
+| Test 2 | `UGk.LJ()` | `X/UGk.smali:3142` | [BROKEN] | Method exists in bytecode but not executed |
+| Test 3 | `AwemeSharePackage.LJIJJ()` | `AwemeSharePackage.smali:21638` | [BROKEN] | Shortened URL already in List - too late in pipeline |
 
 These early attempts taught us that:
 1. Static method hooks may not be called at expected times

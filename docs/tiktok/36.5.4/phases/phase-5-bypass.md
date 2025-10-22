@@ -2,7 +2,7 @@
 
 **Focus**: Replace shortened URLs with canonical URLs to remove tracking
 
-**Status**: [SUPERSEDED] by Phase 6 - Approach based on incorrect assumption
+**Status**: [DISPROVEN] by Phase 6 - Approach based on incorrect assumption
 
 **Date**: 2025-10-20
 
@@ -72,7 +72,7 @@ goto :continue
 - ✅ **APK installation**: Success - no VerifyError
 - ✅ **App launch**: Success - no crashes
 
-**But functionally**: ❌ **[FAIL]** - No shortened URLs detected
+**But functionally**: ❌ **[BROKEN]** - No shortened URLs detected
 
 ---
 
@@ -120,7 +120,7 @@ URLs already **contain** the tracking parameters by the time they reach LIZLLL()
 
 ## Conclusion
 
-**Status**: [SUPERSEDED]
+**Status**: [DISPROVEN]
 
 This phase was **not wasted** - it provided:
 1. Proof that the injection point is safe and accessible
