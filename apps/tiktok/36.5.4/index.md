@@ -1,104 +1,90 @@
-# TikTok 36.5.4 - Share URL Sanitization Patch
+# TikTok 36.5.4 - Research Workspace
 
-**Status**: [COMPLETE] Phase 7 - ReVanced port validated
-
-**Target**: Remove tracking parameters from share URLs
-
-**Result**: 89% size reduction (568 → 63 chars), 100% tracking parameter removal
+Reverse-engineering workspace for TikTok 36.5.4 (36.5.4) with focus on tracking parameter removal from share URLs.
 
 ---
 
-## Quick Links
+## Available Patches
 
-| Item | Location |
-|------|----------|
-| **Patch Documentation** | [patches/README.md](patches/README.md) |
-| **Smali Implementation** | [patches/share-url-sanitizer/](patches/share-url-sanitizer/) |
-| **ReVanced (Java)** | `revanced-src/revanced-patches/extensions/tiktok/src/main/java/app/revanced/extension/tiktok/share/ShareUrlSanitizer.java` |
-| **ReVanced (Kotlin)** | `revanced-src/revanced-patches/patches/src/main/kotlin/app/revanced/patches/tiktok/misc/share/SanitizeShareUrlsPatch.kt` |
-| **Test Evidence** | [logs/phase6-test-clipboard.log](logs/phase6-test-clipboard.log) |
+| Patch | Purpose | Status |
+|-------|---------|--------|
+| **[Share URL Sanitizer](patches/share-url-sanitizer/)** | Remove tracking parameters (utm_*, share_*, etc.) from share URLs | ✅ Complete |
+
+See [patches/README.md](patches/README.md) for all available patches.
 
 ---
 
-## Phase Timeline
+## Quick Start
 
-| Phase | Date | Focus | Status |
-|-------|------|-------|--------|
-| **Phase 4** | 2025-10-19 | Discovery & verification | [PASS] |
-| **Phase 5** | 2025-10-20 | Bypass shortening orchestrator | [DISPROVEN] |
-| **Phase 6** | 2025-10-20 | URL parameter sanitizer (Smali) | [VALIDATED] |
-| **Phase 7** | 2025-10-21 | ReVanced port | [VALIDATED] |
+### Want to use the Share URL Sanitizer patch?
 
-**See [phases.md](phases.md) for complete development narratives.**
+**Recommended (ReVanced)**:
+```bash
+cd revanced-src/revanced-patches
+./gradlew build
+java -jar revanced-cli.jar -a base.apk --patch "Sanitize share URLs" --out patched.apk
+```
+
+**Manual (Smali)**:
+See [patches/share-url-sanitizer/README.md](patches/share-url-sanitizer/README.md) for detailed instructions.
 
 ---
 
 ## Documentation Index
 
-### Main Docs
-- **[overview.md](overview.md)** - APK metadata, objectives, build commands, notes
-- **[phases.md](phases.md)** - Phase 4-7 technical reference (specifications, code, validation)
-- **[injection-points.md](injection-points.md)** - Injection location, register allocation, implementation
-- **[validation-log.md](validation-log.md)** - Test scenarios and results summary
-- **[obfuscation-map.md](obfuscation-map.md)** - Class/method mappings and tracking parameters
+### Entry Points
+- **[patches/README.md](patches/README.md)** - All patches with status and navigation
+- **[patches/share-url-sanitizer/README.md](patches/share-url-sanitizer/)** - Feature guide, usage, and technical details
+
+### Technical Reference
+- **[phases.md](phases.md)** - Phase 4-7 technical specs (Smali & ReVanced implementations)
+- **[injection-points.md](injection-points.md)** - Injection location, register allocation, bytecode
+- **[obfuscation-map.md](obfuscation-map.md)** - Class/method mappings
+- **[validation-log.md](validation-log.md)** - Test results and APK hashes
+
+### Research Notes
+- **[overview.md](overview.md)** - APK metadata, build commands, design notes
 - **[attempt-history.md](attempt-history.md)** - Complete attempt timeline and findings
 
-### Patches & Code
-- **[patches/README.md](patches/README.md)** - Patch index and navigation
-- **[patches/share-url-sanitizer/](patches/share-url-sanitizer/)** - Share URL sanitizer implementation
-  - `smali.patch` - Smali bytecode implementation (Phase 6)
-  - `README.md` - Feature documentation with links
-
 ---
 
-## Key Findings
+## Workspace Structure
 
-### URL Processing Flow
-1. **AwemeSharePackage.LJIJJLI()** (line 2795) - Entry point with canonical URL
-2. **UEU.LIZLLL()** (line 3866) - Orchestrator that calls UEa.LIZ()
-3. **UEa.LIZ()** - Returns canonical URL **with massive tracking blob** (18 params, 505 bytes)
-4. **Distribution** - URL goes to Intent (WhatsApp/Twitter/SMS) or Clipboard
-
-### Injection Strategy
-- **Location**: `smali_classes15/X/UEU.smali:3866` (after `move-result-object` from `UEa.LIZ()`)
-- **Approach**: Whitelist sanitization - strip everything after `?` character
-- **Register Safe**: v0=int, v1/v2=String (no DEX verification conflicts)
-- **Edge Cases**: Null check, no `?`, `?` at position 0 - all handled
-
-### Results
-- **Before**: `https://www.tiktok.com/@user/video/ID?_r=1&u_code=0&utm_source=copy&...` (568 chars)
-- **After**: `https://www.tiktok.com/@user/video/ID` (63 chars)
-- **Removed**: 18 tracking parameters (utm_*, share_*, _d, _r, timestamps, JSON blobs)
-
----
-
-## Build Information
-
-**APK Metadata**:
-- Package: `com.zhiliaoapp.musically` (TikTok China fork, matches 36.5.4 global version)
-- Version: 36.5.4
-- Original APK: `base.apk` (decompiled, patched, rebuilt)
-
-**ReVanced Build** (Phase 7):
 ```
-e8febd0c08b2f5fcbc51cffe0e417ca5a8cd54e90aa2b584e1e5d451eb0a164d  revanced-builds/phase6-revanced-aligned.apk
+apps/tiktok/36.5.4/
+├── patches/                              ← Start here for patches
+│   ├── README.md                         (patch index)
+│   └── share-url-sanitizer/
+│       ├── README.md                     (feature documentation)
+│       └── smali.patch                   (implementation)
+│
+├── *.md                                  ← Technical documentation
+├── smali-tests/                          ← Test builds
+├── revanced-builds/                      ← ReVanced APKs
+├── logs/                                 ← Test evidence
+└── decompiled-*/                         ← Decompilation artifacts
 ```
-- Branch: `feat/tiktok-sanitize-share-urls`
-- Status: Validated against TikTok 36.5.4, ready for upstream PR
 
 ---
 
-## Documentation Structure
+## APK Information
 
-All materials are co-located in `apps/tiktok/36.5.4/`:
+| Property | Value |
+|----------|-------|
+| Package | `com.zhiliaoapp.musically` |
+| Version | 36.5.4 |
+| SHA256 | `0552a22f1fb944b42bd265d5d5c6e342404396517e94ec1f2809f8bbfcb4d80d` |
 
-| Directory | Purpose |
-|-----------|---------|
-| `./*.md` | Technical documentation and narratives |
-| `patches/` | Manual patch implementations and references |
-| `smali-tests/` | Iterative Smali test builds |
-| `revanced-builds/` | ReVanced APK builds and logs |
-| `decompiled-*/` | Decompilation artifacts (JADX, Smali) |
-| `logs/` | Build and test execution logs |
+---
 
-**Live implementations**: `revanced-src/revanced-patches/` (upstream repository)
+## Status
+
+| Component | Status |
+|-----------|--------|
+| Share URL Sanitizer (Smali) | ✅ Validated |
+| Share URL Sanitizer (ReVanced) | ✅ Validated |
+| ReVanced Upstream PR | ✅ Ready |
+
+---
+
+**For detailed information, start with [patches/README.md](patches/README.md) or [patches/share-url-sanitizer/README.md](patches/share-url-sanitizer/).**
