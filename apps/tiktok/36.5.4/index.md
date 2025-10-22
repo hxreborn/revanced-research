@@ -12,10 +12,11 @@
 
 | Item | Location |
 |------|----------|
-| **Live Patch (Java)** | `revanced-src/revanced-patches/extensions/tiktok/src/main/java/app/revanced/extension/tiktok/share/ShareUrlSanitizer.java` |
-| **Live Patch (Kotlin)** | `revanced-src/revanced-patches/patches/src/main/kotlin/app/revanced/patches/tiktok/misc/share/SanitizeShareUrlsPatch.kt` |
-| **Smali Reference** | `apps/tiktok/36.5.4/patches/phase6-url-sanitizer.smali.patch` |
-| **Validation Evidence** | `apps/tiktok/36.5.4/logs/phase6-test-clipboard.log` |
+| **Patch Documentation** | [patches/README.md](patches/README.md) |
+| **Smali Implementation** | [patches/share-url-sanitizer/](patches/share-url-sanitizer/) |
+| **ReVanced (Java)** | `revanced-src/revanced-patches/extensions/tiktok/src/main/java/app/revanced/extension/tiktok/share/ShareUrlSanitizer.java` |
+| **ReVanced (Kotlin)** | `revanced-src/revanced-patches/patches/src/main/kotlin/app/revanced/patches/tiktok/misc/share/SanitizeShareUrlsPatch.kt` |
+| **Test Evidence** | [logs/phase6-test-clipboard.log](logs/phase6-test-clipboard.log) |
 
 ---
 
@@ -34,12 +35,19 @@
 
 ## Documentation Index
 
-- **[overview.md](overview.md)** - APK metadata, objectives, notes
-- **[phases.md](phases.md)** - Phase 4-7 development narratives (discovery through validation)
-- **[injection-points.md](injection-points.md)** - Technical reference for injection location
-- **[obfuscation-map.md](obfuscation-map.md)** - Class/method mappings and tracking parameters
+### Main Docs
+- **[overview.md](overview.md)** - APK metadata, objectives, build commands, notes
+- **[phases.md](phases.md)** - Phase 4-7 technical reference (specifications, code, validation)
+- **[injection-points.md](injection-points.md)** - Injection location, register allocation, implementation
 - **[validation-log.md](validation-log.md)** - Test scenarios and results summary
-- **[attempt-history.md](attempt-history.md)** - Complete attempt timeline and learnings
+- **[obfuscation-map.md](obfuscation-map.md)** - Class/method mappings and tracking parameters
+- **[attempt-history.md](attempt-history.md)** - Complete attempt timeline and findings
+
+### Patches & Code
+- **[patches/README.md](patches/README.md)** - Patch index and navigation
+- **[patches/share-url-sanitizer/](patches/share-url-sanitizer/)** - Share URL sanitizer implementation
+  - `smali.patch` - Smali bytecode implementation (Phase 6)
+  - `README.md` - Feature documentation with links
 
 ---
 
@@ -80,9 +88,17 @@ e8febd0c08b2f5fcbc51cffe0e417ca5a8cd54e90aa2b584e1e5d451eb0a164d  revanced-build
 
 ---
 
-## References
+## Documentation Structure
 
-All detailed technical documentation is organized in:
-- **Research workspace**: `apps/tiktok/36.5.4/` (raw decompilation, test builds, patches)
-- **Documentation**: `docs/tiktok/36.5.4/` (narratives, reference specs, validation evidence)
-- **Live patch code**: `revanced-src/revanced-patches/` (upstream repository)
+All materials are co-located in `apps/tiktok/36.5.4/`:
+
+| Directory | Purpose |
+|-----------|---------|
+| `./*.md` | Technical documentation and narratives |
+| `patches/` | Manual patch implementations and references |
+| `smali-tests/` | Iterative Smali test builds |
+| `revanced-builds/` | ReVanced APK builds and logs |
+| `decompiled-*/` | Decompilation artifacts (JADX, Smali) |
+| `logs/` | Build and test execution logs |
+
+**Live implementations**: `revanced-src/revanced-patches/` (upstream repository)

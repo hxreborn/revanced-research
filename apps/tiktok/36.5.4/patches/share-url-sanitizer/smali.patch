@@ -175,14 +175,16 @@ Evidence preserved in: `logs/phase6-test-clipboard.log`
 
 ## Related Documentation
 
-- `../phases.md#phase-6-smali-implementation` - Complete Phase 6 technical reference
-- `../attempt-history.md` - Phase 6 execution timeline
-- `../injection-points.md` - Injection location specs and register allocation
-- `../validation-log.md` - Test results and APK hashes
-- `../obfuscation-map.md` - Class/method mappings
+See `../README.md` for navigation and full patch documentation.
+
+- `../../phases.md#phase-6-smali-implementation` - Complete Phase 6 technical reference
+- `../../attempt-history.md` - Phase 6 execution timeline
+- `../../injection-points.md` - Injection location specs and register allocation
+- `../../validation-log.md` - Test results and APK hashes
+- `../../obfuscation-map.md` - Class/method mappings
 
 ## Build Artifacts
 
-- `../smali-tests/05-option-c-bypass/classes15-sanitizer-fixed.dex` - Compiled bytecode
-- `../smali-tests/05-option-c-bypass/phase6-sanitizer-fixed-aligned.apk` - Test APK
-- `../logs/phase6-test-clipboard.log` - Validation evidence
+- `../../smali-tests/05-option-c-bypass/classes15-sanitizer-fixed.dex` - Compiled bytecode
+- `../../smali-tests/05-option-c-bypass/phase6-sanitizer-fixed-aligned.apk` - Test APK
+- `../../logs/phase6-test-clipboard.log` - Validation evidence
