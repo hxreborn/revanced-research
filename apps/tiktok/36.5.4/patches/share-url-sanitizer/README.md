@@ -25,14 +25,14 @@ Remove tracking parameters from TikTok share URLs (utm_*, share_*, etc.)
 - **Location**: `smali_classes15/X/UEU.smali:3866`
 - **Method**: `LIZLLL(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)LX/Wu4;`
 - **Approach**: Strip everything after `?` character (whitelist sanitization)
-- **Status**: ✅ Validated in Smali, tested on device
+- **Status**: [PASS] Validated in Smali, tested on device
 
 ### Phase 7: ReVanced Framework
 - **Location**: `revanced-src/revanced-patches/`
 - **Extension**: `extensions/tiktok/src/main/java/app/revanced/extension/tiktok/share/ShareUrlSanitizer.java`
 - **Patch**: `patches/src/main/kotlin/app/revanced/patches/tiktok/misc/share/SanitizeShareUrlsPatch.kt`
 - **Fingerprint**: `patches/src/main/kotlin/app/revanced/patches/tiktok/misc/share/Fingerprints.kt`
-- **Status**: ✅ Built and tested, ready for upstream PR
+- **Status**: [PASS] Built and tested
 
 ---
 
@@ -114,3 +114,12 @@ e8febd0c08b2f5fcbc51cffe0e417ca5a8cd54e90aa2b584e1e5d451eb0a164d  revanced-build
 - **Version resilient**: ReVanced uses bytecode fingerprints, not line numbers
 
 See [../../../injection-points.md](../../../injection-points.md) for detailed register allocation and implementation specs.
+
+---
+
+**Resources**:
+
+- Dalvik Bytecode: https://source.android.com/docs/core/runtime/dalvik-bytecode
+- Smali Assembly: https://github.com/JesusFreke/smali/wiki
+- Android DEX Format: https://source.android.com/docs/core/runtime/dex-format
+- ReVanced Framework: https://github.com/revanced/revanced-patches

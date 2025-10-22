@@ -185,7 +185,7 @@ java -jar revanced-src/revanced-cli.jar patch \
 
 ### Validation
 
-Build successful, runtime tested, behavior identical to Phase 6 (89% size reduction, 100% parameter removal). See [validation-log.md](validation-log.md) for full build and test results.
+Build [PASS], runtime tested, behavior identical to Phase 6 (89% size reduction, 100% parameter removal). See [validation-log.md](validation-log.md) for full build and test results.
 
 ---
 

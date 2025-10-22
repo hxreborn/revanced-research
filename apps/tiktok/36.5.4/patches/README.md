@@ -83,7 +83,7 @@ patches/
 
 | Patch | Status | Version |
 |-------|--------|---------|
-| Share URL Sanitizer | ✅ Complete | 36.5.4 |
+| Share URL Sanitizer | [COMPLETE] | 36.5.4 |
 
 ---
 

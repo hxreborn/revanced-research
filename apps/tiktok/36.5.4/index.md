@@ -8,7 +8,7 @@ Reverse-engineering workspace for TikTok 36.5.4 (36.5.4) with focus on tracking 
 
 | Patch | Purpose | Status |
 |-------|---------|--------|
-| **[Share URL Sanitizer](patches/share-url-sanitizer/)** | Remove tracking parameters (utm_*, share_*, etc.) from share URLs | ✅ Complete |
+| **[Share URL Sanitizer](patches/share-url-sanitizer/)** | Remove tracking parameters (utm_*, share_*, etc.) from share URLs | [COMPLETE] |
 
 See [patches/README.md](patches/README.md) for all available patches.
 
@@ -81,9 +81,8 @@ apps/tiktok/36.5.4/
 
 | Component | Status |
 |-----------|--------|
-| Share URL Sanitizer (Smali) | ✅ Validated |
-| Share URL Sanitizer (ReVanced) | ✅ Validated |
-| ReVanced Upstream PR | ✅ Ready |
+| Share URL Sanitizer (Smali) | [PASS] |
+| Share URL Sanitizer (ReVanced) | [PASS] |
 
 ---
 

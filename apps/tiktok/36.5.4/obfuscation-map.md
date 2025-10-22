@@ -120,7 +120,7 @@ Distribution
 
 **Approach Attempted**: Detect shortened vm.tiktok.com/vt.tiktok.com URLs and replace with canonical form
 
-**Technical Achievement**: Established register allocation patterns (`v0` for int, `v1` for String) that Phase 6 reused successfully
+**Technical Achievement**: Established register allocation patterns (`v0` for int, `v1` for String) that Phase 6 reused
 
 **Build Artifacts**: `smali-tests/05-option-c-bypass/phase5-final-aligned.apk`
 
