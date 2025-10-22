@@ -24,9 +24,9 @@
 | Phase | Date | Focus | Status | Details |
 |-------|------|-------|--------|---------|
 | **Phase 4** | 2025-10-19 | Discovery & verification | [PASS] | [phase-4-discovery.md](phases/phase-4-discovery.md) |
-| **Phase 5** | 2025-10-20 | Bypass shortening orchestrator | [SUPERSEDED] | [phase-5-bypass.md](phases/phase-5-bypass.md) |
-| **Phase 6** | 2025-10-20 | URL parameter sanitizer (Smali) | [SUCCESS] | [phase-6-sanitizer.md](phases/phase-6-sanitizer.md) |
-| **Phase 7** | 2025-10-21 | ReVanced port | [SUCCESS] | [phase-7-revanced.md](phases/phase-7-revanced.md) |
+| **Phase 5** | 2025-10-20 | Bypass shortening orchestrator | [DISPROVEN] | [phase-5-bypass.md](phases/phase-5-bypass.md) |
+| **Phase 6** | 2025-10-20 | URL parameter sanitizer (Smali) | [VALIDATED] | [phase-6-sanitizer.md](phases/phase-6-sanitizer.md) |
+| **Phase 7** | 2025-10-21 | ReVanced port | [VALIDATED] | [phase-7-revanced.md](phases/phase-7-revanced.md) |
 
 ---
 

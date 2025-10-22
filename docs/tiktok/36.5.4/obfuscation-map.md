@@ -115,7 +115,7 @@ Distribution
 ### Phase 5: Canonical URL Swap (SUPERSEDED)
 
 **Date**: 2025-10-20
-**Status**: [SUPERSEDED] by Phase 6
+**Status**: [DISPROVEN] by Phase 6
 **Why**: Premise disproven - testing revealed URLs at `UEa.LIZ()` are not shortened (vm./vt. format), they're canonical with tracking blob
 
 **Approach Attempted**: Detect shortened vm.tiktok.com/vt.tiktok.com URLs and replace with canonical form

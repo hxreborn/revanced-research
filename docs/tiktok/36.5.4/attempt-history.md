@@ -3,7 +3,7 @@
 ## Phase 6: URL Parameter Sanitizer - Production Implementation
 
 **Date Completed**: 2025-10-20
-**Status**: [SUCCESS] - 89% size reduction, production-ready
+**Status**: [WORKING] - 89% size reduction, production-ready
 **Approach**: Whitelist sanitization - strip all query parameters from canonical URLs
 
 ### Summary
@@ -89,7 +89,7 @@ move-result-object v1  # v1 now contains clean URL
 
 **Date**: 2025-10-21
 **Branch**: feat/tiktok-sanitize-share-urls
-**Status**: [SUCCESS]
+**Status**: [WORKING]
 
 ### Implementation
 
@@ -148,7 +148,7 @@ Ported Phase 6 Smali patch to ReVanced framework with annotation-based metadata:
 ### Phase 5: Option C Bypass - Register-Safe Canonical URL Swap
 
 **Date**: 2025-10-20
-**Status**: [SUPERSEDED] by Phase 6
+**Status**: [DISPROVEN] by Phase 6
 **Why Superseded**: Discovered that `UEa.LIZ()` returns canonical URLs with tracking blobs, not shortened URLs. Approach of detecting/swapping shortened URLs was based on incorrect assumption about what LIZLLL returns.
 
 **Summary**: Attempted to detect shortened vm./vt.tiktok.com URLs and replace with canonical URLs. Patch compiled and DEX verified successfully, but testing revealed the premise was wrong - no shortened URLs appear at this layer. Instead, canonical URLs arrive with massive tracking parameters that need removal (89% of URL size). This discovery led directly to Phase 6's parameter sanitization approach.
@@ -159,7 +159,7 @@ Ported Phase 6 Smali patch to ReVanced framework with annotation-based metadata:
 - Label hygiene: Suffixed labels prevent collisions (`:swap_canonical_c`, `:keep_shortened_c`)
 - Null safety patterns: Always check null before calling string methods
 
-**Test Results**: [PASS] Compilation and installation, [FAIL] Functional goal (no shortened URLs to detect)
+**Test Results**: [PASS] Compilation and installation, [BROKEN] Functional goal (no shortened URLs to detect)
 
 **Build Artifacts**: `smali-tests/05-option-c-bypass/phase5-final-aligned.apk`, `classes15-final.dex`
 
