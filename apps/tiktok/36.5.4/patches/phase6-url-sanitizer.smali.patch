@@ -173,9 +173,16 @@ Evidence preserved in: `logs/phase6-test-clipboard.log`
 **Build Date**: 2025-10-20
 **Test Status**: Ready for validation
 
-## Related Files
+## Related Documentation
 
-- PHASE6-SANITIZER-PLAN.md - Detailed pre-implementation analysis
-- attempt-history.md - Phase 6 execution log
-- injection-points.md - Updated with Phase 6 details
-- obfuscation-map.md - Phase 6 status tracking
+- `../phases.md#phase-6-smali-implementation` - Complete Phase 6 technical reference
+- `../attempt-history.md` - Phase 6 execution timeline
+- `../injection-points.md` - Injection location specs and register allocation
+- `../validation-log.md` - Test results and APK hashes
+- `../obfuscation-map.md` - Class/method mappings
+
+## Build Artifacts
+
+- `../smali-tests/05-option-c-bypass/classes15-sanitizer-fixed.dex` - Compiled bytecode
+- `../smali-tests/05-option-c-bypass/phase6-sanitizer-fixed-aligned.apk` - Test APK
+- `../logs/phase6-test-clipboard.log` - Validation evidence
