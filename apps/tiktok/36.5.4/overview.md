@@ -120,7 +120,7 @@ sha256sum patched.apk
 | Parameter removal | [PASS] | 18 params → 0 params |
 | Size reduction | [PASS] | 568 chars → 63 chars (89%) |
 | App stability | [PASS] | No crashes, normal operation |
-| ReVanced build | [PASS] | Gradle success, CLI success |
+| ReVanced build | [PASS] | Gradle [PASS], CLI [PASS] |
 | ReVanced runtime | [PASS] | Share tested, no errors |
 
 See `apps/tiktok/36.5.4/logs/` for detailed evidence.
@@ -130,12 +130,12 @@ See `apps/tiktok/36.5.4/logs/` for detailed evidence.
 - **2025-10-19**: Phases 1-3 (reconnaissance, analysis) - identified AwemeSharePackage as share entry point
 - **2025-10-19**: Phase 4 (discovery) - discovered canonical URL at LJIJJLI() line 2795, URL tracking at UEa.LIZ()
 - **2025-10-20**: Phase 5 (explored) - bypass shortening orchestrator (superseded by Phase 6 discovery)
-- **2025-10-20**: Phase 6 (success) - URL parameter sanitizer implemented and validated in Smali
-- **2025-10-21**: Phase 7 (success) - ReVanced port completed, tested, ready for upstream PR
+- **2025-10-20**: Phase 6 - URL parameter sanitizer implemented and validated in Smali
+- **2025-10-21**: Phase 7 - ReVanced port completed and tested
 
 ## Status
 
-**[COMPLETE]** - Both Smali patch and ReVanced port validated successfully. Ready for upstream submission.
+**[COMPLETE]** - Both Smali patch and ReVanced port validated.
 
 ---
 

@@ -141,7 +141,7 @@ e8febd0c08b2f5fcbc51cffe0e417ca5a8cd54e90aa2b584e1e5d451eb0a164d  revanced-build
 
 ---
 
-**Status**: [COMPLETE] - ReVanced patch validated against TikTok 36.5.4. Ready for upstream PR consideration.
+**Status**: [COMPLETE] - ReVanced patch validated against TikTok 36.5.4.
 
 ---
 
@@ -153,7 +153,7 @@ e8febd0c08b2f5fcbc51cffe0e417ca5a8cd54e90aa2b584e1e5d451eb0a164d  revanced-build
 **Status**: [DISPROVEN] by Phase 6
 **Why Superseded**: Discovered that `UEa.LIZ()` returns canonical URLs with tracking blobs, not shortened URLs. Approach of detecting/swapping shortened URLs was based on incorrect assumption about what LIZLLL returns.
 
-**Summary**: Attempted to detect shortened vm./vt.tiktok.com URLs and replace with canonical URLs. Patch compiled and DEX verified successfully, but testing revealed the premise was wrong - no shortened URLs appear at this layer. Instead, canonical URLs arrive with massive tracking parameters that need removal (89% of URL size). Informed Phase 6's parameter sanitization approach.
+**Summary**: Attempted to detect shortened vm./vt.tiktok.com URLs and replace with canonical URLs. Patch compiled and DEX verified [PASS], but testing revealed the premise was wrong - no shortened URLs appear at this layer. Instead, canonical URLs arrive with massive tracking parameters that need removal (89% of URL size). Informed Phase 6's parameter sanitization approach.
 
 **Key Technical Achievements** (carried forward to Phase 6):
 - Proper register allocation: `.registers 6` with v0-v1 local, v2-v5 parameters
