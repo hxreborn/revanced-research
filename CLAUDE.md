@@ -2,7 +2,7 @@
 
 **Purpose:** Instructions for Claude Code when working in this repository. Keeps edits reproducible, focused, and reviewable.
 
-**Changelog:** 2025-10-20 - Phase 1 hypotheses superseded; canonical URL found at LJIJJLI. See `docs/status.md` for current state.
+**Changelog:** 2025-10-22 - Documentation reorganization complete. Per-app structure established under `docs/<app>/<version>/`. See `attempt-history.md` for global status.
 
 ---
 
@@ -10,9 +10,7 @@
 
 Research and develop ReVanced patches through **Smali-first validation**. Every bytecode change must work in raw Smali before porting to ReVanced.
 
-**Current Focus:** TikTok 36.5.4 share URL sanitization (remove `utm_*`, `tt_*`, `enter_*` parameters)
-
-**Phase 2 Status:** Breakthrough - canonical URL found at `AwemeSharePackage.LJIJJLI()` line 2795. URL is canonical at entry, shortened by `UEU.LIZLLL()` at line 2889. Next: bypass shortening orchestrator.
+**Current Work**: See `attempt-history.md` and `docs/` for per-target status and findings.
 
 ---
 
@@ -29,9 +27,9 @@ Research and develop ReVanced patches through **Smali-first validation**. Every 
 
 | Directory | Your Access | Purpose |
 |-----------|-------------|---------|
-| `apps/tiktok/36.5.4/` | **Read/Write** | Research workspace: notes, searches, smali experiments |
-| `apps/tiktok/36.5.4/smali-tests/` | **Read/Write** | Iterative DEX patches |
-| `apps/tiktok/36.5.4/verification/` | **Append** | Evidence logs and analysis |
+| `apps/<app>/<version>/` | **Read/Write** | Research workspace: decompilation, smali experiments, patches |
+| `apps/<app>/<version>/smali-tests/` | **Read/Write** | Iterative DEX patches and test builds |
+| `docs/<app>/<version>/` | **Read/Write** | Analysis, findings, phase documentation |
 | `revanced-src/revanced-patches/` | **Read-only** | Upstream port (only after Smali validation) |
 
 ---
@@ -111,4 +109,5 @@ Detailed commands in `WORKFLOW.md` Phase 2. Essential pipeline:
 - **Detailed workflow:** `WORKFLOW.md` (phase-by-phase runbook)
 - **Human contributor guide:** `AGENTS.md` (coding standards, PR process)
 - **Project overview:** `README.md`
-- **Current state:** `docs/status.md` (verified facts, open questions, next steps)
+- **Global attempt tracking:** `attempt-history.md` (links to per-target docs)
+- **Per-target documentation:** `docs/<app>/<version>/` (index.md is entry point)

@@ -12,7 +12,14 @@ Reverse-engineering workspace for analyzing Android APKs and documenting patch r
 
 | Path | Purpose |
 |------|---------|
-| `apps/tiktok/36.5.4/` | Version-specific research workspace |
-| `apps/tiktok/36.5.4/smali-tests/` | Iterative DEX patches and validation |
+| `apps/<app>/<version>/` | Version-specific research workspace (decompilation, tests, patches) |
+| `docs/<app>/<version>/` | Research documentation (analysis, findings, phases) |
 | `revanced-src/` | ReVanced patches submodule |
-| `docs/` | Documentation and status tracking |
+
+## Documentation Index
+
+| Target | Status | Documentation |
+|--------|--------|-----------------|
+| **TikTok 36.5.4** | Share URL sanitization | [docs/tiktok/36.5.4/](docs/tiktok/36.5.4/) |
+
+See `docs/` for complete documentation structure and `attempt-history.md` for global attempt tracking.

@@ -4,18 +4,15 @@
 ```bash
 revanced-research/
 ├── README.md                    # Main documentation + status
-├── WORKFLOW.md                  # This runbook (Phase 1-3 only)
+├── WORKFLOW.md                  # This runbook
 ├── CLAUDE.md                    # LLM agent instructions
 ├── AGENTS.md                    # Contributor guidelines
 ├── attempt-history.md           # Global attempt tracker
 ├── docs/
-│   ├── status.md               # Current state dashboard
-│   └── bootstrap.md            # Archived Phase 0 setup
+│   └── <app>/<version>/        # Per-target documentation (analysis, findings, phases)
 ├── apps/
-│   └── tiktok/36.5.4/
+│   └── <app>/<version>/
 │       ├── base.apk                # Original APK
-│       ├── obfuscation-map.md      # Obfuscated class mappings
-│       ├── injection-points.md     # Verified injection points
 │       ├── decompiled-jadx/        # JADX decompilation output
 │       ├── decompiled-smali/       # Smali decompilation output
 │       ├── smali-tests/            # Smali test builds
@@ -25,6 +22,8 @@ revanced-research/
     ├── revanced-patches/        # Submodule (forked)
     └── revanced-cli.jar         # CLI tool
 ```
+
+**For concrete examples**, see `docs/tiktok/$VERSION/` - complete TikTok $VERSION share URL sanitizer research.
 
 ---
 
@@ -67,7 +66,7 @@ When creating a new smali-test experiment:
 ```bash
 # 1. Create test directory
 TEST_NUM=01-my-experiment
-cd apps/tiktok/36.5.4/smali-tests/$TEST_NUM
+cd apps/$APP/$VERSION/smali-tests/$TEST_NUM
 
 # 2. Extract target DEX and decompile
 unzip -j ../../base.apk classes15.dex -d .
@@ -110,7 +109,7 @@ cat patches/src/main/kotlin/app/revanced/patches/tiktok/misc/settings/SettingsPa
 # Key observations:
 # - Uses bytecodePatch DSL (annotation-based, no JSON metadata)
 # - dependsOn(sharedExtensionPatch) for TikTok
-# - compatibleWith("com.ss.android.ugc.trill"("36.5.4"), ...)
+# - compatibleWith("$PACKAGE_NAME"("$VERSION"), ...)
 # - Extension helpers in extensions/tiktok/src/main/java/
 ```
 
@@ -185,8 +184,8 @@ val yourPatch = bytecodePatch(
     dependsOn(sharedExtensionPatch)
 
     compatibleWith(
-        "com.ss.android.ugc.trill"("36.5.4"),
-        "com.zhiliaoapp.musically"("36.5.4"),
+        "$PACKAGE_NAME"("$VERSION"),
+        "com.zhiliaoapp.musically"("$VERSION"),
     )
 
     execute {
@@ -417,18 +416,18 @@ zipalign -p -f 4 patched-working.apk patched-aligned.apk
 apksigner sign \
   --ks ~/.android/debug.keystore \
   --ks-pass pass:android \
-  --out patched-tiktok-36.5.4.apk \
+  --out patched-tiktok-$VERSION.apk \
   patched-aligned.apk
 
 # Verify signature is valid
-apksigner verify patched-tiktok-36.5.4.apk
+apksigner verify patched-tiktok-$VERSION.apk
 ```
 
 ### 2A.7 Install & Test
 
 ```bash
 # Install patched APK
-adb install -r patched-tiktok-36.5.4.apk
+adb install -r patched-tiktok-$VERSION.apk
 
 # Clear logcat to see fresh logs
 adb logcat -c
@@ -448,7 +447,7 @@ adb logcat -d | tee ../../logs/targeted-dex-01-canonical-$(date +%Y%m%d-%H%M%S).
 
 **APK install fails with INSTALL_PARSE_FAILED_NO_CERTIFICATES**:
 - Verify you ran `zip -d` to remove META-INF/*
-- Check APK signature: `apksigner verify patched-tiktok-36.5.4.apk`
+- Check APK signature: `apksigner verify patched-tiktok-$VERSION.apk`
 - Rebuild if needed
 
 **Patch didn't activate (no log line)**:
@@ -489,10 +488,10 @@ with zipfile.ZipFile('temp.apk', 'r') as orig, \
 os.remove('temp.apk')
 " && /home/rafa/Android/Sdk/build-tools/36.1.0/apksigner sign \
   --ks ~/.android/debug.keystore --ks-pass pass:android \
-  --out patched-tiktok-36.5.4.apk patched.apk && \
-adb shell am force-stop com.ss.android.ugc.trill && \
-adb install -r patched-tiktok-36.5.4.apk && \
-adb shell am start -n com.ss.android.ugc.trill/.MainActivity
+  --out patched-tiktok-$VERSION.apk patched.apk && \
+adb shell am force-stop $PACKAGE_NAME && \
+adb install -r patched-tiktok-$VERSION.apk && \
+adb shell am start -n $PACKAGE_NAME/.MainActivity
 ```
 
 ---
@@ -511,7 +510,7 @@ package app.revanced.patches.tiktok.share.fingerprints
 
 import app.revanced.patcher.fingerprint.MethodFingerprint
 
-// Based on: revanced-research/apps/tiktok/36.5.4/injection-points.md Test 01-ljijj-bundle
+// Based on: revanced-research/apps/$APP/$VERSION/injection-points.md Test 01-ljijj-bundle
 // LJIJJ Method - Share extras builder
 internal object LjijjBundleFingerprint : MethodFingerprint(
     returnType = "Landroid/os/Bundle;",
@@ -540,7 +539,7 @@ import app.revanced.util.exception
 @Patch(
     name = "Clean share URLs - Stage 1",
     description = "Testing LJIJJ method only.",
-    compatiblePackages = [CompatiblePackage("com.ss.android.ugc.trill")]
+    compatiblePackages = [CompatiblePackage("$PACKAGE_NAME")]
 )
 object CleanShareUrlsPatch : BytecodePatch(
     setOf(LjijjBundleFingerprint)  // Just one fingerprint
@@ -620,7 +619,7 @@ Update patch to include both methods:
 @Patch(
     name = "Clean share URLs",
     description = "Removes tracking parameters from share URLs.",
-    compatiblePackages = [CompatiblePackage("com.ss.android.ugc.trill")]
+    compatiblePackages = [CompatiblePackage("$PACKAGE_NAME")]
 )
 object CleanShareUrlsPatch : BytecodePatch(
     setOf(
@@ -840,9 +839,9 @@ Can't find target in obfuscated code?
 ```bash
 cd ../../..
 cat >> ATTEMPTS.md << 'EOF'
-| 2024-12-25 | tiktok | 36.5.4 | URL clean | Hotswap test | ✅ Works | Create fingerprint |
-| 2024-12-25 | tiktok | 36.5.4 | URL clean | Stage 1 LJIJJ | ✅ Matched | Add LJFF |
-| 2024-12-25 | tiktok | 36.5.4 | URL clean | Stage 2 Both | ✅ Works | Production |
+| 2024-12-25 | tiktok | $VERSION | URL clean | Hotswap test | ✅ Works | Create fingerprint |
+| 2024-12-25 | tiktok | $VERSION | URL clean | Stage 1 LJIJJ | ✅ Matched | Add LJFF |
+| 2024-12-25 | tiktok | $VERSION | URL clean | Stage 2 Both | ✅ Works | Production |
 EOF
 ```
 
@@ -867,7 +866,7 @@ public static String sanitizeUrl(String url) {
 ### 6.2 Test on Multiple Versions
 ```bash
 # Test compatibility
-for VERSION in 36.5.4 36.6.0 36.6.5; do
+for VERSION in $VERSION 36.6.0 36.6.5; do
     cd apps/tiktok/$VERSION
     echo "Testing version $VERSION..."
     java -jar ../../../revanced-src/revanced-cli.jar patch \
@@ -895,16 +894,16 @@ done
 ### Research Commits
 ```bash
 # After successful smali test
-git add apps/tiktok/36.5.4/
-git commit -m "test(tiktok): verify LJIJJ injection on 36.5.4"
+git add apps/$APP/$VERSION/
+git commit -m "test(tiktok): verify LJIJJ injection on $VERSION"
 
 # After Stage 1 works (docs)
-git add apps/tiktok/36.5.4/injection-points.md
+git add apps/$APP/$VERSION/injection-points.md
 git commit -m "docs(tiktok): add injection-points for stage 1 share URL FP"
 
 # When adding or updating the raw APK
-git add apps/tiktok/36.5.4/apk/
-git commit -m "chore(apk): add TikTok 36.5.4 base artifact"
+git add apps/$APP/$VERSION/apk/
+git commit -m "chore(apk): add TikTok $VERSION base artifact"
 
 ```
 
