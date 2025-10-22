@@ -8,7 +8,7 @@
 
 **Date**: 2025-10-20
 **Build**: phase6-sanitizer-fixed-aligned.apk
-**Status**: [PASS] SUCCESS
+**Status**: [PASS]
 
 ### Test 1: Copy Link (Clipboard)
 
@@ -92,7 +92,7 @@ D/URL_AFTER_CLEAN( 3643): https://www.tiktok.com/@pure.8k/video/7558444171787373
 **Build**: phase6-revanced-aligned.apk
 **Branch**: feat/tiktok-sanitize-share-urls
 **Patch Name**: "Sanitize share URLs"
-**Status**: [PASS] SUCCESS
+**Status**: [PASS]
 
 ### Build Validation
 

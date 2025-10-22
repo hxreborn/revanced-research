@@ -128,7 +128,7 @@ See `apps/tiktok/36.5.4/logs/` for detailed evidence.
 ## Timeline
 
 - **2025-10-19**: Phases 1-3 (reconnaissance, analysis) - identified AwemeSharePackage as share entry point
-- **2025-10-19**: Phase 4 (breakthrough) - discovered canonical URL at LJIJJLI() line 2795, URL tracking at UEa.LIZ()
+- **2025-10-19**: Phase 4 (discovery) - discovered canonical URL at LJIJJLI() line 2795, URL tracking at UEa.LIZ()
 - **2025-10-20**: Phase 5 (explored) - bypass shortening orchestrator (superseded by Phase 6 discovery)
 - **2025-10-20**: Phase 6 (success) - URL parameter sanitizer implemented and validated in Smali
 - **2025-10-21**: Phase 7 (success) - ReVanced port completed, tested, ready for upstream PR
