@@ -107,10 +107,10 @@ result.mutableMethod.addInstruction(
 ```
 
 **Advantages**:
-- ✅ Dynamic register extraction: Doesn't hardcode v0, v1, v2
-- ✅ Version-resilient: If method structure changes, fingerprint fails gracefully (with clear error)
-- ✅ Register safe: Preserves type and usage constraints
-- ✅ Minimal code injection: Only 2 instructions added
+- Dynamic register extraction: Doesn't hardcode v0, v1, v2
+- Version-resilient: If method structure changes, fingerprint fails gracefully (with clear error)
+- Register safe: Preserves type and usage constraints
+- Minimal code injection: Only 2 instructions added
 
 ---
 
@@ -123,15 +123,15 @@ cd revanced-src/revanced-patches
 
 # Compile Kotlin patches
 ./gradlew :patches:compileKotlin
-# ✅ [PASS] Kotlin compiler validates syntax and types
+# [PASS] Kotlin compiler validates syntax and types
 
 # Compile Java extensions
 ./gradlew :extensions:tiktok:assembleRelease
-# ✅ [PASS] Java compiler validates logic
+# [PASS] Java compiler validates logic
 
 # Build patch bundle
 ./gradlew :patches:jar
-# ✅ [PASS] Creates patches.jar with all metadata
+# [PASS] Creates patches.jar with all metadata
 ```
 
 ### Phase 2: CLI Patch Application
@@ -142,7 +142,7 @@ java -jar revanced-src/revanced-cli.jar \
   --out patched.apk \
   base.apk
 
-# ✅ [PASS] CLI successfully:
+# [PASS] CLI successfully:
 #   1. Loads original APK
 #   2. Applies fingerprint matching
 #   3. Injects ShareUrlSanitizer.clean() call
@@ -155,17 +155,17 @@ java -jar revanced-src/revanced-cli.jar \
 
 ```bash
 adb install -r patched.apk
-# ✅ [PASS] No VerifyError or installation errors
+# [PASS] No VerifyError or installation errors
 
 # On device:
 # Open TikTok
 # Navigate to a video
 # Share to clipboard
 # Verify: No tracking parameters in clipboard URL
-# ✅ [PASS] URL sanitized as expected
+# [PASS] URL sanitized as expected
 
 adb logcat | grep -E "URL|SANITIZER"
-# ✅ [PASS] No exceptions or warnings
+# [PASS] No exceptions or warnings
 ```
 
 ---
@@ -258,7 +258,7 @@ Identical to Phase 6 Smali patch:
 ## Compatibility & Future Versions
 
 ### TikTok 36.5.4
-✅ **Validated** - Fingerprint matched, patch applied, runtime tested
+**Validated** - Fingerprint matched, patch applied, runtime tested
 
 ### TikTok 36.6 and Later
 ⚠️ **Unknown** - Fingerprint may or may not match depending on:
