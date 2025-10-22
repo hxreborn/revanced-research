@@ -2,8 +2,6 @@
 
 **Status**: [PASS] Phase 6 implementation - verified and tested
 
-**For discovery narrative**: See [phases/phase-4-discovery.md](phases/phase-4-discovery.md)
-
 ---
 
 ## URL Processing Flow
@@ -177,8 +175,8 @@ D/URL_AFTER_CLEAN(3643): https://www.tiktok.com/@pure.8k/video/75584441717873738
 
 ## Related Documentation
 
-- **Phase 6 Details**: [phases/phase-6-sanitizer.md](phases/phase-6-sanitizer.md) - Complete implementation walkthrough
-- **Phase 7 ReVanced**: [phases/phase-7-revanced.md](phases/phase-7-revanced.md) - Framework integration
+- **Phase 6 Details**: [phases.md#phase-6-smali-implementation](phases.md) - Complete implementation walkthrough
+- **Phase 7 ReVanced**: [phases.md#phase-7-revanced-port](phases.md) - Framework integration
 - **Obfuscation Map**: [obfuscation-map.md](obfuscation-map.md) - Class/method reference
 - **Validation Log**: [validation-log.md](validation-log.md) - Test results summary
 

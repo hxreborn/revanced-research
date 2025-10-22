@@ -221,15 +221,6 @@ D/URL_AFTER( 1234): https://www.tiktok.com/@user/video/ID
 
 ---
 
-## Next Steps
-
-1. **Extended testing** with WhatsApp, Twitter, SMS share channels
-2. **Future version testing** (36.6+) to verify fingerprint stability
-3. **Upstream PR submission** to revanced-patches
-4. **Community feedback** on effectiveness and compatibility
-
----
-
 **Status**: [PASS] - Both implementations validated. Ready for distribution.
 
-See [injection-points.md](injection-points.md) for technical reference and [phases/](phases/) for detailed narratives.
+See [injection-points.md](injection-points.md) for technical reference and [phases.md](phases.md) for detailed narratives.
