@@ -4,21 +4,38 @@
 ![Status: Experimental](https://img.shields.io/badge/status-experimental-ffb347)
 ![GPLv3](https://img.shields.io/badge/license-GPLv3-blue)
 
-Reverse-engineering workspace for analyzing Android APKs and documenting patch research.
+Smali-first reverse-engineering workspace for Android APK analysis and ReVanced patch development.
 
-**No APKs or binaries are provided or distributed from this repository.**
+## Quick Start
 
-## Repository Layout
+```bash
+git clone --recursive https://github.com/hxreborn/revanced-research.git
+cd revanced-research
+cat attempt-history.md                                              # Global status
+cat apps/tiktok/features/share-url-sanitization/README.md          # Active feature
+ls -la apps/tiktok/apks/36.5.4/                                    # APK artifacts
+```
+
+## Navigation
 
 | Path | Purpose |
 |------|---------|
-| `apps/<app>/<version>/` | Version-specific research workspace (decompilation, tests, patches, documentation) |
-| `revanced-src/` | ReVanced patches submodule |
+| `apps/<app>/features/<feature>/` | Research workspace: problem analysis, smali tests, logs |
+| `apps/<app>/features/<feature>/<version>/` | Version-specific artifacts (smali-tests/, logs/) |
+| `apps/<app>/apks/<version>/` | APK artifacts: base.apk, metadata, decompilation outputs |
+| `attempt-history.md` | Global status tracker |
+| `revanced-src/` | ReVanced patches (submodule, upstream port only) |
 
-## Documentation Index
+## Targets
 
-| Target | Status | Documentation |
-|--------|--------|-----------------|
-| **TikTok 36.5.4** | Share URL sanitization | [apps/tiktok/36.5.4/index.md](apps/tiktok/36.5.4/index.md) |
+| App | Feature | Status | Documentation |
+|-----|---------|--------|---|
+| TikTok | Share URL sanitization | Passed | [README.md](apps/tiktok/features/share-url-sanitization/README.md) |
 
-See `attempt-history.md` in each app directory for per-version attempt tracking.
+## Prerequisites
+
+- `apktool` - APK decompilation
+- `baksmali`/`smali` - DEX manipulation
+- `zipalign`, `apksigner` - APK signing
+- `jadx` - Source deobfuscation (optional)
+- `rg` (ripgrep) - Fast code search

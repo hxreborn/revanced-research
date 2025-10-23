@@ -1,0 +1,6 @@
+Version: 36.5.4 (360504)
+Package: com.ss.android.ugc.trill
+Architecture: arm64-v8a, armeabi-v7a
+Min SDK: 24 (Android 7.0)
+Target SDK: 35 (Android 15)
+API Level: 35
