@@ -5,8 +5,6 @@
 revanced-research/
 ├── README.md                    # Main documentation + status
 ├── WORKFLOW.md                  # This runbook
-├── CLAUDE.md                    # LLM agent instructions
-├── AGENTS.md                    # Contributor guidelines
 ├── attempt-history.md           # Global attempt tracker
 ├── docs/
 │   └── <app>/<version>/        # Per-target documentation (analysis, findings, phases)
