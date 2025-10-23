@@ -2,7 +2,7 @@
 
 **Purpose:** Instructions for Claude Code when working in this repository. Keeps edits reproducible, focused, and reviewable.
 
-**Changelog:** 2025-10-22 - Documentation reorganization complete. Per-app structure established under `docs/<app>/<version>/`. See `attempt-history.md` for global status.
+**Changelog:** 2025-10-23 - Updated to reflect feature-first structure. Feature READMEs are the single source of truth.
 
 ---
 
@@ -10,7 +10,7 @@
 
 Research and develop ReVanced patches through **Smali-first validation**. Every bytecode change must work in raw Smali before porting to ReVanced.
 
-**Current Work**: See `attempt-history.md` and `docs/` for per-target status and findings.
+**Current Work**: See feature READMEs in `apps/<app>/features/<feature>/README.md` for status and findings.
 
 ---
 
@@ -27,9 +27,9 @@ Research and develop ReVanced patches through **Smali-first validation**. Every 
 
 | Directory | Your Access | Purpose |
 |-----------|-------------|---------|
-| `apps/<app>/<version>/` | **Read/Write** | Research workspace: decompilation, smali experiments, patches |
-| `apps/<app>/<version>/smali-tests/` | **Read/Write** | Iterative DEX patches and test builds |
-| `docs/<app>/<version>/` | **Read/Write** | Analysis, findings, phase documentation |
+| `apps/<app>/features/<feature>/<version>/` | **Read/Write** | Version-specific smali tests, logs, patches |
+| `apps/<app>/apks/<version>/` | **Read/Write** | APK artifacts, decompilation outputs (jadx/, apktool/) |
+| `apps/<app>/features/<feature>/README.md` | **Read/Write** | Single source of truth: status, findings, technical details |
 | `revanced-src/revanced-patches/` | **Read-only** | Upstream port (only after Smali validation) |
 
 ---
@@ -58,10 +58,10 @@ Research and develop ReVanced patches through **Smali-first validation**. Every 
 ### Discovery (Read-only)
 ```bash
 # Search JADX decompilation for patterns
-rg "<pattern>" apps/tiktok/36.5.4/decompiled-jadx/
+rg "<pattern>" apps/tiktok/apks/36.5.4/jadx/
 
 # Verify in Smali
-rg "<pattern>" apps/tiktok/36.5.4/smali-tests/<test>/smali-classes*/
+rg "<pattern>" apps/tiktok/features/<feature>/36.5.4/smali-tests/<test>/smali-classes*/
 ```
 
 ### Smali Testing (Your primary workflow)
@@ -74,10 +74,9 @@ Detailed commands in `WORKFLOW.md` Phase 2. Essential pipeline:
 6. Sign: `zipalign` → `apksigner`
 
 ### Documentation (Required after validation)
-- `obfuscation-map.md` - Map obfuscated class/method names to purpose
-- `injection-points.md` - Document register usage, line numbers, guards
-- `attempt-history.md` - Record outcome, blockers, next steps
-- `verification/` - Save logs with timestamps
+- Feature `README.md` - Update status, technical details, validation results
+- `logs/` - Save test logs with timestamps
+- Inline Smali comments - Document register usage, injection points, edge cases
 
 ---
 
@@ -108,5 +107,5 @@ Detailed commands in `WORKFLOW.md` Phase 2. Essential pipeline:
 
 - **Detailed workflow:** `WORKFLOW.md` (phase-by-phase runbook)
 - **Project overview:** `README.md`
-- **Global attempt tracking:** `attempt-history.md` (links to per-target docs)
-- **Per-target documentation:** `docs/<app>/<version>/` (index.md is entry point)
+- **Feature documentation:** `apps/<app>/features/<feature>/README.md` (single source of truth)
+- **Current targets:** See README.md Targets table

@@ -4,7 +4,7 @@
 
 **Problem**: TikTok share URLs contain 21 tracking parameters (utm_*, share_*, _d, _r, timestamps, JSON blobs) totaling 505 bytes that track user sharing behavior.
 
-**Solution**: Strip everything after `?` character, preserving canonical URL base (`https://www.tiktok.com/@user/video/ID`).
+**Solution**: Selectively remove tracking parameters (utm_*, tt_*, enter_*, share_*, etc.) while preserving legitimate query parameters. Smali test used blanket `?` stripping for simplicity; ReVanced implementation will reuse existing parameter filtering approach.
 
 **Status**: Passed - Both Smali (Phase 6) and ReVanced (Phase 7) implementations validated
 
@@ -69,7 +69,7 @@ Distribution (Intent/Clipboard)
 | v1 | String | URL (modified in-place) |
 | v2 | String | const-string temporaries |
 
-**Implementation**:
+**Smali Test Implementation** (Phase 6 - simplified for validation):
 ```smali
 move-result-object v1              # v1 = URL from UEa.LIZ()
 
@@ -93,6 +93,8 @@ move-result-object v1              # v1 now contains clean URL
 :keep_shortened_c
 # Fall through (null case)
 ```
+
+**Note**: This Smali test uses blanket query string removal for rapid validation. The ReVanced patch will implement selective parameter filtering via `ShareUrlSanitizer.clean()` extension to preserve legitimate params.
 
 **Edge Cases**:
 - Null URL: Skip sanitization via `if-eqz`
