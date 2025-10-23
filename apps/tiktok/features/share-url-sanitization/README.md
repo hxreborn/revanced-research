@@ -16,7 +16,7 @@
 
 | Version | Status | Smali Tests | Logs | Base APK |
 |---------|--------|-------------|------|----------|
-| 36.5.4 | Passed | [36.5.4/smali-tests](36.5.4/smali-tests) | [36.5.4/logs](36.5.4/logs) | [apks/36.5.4/base.apk.info](../../apks/36.5.4/base.apk.info) |
+| 36.5.4 | Passed | [Tests](36.5.4/smali-tests) | [Logs](36.5.4/logs) | [APK Info](../../apks/36.5.4/base.apk.info) |
 | 36.6.0 | Pending | - | - | - |
 
 ---
@@ -133,7 +133,7 @@ internal val urlShorteningFingerprint = fingerprint {
 
 | Scenario | Test | Result | Evidence |
 |----------|------|--------|----------|
-| Copy link | Clipboard share | Passed | [phase6-test-clipboard.log](36.5.4/logs/phase6-test-clipboard.log) |
+| Copy link | Clipboard share | Passed | [Test Log](36.5.4/logs/phase6-test-clipboard.log) |
 | URL format | Canonical structure | Passed | Clean: `https://www.tiktok.com/@pure.8k/video/7558444171787373846` |
 | Parameter removal | All 21 params stripped | Passed | 568 chars → 63 chars (89% reduction) |
 | Stability | App crashes/hangs | None | Full test run, no exceptions |
@@ -156,13 +156,13 @@ After:  https://www.tiktok.com/@pure.8k/video/7558444171787373846
 
 ### Test Logs
 
-- Phase 6 (Smali): [36.5.4/logs/phase6-test-clipboard.log](36.5.4/logs/phase6-test-clipboard.log)
-- Phase 7 (ReVanced build): [36.5.4/logs/phase6-revanced-build.log](36.5.4/logs/phase6-revanced-build.log)
-- Phase 7 (ReVanced runtime): [36.5.4/logs/phase6-revanced-test.log](36.5.4/logs/phase6-revanced-test.log)
+- Phase 6 (Smali): [Clipboard Test](36.5.4/logs/phase6-test-clipboard.log)
+- Phase 7 (ReVanced build): [Build Log](36.5.4/logs/phase6-revanced-build.log)
+- Phase 7 (ReVanced runtime): [Runtime Test](36.5.4/logs/phase6-revanced-test.log)
 
 ### Clean URLs Comparison
 
-**Actual URL from Phase 6 test** ([phase6-test-clipboard.log](36.5.4/logs/phase6-test-clipboard.log)):
+**Actual URL from Phase 6 test** ([log](36.5.4/logs/phase6-test-clipboard.log)):
 ```
 https://www.tiktok.com/@pure.8k/video/7558444171787373846?
 _r=1&u_code=0&preview_pb=0&sharer_language=en&_d=f01b3cehlc22d5&
@@ -245,7 +245,7 @@ Ad tracking (1):
 
 - WORKFLOW.md Phase 2: [../../../../WORKFLOW.md#phase-2-smali-testing](../../../../WORKFLOW.md#phase-2-smali-testing)
 - WORKFLOW.md Phase 3: [../../../../WORKFLOW.md#phase-3-revanced-patch-porting](../../../../WORKFLOW.md#phase-3-revanced-patch-porting)
-- APK info: [../../apks/36.5.4/base.apk.info](../../apks/36.5.4/base.apk.info)
+- APK info: [base.apk.info](../../apks/36.5.4/base.apk.info)
 
 ---
 
