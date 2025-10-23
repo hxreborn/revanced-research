@@ -32,9 +32,9 @@ Smali-first reverse-engineering workspace for Android APK analysis and ReVanced 
 ## Approach
 
 Every patch begins with **Smali-first validation**: bytecode changes are tested in raw Smali (via baksmali/apktool) before porting to ReVanced. This ensures:
-- Injection points are verified to work
+- Injection points are proven to work
 - Register allocation is correct
-- No surprises at ReVanced build time
+- Bytecode patterns are established before abstraction to ReVanced
 
 Feature READMEs serve as the single source of truth, combining research findings, technical details, and validation results across versions in one place.
 
