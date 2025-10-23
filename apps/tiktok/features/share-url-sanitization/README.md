@@ -174,17 +174,8 @@ After:  https://www.tiktok.com/@pure.8k/video/7558444171787373846
 
 ---
 
-## Next Steps & References
+## References
 
-### TODOs
-
-- [ ] Test on TikTok 36.6.0+ versions
-- [ ] Test share to individual channels (WhatsApp, Twitter, SMS) - all use same `LIZLLL()` method but want to verify
-- [ ] Monitor upstream PR status: [revanced-patches PR](https://github.com/ReVanced/revanced-patches/pulls)
-
-### References
-
-- Root status: [../../attempt-history.md](../../attempt-history.md)
 - WORKFLOW.md Phase 2: [../../../WORKFLOW.md#phase-2-smali-testing](../../../WORKFLOW.md#phase-2-smali-testing)
 - WORKFLOW.md Phase 3: [../../../WORKFLOW.md#phase-3-revanced-patch-porting](../../../WORKFLOW.md#phase-3-revanced-patch-porting)
 - APK info: [../../apks/36.5.4/base.apk.info](../../apks/36.5.4/base.apk.info)
