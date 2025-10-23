@@ -6,15 +6,6 @@
 
 Smali-first reverse-engineering workspace for Android APK analysis and ReVanced patch development.
 
-## Quick Start
-
-```bash
-git clone --recursive https://github.com/hxreborn/revanced-research.git
-cd revanced-research
-cat apps/tiktok/features/share-url-sanitization/README.md          # Active feature
-ls -la apps/tiktok/apks/36.5.4/                                    # APK artifacts
-```
-
 ## Navigation
 
 | Path | Purpose |
