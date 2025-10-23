@@ -1,3 +1,0 @@
-0552a22f1fb944b42bd265d5d5c6e342404396517e94ec1f2809f8bbfcb4d80d  base.apk
-Version: 36.5.4 (360504)
-App: TikTok (com.ss.android.ugc.trill)
