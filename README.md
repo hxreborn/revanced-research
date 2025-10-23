@@ -11,7 +11,6 @@ Smali-first reverse-engineering workspace for Android APK analysis and ReVanced 
 ```bash
 git clone --recursive https://github.com/hxreborn/revanced-research.git
 cd revanced-research
-cat attempt-history.md                                              # Global status
 cat apps/tiktok/features/share-url-sanitization/README.md          # Active feature
 ls -la apps/tiktok/apks/36.5.4/                                    # APK artifacts
 ```
@@ -23,7 +22,6 @@ ls -la apps/tiktok/apks/36.5.4/                                    # APK artifac
 | `apps/<app>/features/<feature>/` | Research workspace: problem analysis, smali tests, logs |
 | `apps/<app>/features/<feature>/<version>/` | Version-specific artifacts (smali-tests/, logs/) |
 | `apps/<app>/apks/<version>/` | APK artifacts: base.apk, metadata, decompilation outputs |
-| `attempt-history.md` | Global status tracker |
 | `revanced-src/` | ReVanced patches (submodule, upstream port only) |
 
 ## Targets
