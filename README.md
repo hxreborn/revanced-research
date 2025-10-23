@@ -37,3 +37,16 @@ ls -la apps/tiktok/apks/36.5.4/                                    # APK artifac
 - `zipalign`, `apksigner` - APK signing
 - `jadx` - Source deobfuscation (optional)
 - `rg` (ripgrep) - Fast code search
+
+## Approach
+
+Every patch begins with **Smali-first validation**: bytecode changes are tested in raw Smali (via baksmali/apktool) before porting to ReVanced. This ensures:
+- Injection points are verified to work
+- Register allocation is correct
+- No surprises at ReVanced build time
+
+Feature READMEs serve as the single source of truth, combining research findings, technical details, and validation results across versions in one place.
+
+## License
+
+[GPLv3](LICENSE)
