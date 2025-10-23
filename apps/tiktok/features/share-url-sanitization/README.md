@@ -16,7 +16,7 @@
 
 | Version | Status | Smali Tests | Logs | Base APK |
 |---------|--------|-------------|------|----------|
-| 36.5.4 | Passed | [Tests](36.5.4/smali-tests) | [Logs](36.5.4/logs) | [APK Info](../../apks/36.5.4/base.apk.info) |
+| 36.5.4 | Passed | [Tests](36.5.4/smali-tests) | [Logs](36.5.4/logs) | [APK Info](apks/36.5.4/base.apk.info) |
 | 36.6.0 | Pending | - | - | - |
 
 ---
@@ -177,19 +177,19 @@ link_reflow_popup_iteration_sharer={...JSON_BLOB...}
 **Clean URLs Database Rules** (26 parameters total):
 
 Primary TikTok tracking (10):
-- `_r` ✓ Observed in 36.5.4
+- `_r` ✓ Present in 36.5.4
 - `_t`
-- `_d` ✓ Observed in 36.5.4
-- `u_code` ✓ Observed in 36.5.4
+- `_d` ✓ Present in 36.5.4
+- `u_code` ✓ Present in 36.5.4
 - `sec_uid`
 - `user_id`
 - `sender_device`
 - `sender_web_id`
-- `share_iid` ✓ Observed in 36.5.4
-- `source` ✓ Observed in 36.5.4
+- `share_iid` ✓ Present in 36.5.4
+- `source` ✓ Present in 36.5.4
 
 Share method tracking (8):
-- `social_share_type` ✓ Observed in 36.5.4
+- `social_share_type` ✓ Present in 36.5.4
 - `tt_from`
 - `share_app_name`
 - `checksum`
@@ -199,9 +199,9 @@ Share method tracking (8):
 - `enter_method`
 
 Standard marketing tracking (5):
-- `utm_source` ✓ Observed in 36.5.4
-- `utm_campaign` ✓ Observed in 36.5.4
-- `utm_medium` ✓ Observed in 36.5.4
+- `utm_source` ✓ Present in 36.5.4
+- `utm_campaign` ✓ Present in 36.5.4
+- `utm_medium` ✓ Present in 36.5.4
 - `utm_content`
 - `utm_term`
 
@@ -221,11 +221,11 @@ Ad tracking (1):
 
 **Coverage Analysis**:
 
-| Metric | Clean URLs Database | Observed in 36.5.4 | This Patch |
+| Metric | Clean URLs Database | Present in 36.5.4 | This Patch |
 |--------|---------------------|--------------------|-----------|
 | Parameters defined | 26 | 21 | All |
 | Actually present | 9 of 26 | 21 of 21 | 21 of 21 |
-| Coverage of observed | 9 of 21 (43%) | - | 21 of 21 (100%) |
+| Coverage of present | 9 of 21 (43%) | - | 21 of 21 (100%) |
 | Missed parameters | 12 in URL | 0 | 0 |
 
 ---
@@ -243,9 +243,9 @@ Ad tracking (1):
 
 ## References
 
-- WORKFLOW.md Phase 2: [../../../../WORKFLOW.md#phase-2-smali-testing](../../../../WORKFLOW.md#phase-2-smali-testing)
-- WORKFLOW.md Phase 3: [../../../../WORKFLOW.md#phase-3-revanced-patch-porting](../../../../WORKFLOW.md#phase-3-revanced-patch-porting)
-- APK info: [base.apk.info](../../apks/36.5.4/base.apk.info)
+- Workflow: [Phase 2 (Smali Testing)](/WORKFLOW.md#phase-2-smali-testing)
+- Workflow: [Phase 3 (ReVanced Porting)](/WORKFLOW.md#phase-3-revanced-patch-porting)
+- APK metadata: [base.apk.info](../../apks/36.5.4/base.apk.info)
 
 ---
 
