@@ -176,11 +176,11 @@ After:  https://www.tiktok.com/@pure.8k/video/7558444171787373846
 
 ## References
 
-- WORKFLOW.md Phase 2: [../../../WORKFLOW.md#phase-2-smali-testing](../../../WORKFLOW.md#phase-2-smali-testing)
-- WORKFLOW.md Phase 3: [../../../WORKFLOW.md#phase-3-revanced-patch-porting](../../../WORKFLOW.md#phase-3-revanced-patch-porting)
+- WORKFLOW.md Phase 2: [../../../../WORKFLOW.md#phase-2-smali-testing](../../../../WORKFLOW.md#phase-2-smali-testing)
+- WORKFLOW.md Phase 3: [../../../../WORKFLOW.md#phase-3-revanced-patch-porting](../../../../WORKFLOW.md#phase-3-revanced-patch-porting)
 - APK info: [../../apks/36.5.4/base.apk.info](../../apks/36.5.4/base.apk.info)
 
 ---
 
 **Last Updated**: 2025-10-21
-**Status**: Passed - Production-ready for distribution
+**Status**: Passed
