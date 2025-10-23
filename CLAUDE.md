@@ -107,7 +107,6 @@ Detailed commands in `WORKFLOW.md` Phase 2. Essential pipeline:
 ## Quick Reference
 
 - **Detailed workflow:** `WORKFLOW.md` (phase-by-phase runbook)
-- **Human contributor guide:** `AGENTS.md` (coding standards, PR process)
 - **Project overview:** `README.md`
 - **Global attempt tracking:** `attempt-history.md` (links to per-target docs)
 - **Per-target documentation:** `docs/<app>/<version>/` (index.md is entry point)
