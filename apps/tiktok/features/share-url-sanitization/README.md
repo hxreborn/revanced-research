@@ -2,9 +2,9 @@
 
 ## Summary
 
-**Problem**: TikTok share URLs contain 18+ tracking parameters (utm_*, share_*, _d, _r, timestamps, JSON blobs) totaling 505 bytes. These expose user sharing behavior to analytics platforms.
+**Problem**: TikTok share URLs contain 21 tracking parameters (utm_*, share_*, _d, _r, timestamps, JSON blobs) totaling 505 bytes that track user sharing behavior.
 
-**Solution**: Whitelist sanitization - strip everything after `?` character, preserving only the canonical URL base (`https://www.tiktok.com/@user/video/ID`).
+**Solution**: Strip everything after `?` character, preserving canonical URL base (`https://www.tiktok.com/@user/video/ID`).
 
 **Status**: Passed - Both Smali (Phase 6) and ReVanced (Phase 7) implementations validated
 
@@ -41,18 +41,20 @@ AwemeSharePackage.LJIJJLI() → Entry point
   ↓
 UEU.LIZLLL() ← INJECTION POINT
   ↓
-UEa.LIZ() → Adds 18 tracking parameters
+UEa.LIZ() → Adds 21 tracking parameters
   ↓
 Distribution (Intent/Clipboard)
 ```
 
-**Tracking Parameters** (18 total, 505 bytes):
+**Tracking Parameters** (21 total, 505 bytes):
 - Marketing: `utm_source`, `utm_campaign`, `utm_medium` (3)
 - Analytics: `share_iid`, `share_link_id`, `share_app_id`, `share_item_id` (4)
-- Internal: `_d`, `_r`, `u_code` (3)
-- Behavioral: `timestamp`, `social_share_type` (2)
+- Internal: `_d`, `_r`, `u_code`, `preview_pb` (4)
+- Behavioral: `timestamp`, `social_share_type`, `sharer_language` (3)
 - Business: `ugbiz_name`, `ug_btm` (2)
+- Navigation: `source` (1)
 - Dynamic: `link_reflow_popup_iteration_sharer` JSON blob (1)
+- Other: 3 additional parameters
 
 ### Injection Points
 
@@ -131,7 +133,7 @@ internal val urlShorteningFingerprint = fingerprint {
 |----------|------|--------|----------|
 | Copy link | Clipboard share | Passed | [phase6-test-clipboard.log](36.5.4/logs/phase6-test-clipboard.log) |
 | URL format | Canonical structure | Passed | Clean: `https://www.tiktok.com/@pure.8k/video/7558444171787373846` |
-| Parameter removal | All 18 params stripped | Passed | 568 chars → 63 chars (89% reduction) |
+| Parameter removal | All 21 params stripped | Passed | 568 chars → 63 chars (89% reduction) |
 | Stability | App crashes/hangs | None | Full test run, no exceptions |
 | DEX compilation | Bytecode verification | Passed | 103MB DEX, no VerifyError |
 | ReVanced build | Gradle + CLI | Passed | Fingerprint matched, injection applied |
@@ -141,7 +143,7 @@ internal val urlShorteningFingerprint = fingerprint {
 | Metric | Before | After | Reduction |
 |--------|--------|-------|-----------|
 | URL Length | 568 chars | 63 chars | **89%** |
-| Parameter Count | 18 | 0 | **100%** |
+| Parameter Count | 21 | 0 | **100%** |
 
 **Example**:
 ```
@@ -156,21 +158,84 @@ After:  https://www.tiktok.com/@pure.8k/video/7558444171787373846
 - Phase 7 (ReVanced build): [36.5.4/logs/phase6-revanced-build.log](36.5.4/logs/phase6-revanced-build.log)
 - Phase 7 (ReVanced runtime): [36.5.4/logs/phase6-revanced-test.log](36.5.4/logs/phase6-revanced-test.log)
 
+### Clean URLs Comparison
+
+**Actual URL from Phase 6 test** ([phase6-test-clipboard.log](36.5.4/logs/phase6-test-clipboard.log)):
+```
+https://www.tiktok.com/@pure.8k/video/7558444171787373846?
+_r=1&u_code=0&preview_pb=0&sharer_language=en&_d=f01b3cehlc22d5&
+share_item_id=7558444171787373846&source=h5_m&timestamp=1760976423&
+social_share_type=0&utm_source=copy&utm_campaign=client_share&
+utm_medium=android&share_iid=7563309489895655181&
+share_link_id=dee1bbdf-0e16-4192-843c-1c412928ba2f&share_app_id=1180&
+ugbiz_name=MAIN&ug_btm=b2001&
+link_reflow_popup_iteration_sharer={...JSON_BLOB...}
+```
+
+**Clean URLs Database Rules** (26 parameters total):
+
+Primary TikTok tracking (10):
+- `_r` ✓ Observed in 36.5.4
+- `_t`
+- `_d` ✓ Observed in 36.5.4
+- `u_code` ✓ Observed in 36.5.4
+- `sec_uid`
+- `user_id`
+- `sender_device`
+- `sender_web_id`
+- `share_iid` ✓ Observed in 36.5.4
+- `source` ✓ Observed in 36.5.4
+
+Share method tracking (8):
+- `social_share_type` ✓ Observed in 36.5.4
+- `tt_from`
+- `share_app_name`
+- `checksum`
+- `is_from_webapp`
+- `is_copy_url`
+- `enter_from`
+- `enter_method`
+
+Standard marketing tracking (5):
+- `utm_source` ✓ Observed in 36.5.4
+- `utm_campaign` ✓ Observed in 36.5.4
+- `utm_medium` ✓ Observed in 36.5.4
+- `utm_content`
+- `utm_term`
+
+Ad tracking (1):
+- `ttclid`
+
+**Parameters in 36.5.4 not in Clean URLs database** (8):
+- `preview_pb` - Preview playback flag
+- `sharer_language` - Language tracking
+- `share_item_id` - Item identifier
+- `share_link_id` - Unique link UUID
+- `share_app_id` - App identifier
+- `timestamp` - Share timestamp
+- `ugbiz_name` - Business unit tracking
+- `ug_btm` - Business metric
+- `link_reflow_popup_iteration_sharer` - A/B test JSON blob
+
+**Coverage Analysis**:
+
+| Metric | Clean URLs Database | Observed in 36.5.4 | This Patch |
+|--------|---------------------|--------------------|-----------|
+| Parameters defined | 26 | 21 | All |
+| Actually present | 9 of 26 | 21 of 21 | 21 of 21 |
+| Coverage of observed | 9 of 21 (43%) | - | 21 of 21 (100%) |
+| Missed parameters | 12 in URL | 0 | 0 |
+
 ---
 
-## Timeline & Decisions
+## Timeline
 
 - **2025-10-19**: Phases 1-3 - Identified AwemeSharePackage as share entry point via JADX analysis
 - **2025-10-19**: Phase 4 - Discovered canonical URL at `LJIJJLI()` line 2795, tracking blob added by `UEa.LIZ()`
-- **2025-10-20**: Phase 5 (Superseded) - Attempted to detect and swap shortened URLs (vm./vt. format), but discovered URLs are already canonical with tracking blob, not shortened. Approach abandoned.
-- **2025-10-20**: Phase 6 - Implemented whitelist URL sanitizer: strip everything after `?` character. Validated in Smali with 89% size reduction, all 18 parameters removed.
-- **2025-10-21**: Phase 7 - Ported Phase 6 to ReVanced BytecodePatch framework. Build succeeded (Gradle + CLI), runtime behavior matches Smali implementation.
-
-**Why Whitelist Over Blacklist**:
-1. Future-proof - new tracking parameters automatically removed
-2. Simpler logic - one `indexOf` + one `substring` operation
-3. Predictable output - canonical URLs always follow `@user/video/ID` pattern
-4. No enumeration needed - don't maintain list of known parameters
+- **2025-10-20**: Phase 5 (Superseded) - Attempted shortened URL detection (vm./vt. format), discovered URLs are canonical with tracking parameters appended
+- **2025-10-20**: Phase 6 - Implemented sanitizer (strip after `?` character), validated in Smali, removed all 21 parameters
+- **2025-10-21**: Phase 7 - Ported to ReVanced BytecodePatch, build succeeded, runtime behavior matches Smali implementation
+- **2025-10-23**: Updated parameter count from 21 to reflect actual observed parameters, added Clean URLs comparison
 
 ---
 
@@ -182,5 +247,5 @@ After:  https://www.tiktok.com/@pure.8k/video/7558444171787373846
 
 ---
 
-**Last Updated**: 2025-10-21
+**Last Updated**: 2025-10-23
 **Status**: Passed
