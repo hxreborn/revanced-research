@@ -21,6 +21,10 @@ apps/**/apks/**/*.ap_
 # Archived documentation
 .archive/
 
+# PR drafts and local documentation (not committed)
+**/PR.md
+**/PR_TRACKING_NOTES.md
+
 # ReVanced build outputs
 revanced-src/**/*.apk
 revanced-src/**/*.ap_

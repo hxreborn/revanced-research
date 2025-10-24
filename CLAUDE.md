@@ -105,7 +105,10 @@ Detailed commands in `WORKFLOW.md` Phase 2. Essential pipeline:
 
 ## Quick Reference
 
-- **Detailed workflow:** `WORKFLOW.md` (phase-by-phase runbook)
-- **Project overview:** `README.md`
-- **Feature documentation:** `apps/<app>/features/<feature>/README.md` (single source of truth)
-- **Current targets:** See README.md Targets table
+**Single Source of Truth**: `apps/<app>/features/<feature>/README.md`
+- Status, findings, technical details, validation results, test matrices all live here
+- This is your primary reference for any feature work
+
+**Supporting references**:
+- **Version-specific details:** `apps/<app>/features/<feature>/<version>/` (smali-tests, logs, obfuscation-map.md)
+- **Project overview:** `README.md` (repo structure, high-level goals only)
