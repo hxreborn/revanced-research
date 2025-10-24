@@ -1,11 +1,12 @@
 # ReVanced Patch Development Runbook
 
+> **Single Source of Truth**: Feature READMEs (`apps/<app>/features/<feature>/README.md`) contain all research findings, technical details, and validation results. This runbook describes the procedures to produce those findings. Always reference the feature README for current status.
+
 ## **Repository Structure**
 ```bash
 revanced-research/
 ├── README.md                    # Main documentation + status
 ├── WORKFLOW.md                  # This runbook
-├── attempt-history.md           # Global attempt tracker
 ├── apps/
 │   └── <app>/
 │       ├── features/
@@ -43,18 +44,28 @@ Ship a working ReVanced patch using proven Smali edits. Test everything in raw S
 
 ## **Documentation Guidelines**
 
-Single feature README is the source of truth:
-- `apps/<app>/features/<feature>/README.md` - All sections (summary, version map, technical reference, validation, timeline)
+**Single source of truth per feature**: `apps/<app>/features/<feature>/README.md`
+
+This README consolidates:
+- Summary (problem, solution, status)
+- Version Map (tested versions, links)
+- Technical Reference (obfuscation mappings, injection points, fingerprints)
+- Validation (test matrices, results, logs)
+- Timeline (phases, decisions, rationale)
+- References (related resources)
+
+Supporting files (for organization only):
 - `apps/<app>/features/<feature>/<version>/smali-tests/` - Bytecode experiments and test APKs
 - `apps/<app>/features/<feature>/<version>/logs/` - Device logs, CLI output, validation evidence
+- `apps/<app>/features/<feature>/<version>/obfuscation-map.md` - Deobfuscation findings (referenced from README)
 - `apps/<app>/apks/<version>/` - Raw APK artifacts and decompilations
 
 **Workflow:**
 1. Create feature/version folder structure
 2. Decompile APK into apks/<version>/{apktool,jadx}
 3. Run smali experiments in features/<feature>/<version>/smali-tests/
-4. Update feature README as you learn (inject notes, register maps, validation status)
-5. Remove old redundant docs (no separate injection-points.md, obfuscation-map.md, etc.)
+4. Update feature README as you learn (status, findings, validation results)
+5. Version-specific details go in: obfuscation-map.md, smali-tests/, logs/ (not separate top-level files)
 
 ---
 
