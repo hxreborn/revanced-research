@@ -87,16 +87,15 @@ Tracking Parameters (21 total, 505 bytes):
 
 ### Injection Points
 
-Location: `smali_classes15/X/UEU.smali:3866`
-
 Method: `LIZLLL(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)LX/Wu4;`
+Location: `smali_classes15/X/UEU.smali` (Trill), `smali_classes18/X/aOp.smali` (Musically)
 
 Register Allocation:
 | Register | Type | Purpose |
 |----------|------|---------|
 | v0 | int | indexOf result (position of '?') |
 | v1 | String | URL (modified in-place) |
-| v2 | String | const-string temporaries |
+| v2 | String, int | Reused: const-string "?" then const/4 0x0 |
 
 Smali Test Implementation (Phase 6 - simplified for validation):
 ```smali
@@ -129,8 +128,8 @@ Edge Cases:
 
 | Case | Input | Behavior | Result |
 |------|-------|----------|--------|
-| Null URL | `null` | Original code handles before patch (line 377-385) | No null pointer risk |
-| No query params | `https://www.tiktok.com/@user/video/123` | `indexOf("?")` → -1, jump to wrap | Returns unchanged |
+| Null URL | `null` | Original code handles before patch | No null pointer risk |
+| No query params | `https://www.tiktok.com/@user/video/123` | `indexOf("?")` → -1, skip to :check_shortened | Returns unchanged |
 | With query params | `https://www.tiktok.com/@user/video/123?_r=1&...` | `substring(0, indexOf("?"))` | Strips all params |
 | Malformed ('?' at position 0) | `?param=value` | `indexOf("?")` → 0, `if-lez` false | Skips sanitization |
 | Multiple '?' (malformed) | `https://site.com/?a=?b` | `indexOf` returns first occurrence | Strips everything after first '?' (RFC 3986 compliant) |
@@ -233,11 +232,11 @@ Important Notes:
 - Now uses generic return type (`LX/`) and method name only, making it resilient to class name obfuscation changes
 
 Rejected alternatives:
-- ❌ `"share_url"` - Does NOT exist in method (common misconception)
-- ❌ `"https://vm.tiktok.com"` - Does NOT exist in original (only in patched smali tests)
-- ❌ `"https://vt.tiktok.com"` - Does NOT exist in original (only in patched smali tests)
-- ❌ `"getShortShareUrlObservab"` (prefix only) - Would NOT match (API requires full string)
-- ✅ `"getShortShareUrlObservab\u2026ongUrl, subBizSceneValue)"` - CONFIRMED unique at line 392
+- NO: `"share_url"` - Does NOT exist in method (common misconception)
+- NO: `"https://vm.tiktok.com"` - Does NOT exist in original (only in patched smali tests)
+- NO: `"https://vt.tiktok.com"` - Does NOT exist in original (only in patched smali tests)
+- NO: `"getShortShareUrlObservab"` (prefix only) - Would NOT match (API requires full string)
+- YES: `"getShortShareUrlObservab\u2026ongUrl, subBizSceneValue)"` - CONFIRMED unique identifier
 
 Uniqueness check:
 ```bash
@@ -308,22 +307,22 @@ ugbiz_name=MAIN&ug_btm=b2001&
 link_reflow_popup_iteration_sharer={...JSON_BLOB...}
 ```
 
-Clean URLs Database Rules (26 parameters total):
+Clean URLs Database Rules (24 parameters total):
 
 Primary TikTok tracking (10):
-- `_r` ✓ Present in 36.5.4
+- `_r` Present in 36.5.4
 - `_t`
-- `_d` ✓ Present in 36.5.4
-- `u_code` ✓ Present in 36.5.4
+- `_d` Present in 36.5.4
+- `u_code` Present in 36.5.4
 - `sec_uid`
 - `user_id`
 - `sender_device`
 - `sender_web_id`
-- `share_iid` ✓ Present in 36.5.4
-- `source` ✓ Present in 36.5.4
+- `share_iid` Present in 36.5.4
+- `source` Present in 36.5.4
 
 Share method tracking (8):
-- `social_share_type` ✓ Present in 36.5.4
+- `social_share_type` Present in 36.5.4
 - `tt_from`
 - `share_app_name`
 - `checksum`
@@ -333,16 +332,16 @@ Share method tracking (8):
 - `enter_method`
 
 Standard marketing tracking (5):
-- `utm_source` ✓ Present in 36.5.4
-- `utm_campaign` ✓ Present in 36.5.4
-- `utm_medium` ✓ Present in 36.5.4
+- `utm_source` Present in 36.5.4
+- `utm_campaign` Present in 36.5.4
+- `utm_medium` Present in 36.5.4
 - `utm_content`
 - `utm_term`
 
 Ad tracking (1):
 - `ttclid`
 
-Parameters in 36.5.4 not in Clean URLs database (8):
+Parameters in 36.5.4 not in Clean URLs database (9):
 - `preview_pb` - Preview playback flag
 - `sharer_language` - Language tracking
 - `share_item_id` - Item identifier
