@@ -6,7 +6,7 @@ Single source of truth for share URL sanitization research. All findings, techni
 
 Problem: TikTok share URLs contain 21 tracking parameters (utm_*, share_*, _d, _r, timestamps, JSON blobs) totaling 505 bytes that track user sharing behavior.
 
-Solution: Selectively remove tracking parameters (utm_*, tt_*, enter_*, share_*, etc.) while preserving legitimate query parameters. Smali test used blanket `?` stripping for simplicity; ReVanced implementation will reuse existing parameter filtering approach.
+Solution: Remove all query parameters via blanket `?` stripping. Both Smali test and ReVanced implementation use identical approach: extract base URL, discard all query parameters.
 
 Status: Passed - Both Smali (Phase 6) and ReVanced (Phase 7) implementations validated
 
@@ -16,10 +16,9 @@ Patch: `feat/tiktok-sanitize-share-urls` in `revanced-src/revanced-patches`
 
 ## Version Map
 
-| Version | App | Status | Smali Tests | Logs | Base APK |
-|---------|-----|--------|-------------|------|----------|
-| 36.5.4 | Trill | Passed | [Tests](36.5.4/trill/smali-tests) | [Logs](36.5.4/logs) | [APK Info](../../trill/apks/36.5.4/base.apk.info) |
-| 36.5.4 | Musically | Passed | [Tests](36.5.4/musically/smali-tests) | [Logs](36.5.4/logs) | [APK Info](../../musically/apks/36.5.4/base.apk.info) |
+| Version | App | Status | Key Files | Logs | Base APK |
+|---------|-----|--------|-----------|------|----------|
+| 36.5.4 | Trill | Passed | [UEU.smali](36.5.4/key-files/UEU-trill.smali) | [Logs](36.5.4/logs) | [APK Info](../../trill/apks/36.5.4/base.apk.info) |
 | 36.6.0 | Both | Pending | - | - | - |
 
 ---
@@ -124,7 +123,7 @@ move-result-object v1              # v1 now contains clean URL
 # Fall through (null case)
 ```
 
-Note: This Smali test uses blanket query string removal for rapid validation. The ReVanced patch will implement selective parameter filtering via `ShareUrlSanitizer.clean()` extension to preserve legitimate params.
+Note: ReVanced implementation also uses blanket query string removal via `ShareUrlSanitizer.sanitizeShareUrl()`, identical to Smali test approach. All query parameters stripped via `LinkSanitizer()` with no parameter exclusion list.
 
 Edge Cases:
 
