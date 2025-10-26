@@ -378,7 +378,7 @@ Coverage Analysis:
 
 - Workflow: [Phase 2 (Smali Testing)](/WORKFLOW.md#phase-2-smali-testing)
 - Workflow: [Phase 3 (ReVanced Porting)](/WORKFLOW.md#phase-3-revanced-patch-porting)
-- APK metadata: [base.apk.info](../../apks/36.5.4/base.apk.info)
+- APK metadata: [base.apk.info](../../trill/apks/36.5.4/base.apk.info)
 
 ---
 
