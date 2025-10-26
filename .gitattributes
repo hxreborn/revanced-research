@@ -1,6 +1,5 @@
-# Mark decompilation outputs as generated (don't count in stats)
-*.smali linguist-generated=true
-apps/**/*.smali linguist-generated=true
+# Smali test files (key patched files for validation)
+apps/**/smali-tests/**/*.smali linguist-language=Smali
 
 # Binary files
 apps/**/*.dex linguist-binary
