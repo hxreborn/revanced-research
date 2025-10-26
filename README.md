@@ -10,10 +10,11 @@ Smali-first reverse-engineering workspace for Android APK analysis and ReVanced 
 
 | Path | Tracked | Purpose |
 |------|---------|---------|
-| `apps/<family>/apks/<variant>/<version>/*.{info,sha256}` | ✓ | APK metadata |
+| `apps/<family>/apks/<version>/<package>.apk.{info,sha256}` | ✓ | APK metadata |
 | `apps/<family>/<feature>/README.md` | ✓ | Research findings |
 | `apps/<family>/<feature>/<version>/files/` | ✓ | Reference smali |
-| `apps/<family>/apks/<variant>/<version>/` | ✗ | APK binaries, decompilations |
+| `apps/<family>/apks/<version>/<package>.apk` | ✗ | APK binaries |
+| `apps/<family>/apks/<version>/{apktool,jadx}/` | ✗ | Decompilations |
 | `apps/<family>/<feature>/<version>/smali-tests/` | ✗ | Test outputs |
 | `revanced-src/` | submodule | Patch port target |
 

@@ -25,20 +25,20 @@ Research and develop ReVanced patches through **Smali-first validation**. Every 
 
 ## Workspace Boundaries
 
-Structure: `apps/<app-family>/<variant|feature>/`
+Structure: `apps/<app-family>/{apks,<feature>}/`
 
 | Directory | Access | Tracked | Purpose |
 |-----------|--------|---------|---------|
-| `apps/<app-family>/apks/<variant>/<version>/*.info` | R/W | ✓ | APK metadata |
-| `apps/<app-family>/apks/<variant>/<version>/*.sha256` | R/W | ✓ | APK checksums |
+| `apps/<app-family>/apks/<version>/<package>.apk.{info,sha256}` | R/W | ✓ | APK metadata |
 | `apps/<app-family>/<feature>/README.md` | R/W | ✓ | Single source of truth: status, findings, validation results |
 | `apps/<app-family>/<feature>/<version>/files/` | R/W | ✓ | Reference smali for documentation |
-| `apps/<app-family>/apks/<variant>/<version>/` (binaries) | R/W | ✗ | APK binaries, decompilation outputs - local only |
+| `apps/<app-family>/apks/<version>/<package>.apk` | R/W | ✗ | APK binaries - local only |
+| `apps/<app-family>/apks/<version>/{apktool,jadx}/` | R/W | ✗ | Decompilation outputs - local only |
 | `apps/<app-family>/<feature>/<version>/smali-tests/` | R/W | ✗ | Smali test outputs - local only |
 | `apps/<app-family>/<feature>/<version>/logs/` | R/W | ✗ | Test logs - local only |
 | `revanced-src/revanced-patches/` | R | - | Upstream port (read-only after Smali validation) |
 
-Example: `apps/tiktok/` contains variants (trill, musically) and shared features (share-url-sanitization)
+Example: `apps/tiktok/` contains APKs (com.zhiliaoapp.musically, com.ss.android.ugc.trill) and features (share-url-sanitization, downloads)
 
 ---
 
@@ -66,20 +66,20 @@ Example: `apps/tiktok/` contains variants (trill, musically) and shared features
 ### Discovery (Read-only, local workspace)
 ```bash
 # Generate decompilation locally (JADX/apktool are gitignored)
-cd apps/tiktok/apks/trill/36.5.4/
-jadx -d jadx-deobf base.apk
-apktool d base.apk -o apktool
+cd apps/tiktok/apks/36.5.4/
+jadx -d jadx-deobf com.ss.android.ugc.trill.apk
+apktool d com.ss.android.ugc.trill.apk -o apktool
 
 # Search decompilation for patterns
 rg "<pattern>" jadx-deobf/ apktool/
 
 # Verify in Smali tests (local only)
-rg "<pattern>" ../../../share-url-sanitization/36.5.4/smali-tests/*/smali-classes*/
+rg "<pattern>" ../../share-url-sanitization/36.5.4/smali-tests/*/smali-classes*/
 ```
 
 ### Smali Testing
 Detailed commands in `WORKFLOW.md` Phase 2:
-1. Extract target DEX: `unzip -j base.apk classes15.dex`
+1. Extract target DEX: `unzip -j <package>.apk classes15.dex`
 2. Decompile: `baksmali d classes15.dex -o smali-classes15/`
 3. Edit smali, add verification logs
 4. Recompile: `smali a smali-classes15/ -o classes15-patched.dex --api 35`
@@ -123,11 +123,11 @@ Detailed commands in `WORKFLOW.md` Phase 2:
 Tracked in Git:
 - `apps/<app-family>/<feature>/README.md`
 - `apps/<app-family>/<feature>/<version>/files/*.smali`
-- `apps/<app-family>/apks/<variant>/<version>/*.info`
-- `apps/<app-family>/apks/<variant>/<version>/*.sha256`
+- `apps/<app-family>/apks/<version>/<package>.apk.info`
+- `apps/<app-family>/apks/<version>/<package>.apk.sha256`
 
 Local workspace gitignored:
 - `apps/<app-family>/<feature>/<version>/smali-tests/`
 - `apps/<app-family>/<feature>/<version>/logs/`
-- `apps/<app-family>/apks/<variant>/<version>/apktool/`
-- `apps/<app-family>/apks/<variant>/<version>/jadx/`
+- `apps/<app-family>/apks/<version>/<package>.apk`
+- `apps/<app-family>/apks/<version>/{apktool,jadx}/`
