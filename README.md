@@ -12,7 +12,7 @@ Smali-first reverse-engineering workspace for Android APK analysis and ReVanced 
 |------|---------|
 | `apps/<app-family>/<variant>/apks/<version>/` | APK metadata: checksums, build info (binaries gitignored) |
 | `apps/<app-family>/<feature>/` | Feature documentation: research findings, technical details |
-| `apps/<app-family>/<feature>/<version>/key-files/` | Reference smali files for documentation |
+| `apps/<app-family>/<feature>/<version>/files/` | Reference smali files for documentation |
 | `revanced-src/` | ReVanced patches (submodule, upstream port only) |
 
 ## Targets
@@ -31,12 +31,7 @@ Smali-first reverse-engineering workspace for Android APK analysis and ReVanced 
 
 ## Approach
 
-Every patch begins with **Smali-first validation**: bytecode changes are tested in raw Smali (via baksmali/apktool) before porting to ReVanced. This ensures:
-- Injection points are proven to work
-- Register allocation is correct
-- Bytecode patterns are established before abstraction to ReVanced
-
-Feature READMEs serve as the single source of truth, combining research findings, technical details, and validation results across versions in one place.
+Smali-first validation: test bytecode changes in raw Smali before porting to ReVanced. Feature READMEs are the single source of truth.
 
 ## License
 

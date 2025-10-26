@@ -12,11 +12,11 @@ revanced-research/
 │       ├── <feature>/
 │       │   ├── README.md                       # Consolidated feature doc (all sections)
 │       │   ├── <version>/
-│       │   │   ├── key-files/                  # Reference smali files (tracked in git)
+│       │   │   ├── files/                  # Reference smali files (tracked in git)
 │       │   │   ├── logs/                       # Test run logs (local only)
 │       │   │   └── smali-tests/                # Smali test outputs (local only)
 │       │   └── 36.6.0/
-│       │       ├── key-files/
+│       │       ├── files/
 │       │       ├── logs/
 │       │       └── smali-tests/
 │       ├── <variant>/
@@ -59,7 +59,7 @@ This README consolidates:
 - References (related resources)
 
 Tracked files:
-- `apps/<app-family>/<feature>/<version>/key-files/*.smali` - Reference bytecode for documentation
+- `apps/<app-family>/<feature>/<version>/files/*.smali` - Reference bytecode for documentation
 - `apps/<app-family>/<variant>/apks/<version>/base.apk.info` - APK metadata
 - `apps/<app-family>/<variant>/apks/<version>/base.apk.sha256` - APK checksums
 
@@ -73,7 +73,7 @@ Local-only files (gitignored):
 2. Decompile APK into `<variant>/apks/<version>/{apktool,jadx}` (local only)
 3. Run smali experiments in `<feature>/<version>/smali-tests/` (local only)
 4. Update feature README as you learn (status, findings, validation results)
-5. Copy reference smali files to `<feature>/<version>/key-files/` for git tracking
+5. Copy reference smali files to `<feature>/<version>/files/` for git tracking
 
 ---
 
@@ -100,7 +100,7 @@ EOF
 ### 0.2 Create Feature Workspace
 
 ```bash
-mkdir -p apps/<app-family>/<feature>/<version>/{key-files,smali-tests,logs}
+mkdir -p apps/<app-family>/<feature>/<version>/{files,smali-tests,logs}
 
 # Create initial README with template sections
 cat > apps/<app-family>/<feature>/README.md << 'EOF'
@@ -1010,7 +1010,7 @@ git push
 ## **Deliverables**
 
 1. `apps/<app-family>/<feature>/README.md` - Consolidated feature documentation (6 sections)
-2. `apps/<app-family>/<feature>/<version>/key-files/` - Reference smali files (tracked in git)
+2. `apps/<app-family>/<feature>/<version>/files/` - Reference smali files (tracked in git)
 3. `apps/<app-family>/<variant>/apks/<version>/base.apk.info` - APK metadata (tracked)
 4. `apps/<app-family>/<variant>/apks/<version>/base.apk.sha256` - APK checksums (tracked)
 5. `revanced-src/revanced-patches/` - Working ReVanced patch (submodule)
