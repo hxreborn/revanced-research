@@ -106,42 +106,60 @@ Trill comparison:
 - Trill APK contains "/Camera" string (localized)
 - Suggests fingerprint designed for Trill, not Musically
 
-**Conclusion**: `downloadUriFingerprint` cannot match any method in Musically → patch silently skips download path modification → hardcoded path always used
+Conclusion: `downloadUriFingerprint` fails to match methods in both Trill and Musically 36.5.4.
+
+Trill verification results:
+- Method signature `(Context,String)→Uri` absent in classes.dex (14,863 files searched)
+- String "video/mp4" absent
+- String "/Camera" absent
+- No methods matched fingerprint criteria
+
+Download path modification non-functional on 36.5.4 for both variants.
 
 ### Runtime Testing Results
 
-**Test Execution**: Installed debug APK with logs in `X/1pI.onSuccessed` method
+Test execution: Installed debug APK with logs in `X/1pI.onSuccessed` method.
 
-**Findings**:
-- ✓ Downloads work
-- ✓ Watermark removal works (ACL patches applied)
-- ✗ Custom path NOT applied (files save to DCIM/Camera)
-- ✗ No debug logs captured (X/1pI not in classes.dex)
+Observed behavior:
+- Downloads functional
+- Watermark removal functional (ACL patches applied)
+- Custom path ignored (files save to DCIM/Camera)
+- Debug logs absent (X/1pI not in classes.dex)
 
-**Analysis**:
-- ACL fingerprints match and work correctly
-- `downloadUriFingerprint` does NOT match any method in Musically
-- Download path construction code is in different DEX file (not classes.dex)
-- X/1pI class found in classes.dex is for different download mechanism
+Analysis:
+- ACL fingerprints match successfully
+- `downloadUriFingerprint` matches no methods in Musically
+- Download path construction in different DEX file
+- X/1pI class unrelated to video download mechanism
 
-**Conclusion**: `downloadUriFingerprint` is Trill-specific, incompatible with Musically
+Trill 36.5.4 verification:
+- Searched classes.dex (14,863 smali files)
+- No static methods with signature `(Context,String)→Uri`
+- Strings "video/mp4", "/Camera" absent
+- Fingerprint matched no methods
+
+Download path modification non-functional on 36.5.4 for both variants.
 
 ### Solution Approaches
 
-**Option A**: Find equivalent method in Musically
-- Search remaining 48 DEX files for actual video download path construction
-- Create Musically-specific fingerprint
-- Requires significant decompilation effort
+Option A - Find download path method:
+- Extract remaining 48 DEX files
+- Search for path construction (StringBuilder, File constructors)
+- Search for ContentResolver/MediaStore calls during download
+- Create working fingerprint
+- Time: Several hours, high accuracy
 
-**Option B**: Generic fingerprint
-- Find common pattern between Trill and Musically
-- Use method signature + behavior instead of strings
-- More robust across versions
+Option B - Hook Environment.getExternalStorageDirectory():
+- Intercept Android storage path API
+- Replace "/DCIM" with custom path at OS level
+- Affects all storage operations (downloads, camera, media)
+- Time: 30 minutes, potential side effects
 
-**Option C**: Hook Settings read
-- Intercept where app reads download path preference
-- Override at read time instead of construction time
-- Simpler but may affect multiple code paths
+Option C - Hook download framework:
+- Based on X/1pI extending DownloadListener
+- Modify DownloadInfo destination before download starts
+- Requires finding download framework entry point in remaining DEX files
+- Time: 2-3 hours, surgical approach
 
 ---
 
@@ -151,6 +169,7 @@ Trill comparison:
 - **2025-10-26 14:30**: Phase 1 - Confirmed fingerprint strings absent in Musically 36.5.4
 - **2025-10-26 14:45**: Phase 1 - Discovered apktool-16g decompilation empty (0 smali files)
 - **2025-10-26 14:07**: Phase 2 - Runtime test completed, confirmed fingerprint mismatch
+- **2025-10-26 14:10**: Phase 3 - Verified Trill 36.5.4, confirmed patch broken on BOTH variants
 
 ---
 
