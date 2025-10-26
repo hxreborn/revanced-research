@@ -1,13 +1,12 @@
-# Mark decompilation outputs as documentation/generated
-*.smali linguist-language=Smali
-apps/**/*.smali linguist-documentation
+# Mark decompilation outputs as generated (don't count in stats)
+*.smali linguist-generated=true
+apps/**/*.smali linguist-generated=true
+
+# Binary files
 apps/**/*.dex linguist-binary
 revanced-src/**/*.apk linguist-binary
 
-# Properly identify script languages
+# Explicitly identify source files
 *.js linguist-language=JavaScript
 *.sh linguist-language=Shell
-frida-scripts/ linguist-documentation=false
-
-# Markdown
 *.md linguist-language=Markdown
