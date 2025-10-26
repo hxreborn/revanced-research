@@ -232,11 +232,11 @@ Important Notes:
 - Now uses generic return type (`LX/`) and method name only, making it resilient to class name obfuscation changes
 
 Rejected alternatives:
-- NO: `"share_url"` - Does NOT exist in method (common misconception)
-- NO: `"https://vm.tiktok.com"` - Does NOT exist in original (only in patched smali tests)
-- NO: `"https://vt.tiktok.com"` - Does NOT exist in original (only in patched smali tests)
-- NO: `"getShortShareUrlObservab"` (prefix only) - Would NOT match (API requires full string)
-- YES: `"getShortShareUrlObservab\u2026ongUrl, subBizSceneValue)"` - CONFIRMED unique identifier
+- ✗ `"share_url"` - Does NOT exist in method (common misconception)
+- ✗ `"https://vm.tiktok.com"` - Does NOT exist in original (only in patched smali tests)
+- ✗ `"https://vt.tiktok.com"` - Does NOT exist in original (only in patched smali tests)
+- ✗ `"getShortShareUrlObservab"` (prefix only) - Would NOT match (API requires full string)
+- ✓ `"getShortShareUrlObservab\u2026ongUrl, subBizSceneValue)"` - CONFIRMED unique identifier
 
 Uniqueness check:
 ```bash
