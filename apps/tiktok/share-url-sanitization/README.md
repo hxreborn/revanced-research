@@ -1,25 +1,20 @@
 # Share URL Sanitization - Trill + Musically
 
-Single source of truth for share URL sanitization research. All findings, technical details, and validation results consolidated here.
-
 ## Summary
 
-Problem: TikTok share URLs contain 21 tracking parameters (utm_*, share_*, _d, _r, timestamps, JSON blobs) totaling 505 bytes that track user sharing behavior.
-
-Solution: Remove all query parameters via blanket `?` stripping. Both Smali test and ReVanced implementation use identical approach: extract base URL, discard all query parameters.
-
-Status: Passed - Both Smali (Phase 6) and ReVanced (Phase 7) implementations validated
-
+Problem: TikTok share URLs contain 21 tracking parameters (505 bytes).
+Solution: Remove all query parameters via blanket `?` stripping.
+Status: Passed (Smali Phase 6, ReVanced Phase 7)
 Patch: `feat/tiktok-sanitize-share-urls` in `revanced-src/revanced-patches`
 
 ---
 
 ## Version Map
 
-| Version | App | Status | Key Files | Logs | Base APK |
-|---------|-----|--------|-----------|------|----------|
-| 36.5.4 | Trill | Passed | [UEU.smali](36.5.4/key-files/UEU-trill.smali) | [Logs](36.5.4/logs) | [APK Info](../../trill/apks/36.5.4/base.apk.info) |
-| 36.6.0 | Both | Pending | - | - | - |
+| Version | App | Status | Files |
+|---------|-----|--------|-------|
+| 36.5.4 | Trill | Passed | [UEU.smali](36.5.4/files/UEU-trill.smali) |
+| 36.6.0 | Both | Pending | - |
 
 ---
 
@@ -378,7 +373,6 @@ Coverage Analysis:
 
 - Workflow: [Phase 2 (Smali Testing)](/WORKFLOW.md#phase-2-smali-testing)
 - Workflow: [Phase 3 (ReVanced Porting)](/WORKFLOW.md#phase-3-revanced-patch-porting)
-- APK metadata: [base.apk.info](../../trill/apks/36.5.4/base.apk.info)
 
 ---
 

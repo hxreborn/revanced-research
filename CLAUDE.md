@@ -32,7 +32,7 @@ Structure: `apps/<app-family>/<variant|feature>/`
 | `apps/<app-family>/<variant>/apks/<version>/*.info` | R/W | ✓ | APK metadata (hashes, build info) |
 | `apps/<app-family>/<variant>/apks/<version>/*.sha256` | R/W | ✓ | APK checksums |
 | `apps/<app-family>/<feature>/README.md` | R/W | ✓ | Single source of truth: status, findings, validation results |
-| `apps/<app-family>/<feature>/<version>/key-files/` | R/W | ✓ | Reference smali files for documentation |
+| `apps/<app-family>/<feature>/<version>/files/` | R/W | ✓ | Reference smali files for documentation |
 | `apps/<app-family>/<variant>/apks/<version>/` (binaries) | R/W | ✗ | APK binaries, decompilation outputs (apktool/, jadx/) - local only |
 | `apps/<app-family>/<feature>/<version>/smali-tests/` | R/W | ✗ | Smali test outputs - local only |
 | `apps/<app-family>/<feature>/<version>/logs/` | R/W | ✗ | Test logs - local only |
@@ -77,8 +77,8 @@ rg "<pattern>" jadx-deobf/ apktool/
 rg "<pattern>" ../../share-url-sanitization/36.5.4/trill/smali-tests/*/smali-classes*/
 ```
 
-### Smali Testing (Your primary workflow)
-Detailed commands in `WORKFLOW.md` Phase 2. Essential pipeline:
+### Smali Testing
+Detailed commands in `WORKFLOW.md` Phase 2:
 1. Extract target DEX: `unzip -j base.apk classes15.dex`
 2. Decompile: `baksmali d classes15.dex -o smali-classes15/`
 3. Edit smali, add verification logs
@@ -86,7 +86,7 @@ Detailed commands in `WORKFLOW.md` Phase 2. Essential pipeline:
 5. Inject: `zip -j patched.apk classes15-patched.dex`
 6. Sign: `zipalign` → `apksigner`
 
-**Note:** smali-tests/ outputs are gitignored. After validation, copy reference files to `apps/<app-family>/<feature>/<version>/key-files/` for git tracking.
+**Note:** smali-tests/ outputs are gitignored. After validation, copy reference files to `apps/<app-family>/<feature>/<version>/files/` for git tracking.
 
 ### Documentation (Required after validation)
 - Feature `README.md` - Update status, technical details, validation results
@@ -122,7 +122,7 @@ Detailed commands in `WORKFLOW.md` Phase 2. Essential pipeline:
 
 **Tracked in Git** (22 files):
 - `apps/<app-family>/<feature>/README.md` - Feature documentation
-- `apps/<app-family>/<feature>/<version>/key-files/*.smali` - Reference bytecode
+- `apps/<app-family>/<feature>/<version>/files/*.smali` - Reference bytecode
 - `apps/<app-family>/<variant>/apks/<version>/*.info` - APK metadata
 - `apps/<app-family>/<variant>/apks/<version>/*.sha256` - APK checksums
 
