@@ -6,13 +6,11 @@ decompiled-smali-full/
 hs_err_*.log
 
 # App research outputs (feature-first structure)
+apps/**/smali-tests/
 apps/**/revanced-builds/
 apps/**/decompiled-*/
 apps/**/*.dex
 apps/**/*.idsig
-
-# Keep smali-tests (key validation files)
-!apps/**/smali-tests/
 
 # APK decompilation outputs
 apps/**/apktool/
