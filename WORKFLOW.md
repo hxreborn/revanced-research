@@ -33,7 +33,7 @@ revanced-research/
     └── revanced-cli.jar         # CLI tool
 ```
 
-**For concrete examples**, see `apps/tiktok/features/share-url-sanitization/README.md` - complete feature research with all sections.
+**For concrete examples**, see `apps/tiktok/share-url-sanitization/README.md` - complete feature research with all sections.
 
 ---
 
@@ -128,6 +128,26 @@ Decompile APK and explore:
 
 ### 1.1 Decompile to APK storage
 
+**For large APKs (TikTok, Musically, etc.) - Use optimized configurations:**
+
+```bash
+# Navigate to APK directory
+cd apps/<app>/apks/<version>/
+
+# Set environment for stability
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk
+export PATH="$JAVA_HOME/bin:/home/rafa/.local/bin:$PATH"
+
+# JADX (Recommended - handles large APKs better)
+mkdir -p jadx-deobf
+taskset -c 0 jadx -d jadx-deobf base.apk
+
+# Apktool (Alternative - use jar directly with increased heap)
+mkdir -p apktool
+taskset -c 0 java -Xmx4G -jar /usr/share/java/android-apktool/apktool.jar d base.apk -o apktool
+```
+
+**For smaller APKs:**
 ```bash
 # apktool
 apktool d -f apps/<app>/apks/<version>/base.apk -o apps/<app>/apks/<version>/apktool
