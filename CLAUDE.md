@@ -66,7 +66,7 @@ Example: `apps/tiktok/` contains variants (trill, musically) and shared features
 ### Discovery (Read-only, local workspace)
 ```bash
 # Generate decompilation locally (JADX/apktool are gitignored)
-cd apps/tiktok/trill/apks/36.5.4/
+cd apps/tiktok/apks/trill/36.5.4/
 jadx -d jadx-deobf base.apk
 apktool d base.apk -o apktool
 
@@ -74,7 +74,7 @@ apktool d base.apk -o apktool
 rg "<pattern>" jadx-deobf/ apktool/
 
 # Verify in Smali tests (local only)
-rg "<pattern>" ../../share-url-sanitization/36.5.4/trill/smali-tests/*/smali-classes*/
+rg "<pattern>" ../../../share-url-sanitization/36.5.4/smali-tests/*/smali-classes*/
 ```
 
 ### Smali Testing
