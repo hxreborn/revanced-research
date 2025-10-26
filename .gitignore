@@ -26,6 +26,14 @@ apps/**/apks/**/*.ap_
 !apps/**/apks/**/*.info
 !apps/**/apks/**/*.sha256
 
+# Cryptographic signing keys (NEVER commit these)
+*.keystore
+*.jks
+*.p12
+*.pfx
+*.key
+*.pem
+
 # Archived documentation
 .archive/
 
