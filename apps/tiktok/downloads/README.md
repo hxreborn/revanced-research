@@ -15,10 +15,10 @@ Patch: `revanced-src/revanced-patches/patches/src/main/kotlin/app/revanced/patch
 
 ## Version Map
 
-| Version | App | Status | Key Files | Logs | Base APK |
-|---------|-----|--------|-----------|------|----------|
-| 36.5.4 | Musically | Verified | [KHJ.smali](36.5.4/key-files/) | [Logs](36.5.4/logs) | [APK Info](../../musically/apks/36.5.4/base.apk.info) |
-| 36.5.4 | Trill | Verified | [K6I.smali](36.5.4/key-files/) | [Logs](36.5.4/logs) | [APK Info](../../trill/apks/36.5.4/base.apk.info) |
+| Version | App | Status | Files |
+|---------|-----|--------|-------|
+| 36.5.4 | Musically | Verified | [KHJ.smali](36.5.4/files/) |
+| 36.5.4 | Trill | Verified | [K6I.smali](36.5.4/files/) |
 
 ---
 
@@ -28,12 +28,12 @@ Patch: `revanced-src/revanced-patches/patches/src/main/kotlin/app/revanced/patch
 
 DownloadsPatch.kt components:
 
-ACL restrictions (functional):
+ACL restrictions functional:
 - `aclCommonShareFingerprint` → ACLCommonShare.getCode() returns 0
 - `aclCommonShare2Fingerprint` → ACLCommonShare.getShowType() returns 2
 - `aclCommonShare3Fingerprint` → ACLCommonShare.getTranscode() watermark removal
 
-Download path (non-functional):
+Download path non-functional:
 - `downloadUriFingerprint` → targets non-existent method
 - Injects `DownloadsPatch.getDownloadPath()` at 2 locations
 - Both write to v0 register (second overwrites first)
@@ -57,14 +57,14 @@ internal val downloadUriFingerprint = fingerprint {
 ```
 
 Patch weaknesses:
-- Fragile string matching (common strings)
+- Fragile string matching
 - Double injection to same register
 - No verification custom path applies
-- Silent failure (ACL patches work, path doesn't)
+- Silent failure: ACL patches work, path doesn't
 
 ### Fingerprint Failure Analysis
 
-Searched classes.dex (Musically: 14,966 files, Trill: 14,863 files):
+Searched classes.dex: Musically 14,966 files, Trill 14,863 files.
 
 Method signature `(Context,String)→Uri`:
 - Musically: absent
@@ -119,12 +119,11 @@ Installed debug APK with logs in `X/1pI.onSuccessed`.
 
 Results:
 - Downloads functional
-- Watermark removal functional (ACL patches applied)
-- Custom path ignored (saves to DCIM/Camera)
-- Debug logs absent (X/1pI unrelated to video downloads)
+- Watermark removal functional
+- Custom path ignored, saves to DCIM/Camera
+- Debug logs absent, X/1pI unrelated to video downloads
 
-Confirms downloadUriFingerprint non-functional.
-Confirms ACL fingerprints functional.
+downloadUriFingerprint non-functional, ACL fingerprints functional.
 
 ### Test Matrix
 
@@ -151,9 +150,9 @@ internal val downloadPathFingerprint = fingerprint {
 ```
 
 Injection approach:
-- Match on string `/DCIM/Camera/` at line 4522
+- Match string `/DCIM/Camera/` at line 4522
 - Replace `const-string v0, "/DCIM/Camera/"` with `invoke-static {}, Lapp/revanced/extension/tiktok/download/DownloadsPatch;->getDownloadPath()`
-- Works both variants (identical structure)
+- Works both variants, identical structure
 
 ---
 
@@ -171,4 +170,3 @@ Injection approach:
 
 - Workflow: [Phase 2 (Smali Testing)](/WORKFLOW.md#phase-2-smali-testing)
 - ReVanced Patch: [DownloadsPatch.kt](../../../revanced-src/revanced-patches/patches/src/main/kotlin/app/revanced/patches/tiktok/interaction/downloads/DownloadsPatch.kt)
-- APK metadata: [base.apk.info](../../musically/apks/36.5.4/base.apk.info)

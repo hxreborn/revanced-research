@@ -29,11 +29,11 @@ Structure: `apps/<app-family>/<variant|feature>/`
 
 | Directory | Access | Tracked | Purpose |
 |-----------|--------|---------|---------|
-| `apps/<app-family>/<variant>/apks/<version>/*.info` | R/W | ✓ | APK metadata (hashes, build info) |
-| `apps/<app-family>/<variant>/apks/<version>/*.sha256` | R/W | ✓ | APK checksums |
+| `apps/<app-family>/apks/<variant>/<version>/*.info` | R/W | ✓ | APK metadata |
+| `apps/<app-family>/apks/<variant>/<version>/*.sha256` | R/W | ✓ | APK checksums |
 | `apps/<app-family>/<feature>/README.md` | R/W | ✓ | Single source of truth: status, findings, validation results |
-| `apps/<app-family>/<feature>/<version>/files/` | R/W | ✓ | Reference smali files for documentation |
-| `apps/<app-family>/<variant>/apks/<version>/` (binaries) | R/W | ✗ | APK binaries, decompilation outputs (apktool/, jadx/) - local only |
+| `apps/<app-family>/<feature>/<version>/files/` | R/W | ✓ | Reference smali for documentation |
+| `apps/<app-family>/apks/<variant>/<version>/` (binaries) | R/W | ✗ | APK binaries, decompilation outputs - local only |
 | `apps/<app-family>/<feature>/<version>/smali-tests/` | R/W | ✗ | Smali test outputs - local only |
 | `apps/<app-family>/<feature>/<version>/logs/` | R/W | ✗ | Test logs - local only |
 | `revanced-src/revanced-patches/` | R | - | Upstream port (read-only after Smali validation) |
@@ -120,14 +120,14 @@ Detailed commands in `WORKFLOW.md` Phase 2:
 
 ## Quick Reference
 
-**Tracked in Git** (22 files):
-- `apps/<app-family>/<feature>/README.md` - Feature documentation
-- `apps/<app-family>/<feature>/<version>/files/*.smali` - Reference bytecode
-- `apps/<app-family>/<variant>/apks/<version>/*.info` - APK metadata
-- `apps/<app-family>/<variant>/apks/<version>/*.sha256` - APK checksums
+Tracked in Git:
+- `apps/<app-family>/<feature>/README.md`
+- `apps/<app-family>/<feature>/<version>/files/*.smali`
+- `apps/<app-family>/apks/<variant>/<version>/*.info`
+- `apps/<app-family>/apks/<variant>/<version>/*.sha256`
 
-**Local Workspace Only** (gitignored):
-- `apps/<app-family>/<feature>/<version>/smali-tests/` - Full decompiled bytecode (1.7GB+ per variant)
-- `apps/<app-family>/<feature>/<version>/logs/` - Test execution logs
-- `apps/<app-family>/<variant>/apks/<version>/apktool/` - Decompiled APK source
-- `apps/<app-family>/<variant>/apks/<version>/jadx/` - Decompiled Java code
+Local workspace gitignored:
+- `apps/<app-family>/<feature>/<version>/smali-tests/`
+- `apps/<app-family>/<feature>/<version>/logs/`
+- `apps/<app-family>/apks/<variant>/<version>/apktool/`
+- `apps/<app-family>/apks/<variant>/<version>/jadx/`
