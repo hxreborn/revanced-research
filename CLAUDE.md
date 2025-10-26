@@ -16,10 +16,10 @@ Research and develop ReVanced patches through **Smali-first validation**. Every 
 
 ## Core Principles
 
-1. **Validate in Smali first** - Never modify `revanced-src/revanced-patches/` until proven in `smali-tests/`
+1. **Validate in Smali first** - Never modify `revanced-src/revanced-patches/` until proven in smali-tests
 2. **No APK artifacts in git** - Track metadata via .info/.sha256 files (gitignore exceptions), never commit binaries
 3. **Surgical edits** - Prefer targeted DEX injection (baksmali → smali) over full apktool rebuilds
-4. **Document everything** - Update obfuscation maps, injection points, and attempt history as you learn
+4. **Keep READMEs current** - Update feature README with injection points, findings, and validation results as you work
 
 ---
 
@@ -63,13 +63,18 @@ Example: `apps/tiktok/` contains variants (trill, musically) and shared features
 
 ## Development Workflow
 
-### Discovery (Read-only)
+### Discovery (Read-only, local workspace)
 ```bash
-# Search JADX decompilation for patterns
-rg "<pattern>" apps/tiktok/trill/apks/36.5.4/jadx/
+# Generate decompilation locally (JADX/apktool are gitignored)
+cd apps/tiktok/trill/apks/36.5.4/
+jadx -d jadx-deobf base.apk
+apktool d base.apk -o apktool
 
-# Verify in Smali
-rg "<pattern>" apps/tiktok/<feature>/36.5.4/trill/smali-tests/*/smali-classes*/
+# Search decompilation for patterns
+rg "<pattern>" jadx-deobf/ apktool/
+
+# Verify in Smali tests (local only)
+rg "<pattern>" ../../share-url-sanitization/36.5.4/trill/smali-tests/*/smali-classes*/
 ```
 
 ### Smali Testing (Your primary workflow)
@@ -81,7 +86,7 @@ Detailed commands in `WORKFLOW.md` Phase 2. Essential pipeline:
 5. Inject: `zip -j patched.apk classes15-patched.dex`
 6. Sign: `zipalign` → `apksigner`
 
-**Note:** smali-tests/ outputs are gitignored. After validation, copy reference files to `<feature>/<version>/key-files/` for git tracking.
+**Note:** smali-tests/ outputs are gitignored. After validation, copy reference files to `apps/<app-family>/<feature>/<version>/key-files/` for git tracking.
 
 ### Documentation (Required after validation)
 - Feature `README.md` - Update status, technical details, validation results
@@ -115,11 +120,11 @@ Detailed commands in `WORKFLOW.md` Phase 2. Essential pipeline:
 
 ## Quick Reference
 
-**Tracked in Git** (23 files):
-- `apps/<app-family>/<feature>/README.md` - Single source of truth: status, findings, validation results
-- `apps/<app-family>/<feature>/<version>/key-files/*.smali` - Reference bytecode for documentation
-- `apps/<app-family>/<variant>/apks/<version>/*.info` - APK metadata (build info, API levels)
-- `apps/<app-family>/<variant>/apks/<version>/*.sha256` - APK checksums for verification
+**Tracked in Git** (22 files):
+- `apps/<app-family>/<feature>/README.md` - Feature documentation
+- `apps/<app-family>/<feature>/<version>/key-files/*.smali` - Reference bytecode
+- `apps/<app-family>/<variant>/apks/<version>/*.info` - APK metadata
+- `apps/<app-family>/<variant>/apks/<version>/*.sha256` - APK checksums
 
 **Local Workspace Only** (gitignored):
 - `apps/<app-family>/<feature>/<version>/smali-tests/` - Full decompiled bytecode (1.7GB+ per variant)
