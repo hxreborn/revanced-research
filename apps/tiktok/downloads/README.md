@@ -17,8 +17,8 @@ Patch: `revanced-src/revanced-patches/patches/src/main/kotlin/app/revanced/patch
 
 | Version | App | Status | Files |
 |---------|-----|--------|-------|
-| 36.5.4 | Musically | Verified | [KHJ.smali](36.5.4/files/) |
-| 36.5.4 | Trill | Verified | [K6I.smali](36.5.4/files/) |
+| 36.5.4 | Musically | Verified | [KHJ.smali](36.5.4/files/KHJ.smali) |
+| 36.5.4 | Trill | Verified | [K6I.smali](36.5.4/files/K6I.smali) |
 
 ---
 
