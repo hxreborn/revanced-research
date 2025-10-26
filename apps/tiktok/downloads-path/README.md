@@ -108,12 +108,40 @@ Trill comparison:
 
 **Conclusion**: `downloadUriFingerprint` cannot match any method in Musically → patch silently skips download path modification → hardcoded path always used
 
-### Next Steps
+### Runtime Testing Results
 
-1. Manual DEX extraction and decompilation
-2. Search for actual download/save logic (ContentResolver, File APIs)
-3. Identify real injection point
-4. Create new fingerprint or generic pattern matcher
+**Test Execution**: Installed debug APK with logs in `X/1pI.onSuccessed` method
+
+**Findings**:
+- ✓ Downloads work
+- ✓ Watermark removal works (ACL patches applied)
+- ✗ Custom path NOT applied (files save to DCIM/Camera)
+- ✗ No debug logs captured (X/1pI not in classes.dex)
+
+**Analysis**:
+- ACL fingerprints match and work correctly
+- `downloadUriFingerprint` does NOT match any method in Musically
+- Download path construction code is in different DEX file (not classes.dex)
+- X/1pI class found in classes.dex is for different download mechanism
+
+**Conclusion**: `downloadUriFingerprint` is Trill-specific, incompatible with Musically
+
+### Solution Approaches
+
+**Option A**: Find equivalent method in Musically
+- Search remaining 48 DEX files for actual video download path construction
+- Create Musically-specific fingerprint
+- Requires significant decompilation effort
+
+**Option B**: Generic fingerprint
+- Find common pattern between Trill and Musically
+- Use method signature + behavior instead of strings
+- More robust across versions
+
+**Option C**: Hook Settings read
+- Intercept where app reads download path preference
+- Override at read time instead of construction time
+- Simpler but may affect multiple code paths
 
 ---
 
@@ -122,6 +150,7 @@ Trill comparison:
 - **2025-10-26 14:00**: Phase 0 - Branch created, identified patch weaknesses
 - **2025-10-26 14:30**: Phase 1 - Confirmed fingerprint strings absent in Musically 36.5.4
 - **2025-10-26 14:45**: Phase 1 - Discovered apktool-16g decompilation empty (0 smali files)
+- **2025-10-26 14:07**: Phase 2 - Runtime test completed, confirmed fingerprint mismatch
 
 ---
 
