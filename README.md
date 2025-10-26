@@ -10,9 +10,9 @@ Smali-first reverse-engineering workspace for Android APK analysis and ReVanced 
 
 | Path | Purpose |
 |------|---------|
-| `apps/<app-family>/<variant>/apks/<version>/` | APK artifacts: base.apk, metadata, decompilation outputs |
-| `apps/<app-family>/<feature>/` | Research workspace: problem analysis, smali tests, logs |
-| `apps/<app-family>/<feature>/<version>/` | Version-specific artifacts (smali-tests/, logs/, patches/) |
+| `apps/<app-family>/<variant>/apks/<version>/` | APK metadata: checksums, build info (binaries gitignored) |
+| `apps/<app-family>/<feature>/` | Feature documentation: research findings, technical details |
+| `apps/<app-family>/<feature>/<version>/key-files/` | Reference smali files for documentation |
 | `revanced-src/` | ReVanced patches (submodule, upstream port only) |
 
 ## Targets
@@ -40,4 +40,4 @@ Feature READMEs serve as the single source of truth, combining research findings
 
 ## License
 
-[GPLv3](LICENSE)
+GPLv3

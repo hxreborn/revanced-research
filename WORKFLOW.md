@@ -1,6 +1,6 @@
 # ReVanced Patch Development Runbook
 
-> **Single Source of Truth**: Feature READMEs (`apps/<app>/features/<feature>/README.md`) contain all research findings, technical details, and validation results. This runbook describes the procedures to produce those findings. Always reference the feature README for current status.
+> **Single Source of Truth**: Feature READMEs (`apps/<app-family>/<feature>/README.md`) contain all research findings, technical details, and validation results. This runbook describes the procedures to produce those findings. Always reference the feature README for current status.
 
 ## **Repository Structure**
 ```bash
@@ -8,25 +8,29 @@ revanced-research/
 ├── README.md                    # Main documentation + status
 ├── WORKFLOW.md                  # This runbook
 ├── apps/
-│   └── <app>/
-│       ├── features/
-│       │   └── <feature>/
-│       │       ├── README.md                    # Consolidated feature doc (all sections)
-│       │       ├── 36.5.4/
-│       │       │   ├── smali-tests/            # Smali test builds
-│       │       │   └── logs/                   # Test run logs
+│   └── <app-family>/
+│       ├── <feature>/
+│       │   ├── README.md                       # Consolidated feature doc (all sections)
+│       │   ├── <version>/
+│       │   │   ├── key-files/                  # Reference smali files (tracked in git)
+│       │   │   ├── logs/                       # Test run logs (local only)
+│       │   │   └── smali-tests/                # Smali test outputs (local only)
+│       │   └── 36.6.0/
+│       │       ├── key-files/
+│       │       ├── logs/
+│       │       └── smali-tests/
+│       ├── <variant>/
+│       │   └── apks/
+│       │       ├── <version>/
+│       │       │   ├── base.apk.info           # Metadata (tracked)
+│       │       │   ├── base.apk.sha256         # Checksums (tracked)
+│       │       │   ├── base.apk                # Binary (gitignored)
+│       │       │   ├── apktool/                # Decompilation (gitignored)
+│       │       │   └── jadx/                   # Decompilation (gitignored)
 │       │       └── 36.6.0/
-│       │           ├── smali-tests/
-│       │           └── logs/
-│       └── apks/
-│           ├── 36.5.4/
-│           │   ├── base.apk
-│           │   ├── base.apk.sha256
-│           │   ├── base.apk.info
-│           │   ├── apktool/                    # apktool decompilation output
-│           │   └── jadx/                       # JADX decompilation output
-│           └── 36.6.0/
-│               ├── base.apk
+│       │           └── ...
+│       └── trill/
+│           └── apks/
 │               └── ...
 └── revanced-src/
     ├── revanced-patches/        # Submodule (forked)
@@ -44,7 +48,7 @@ Ship a working ReVanced patch using proven Smali edits. Test everything in raw S
 
 ## **Documentation Guidelines**
 
-**Single source of truth per feature**: `apps/<app>/features/<feature>/README.md`
+**Single source of truth per feature**: `apps/<app-family>/<feature>/README.md`
 
 This README consolidates:
 - Summary (problem, solution, status)
@@ -54,18 +58,22 @@ This README consolidates:
 - Timeline (phases, decisions, rationale)
 - References (related resources)
 
-Supporting files (for organization only):
-- `apps/<app>/features/<feature>/<version>/smali-tests/` - Bytecode experiments and test APKs
-- `apps/<app>/features/<feature>/<version>/logs/` - Device logs, CLI output, validation evidence
-- `apps/<app>/features/<feature>/<version>/obfuscation-map.md` - Deobfuscation findings (referenced from README)
-- `apps/<app>/apks/<version>/` - Raw APK artifacts and decompilations
+Tracked files:
+- `apps/<app-family>/<feature>/<version>/key-files/*.smali` - Reference bytecode for documentation
+- `apps/<app-family>/<variant>/apks/<version>/base.apk.info` - APK metadata
+- `apps/<app-family>/<variant>/apks/<version>/base.apk.sha256` - APK checksums
+
+Local-only files (gitignored):
+- `apps/<app-family>/<feature>/<version>/smali-tests/` - Bytecode experiments and test APKs
+- `apps/<app-family>/<feature>/<version>/logs/` - Device logs, CLI output, validation evidence
+- `apps/<app-family>/<variant>/apks/<version>/` - APK binaries and decompilations
 
 **Workflow:**
 1. Create feature/version folder structure
-2. Decompile APK into apks/<version>/{apktool,jadx}
-3. Run smali experiments in features/<feature>/<version>/smali-tests/
+2. Decompile APK into `<variant>/apks/<version>/{apktool,jadx}` (local only)
+3. Run smali experiments in `<feature>/<version>/smali-tests/` (local only)
 4. Update feature README as you learn (status, findings, validation results)
-5. Version-specific details go in: obfuscation-map.md, smali-tests/, logs/ (not separate top-level files)
+5. Copy reference smali files to `<feature>/<version>/key-files/` for git tracking
 
 ---
 
@@ -76,13 +84,11 @@ One-time setup when adding a new APK and feature:
 ### 0.1 Create APK Storage
 
 ```bash
-mkdir -p apps/<app>/apks/<version>/{apktool,jadx}
-touch apps/<app>/apks/<version>/apktool/.gitkeep
-touch apps/<app>/apks/<version>/jadx/.gitkeep
+mkdir -p apps/<app-family>/<variant>/apks/<version>
 
-# Create metadata
-sha256sum apps/<app>/apks/<version>/base.apk > apps/<app>/apks/<version>/base.apk.sha256
-cat > apps/<app>/apks/<version>/base.apk.info << 'EOF'
+# Create metadata (tracked in git)
+sha256sum apps/<app-family>/<variant>/apks/<version>/base.apk > apps/<app-family>/<variant>/apks/<version>/base.apk.sha256
+cat > apps/<app-family>/<variant>/apks/<version>/base.apk.info << 'EOF'
 Version: <VERSION>
 Package: <PACKAGE_NAME>
 Architecture: arm64-v8a, armeabi-v7a
@@ -94,10 +100,10 @@ EOF
 ### 0.2 Create Feature Workspace
 
 ```bash
-mkdir -p apps/<app>/features/<feature>/<version>/{smali-tests,logs}
+mkdir -p apps/<app-family>/<feature>/<version>/{key-files,smali-tests,logs}
 
 # Create initial README with template sections
-cat > apps/<app>/features/<feature>/README.md << 'EOF'
+cat > apps/<app-family>/<feature>/README.md << 'EOF'
 # <Feature Name> - <App>
 
 ## Summary
@@ -132,7 +138,7 @@ Decompile APK and explore:
 
 ```bash
 # Navigate to APK directory
-cd apps/<app>/apks/<version>/
+cd apps/<app-family>/<variant>/apks/<version>/
 
 # Set environment for stability
 export JAVA_HOME=/usr/lib/jvm/java-11-openjdk
@@ -150,17 +156,17 @@ taskset -c 0 java -Xmx4G -jar /usr/share/java/android-apktool/apktool.jar d base
 **For smaller APKs:**
 ```bash
 # apktool
-apktool d -f apps/<app>/apks/<version>/base.apk -o apps/<app>/apks/<version>/apktool
+apktool d -f apps/<app-family>/<variant>/apks/<version>/base.apk -o apps/<app-family>/<variant>/apks/<version>/apktool
 
 # JADX
-jadx apps/<app>/apks/<version>/base.apk -d apps/<app>/apks/<version>/jadx --deobf
+jadx apps/<app-family>/<variant>/apks/<version>/base.apk -d apps/<app-family>/<variant>/apks/<version>/jadx --deobf
 ```
 
 ### 1.2 Take temporary notes
 
 As you search and find patterns, save scratch findings in:
 ```
-apps/<app>/features/<feature>/notes.md  (temporary)
+apps/<app-family>/<feature>/notes.md  (temporary)
 ```
 
 Later, consolidate these into the feature README's "Technical Reference" section.
@@ -174,7 +180,7 @@ When creating a new smali-test experiment:
 ```bash
 # 1. Create test directory
 TEST_NUM=01-my-experiment
-cd apps/<app>/features/<feature>/<version>/smali-tests/$TEST_NUM
+cd apps/<app-family>/<feature>/<version>/smali-tests/$TEST_NUM
 mkdir -p .
 
 # 2. Extract target DEX and decompile
@@ -343,13 +349,13 @@ java -jar revanced-src/revanced-cli.jar patch \
     -p revanced-src/revanced-patches/patches/build/libs/patches-*.rvp \
     -o revanced-build-test.apk \
     -e "Your patch name" \
-    apps/<app>/apks/<version>/base.apk
+    apps/<app-family>/<variant>/apks/<version>/base.apk
 
 # Install and test
 adb install -r revanced-build-test.apk
 adb logcat -c
 # Trigger feature
-adb logcat -d | tee apps/<app>/features/<feature>/<version>/logs/revanced-test-$(date +%s).log
+adb logcat -d | tee apps/<app-family>/<feature>/<version>/logs/revanced-test-$(date +%s).log
 
 # Save CLI output
 sha256sum revanced-build-test.apk
@@ -370,10 +376,10 @@ Update feature README with ReVanced validation:
 # - Note versions tested, fingerprints used
 
 # 3. Commit
-git add apps/<app>/features/<feature>/README.md \
-        apps/<app>/features/<feature>/<version>/logs/*.log \
-        apps/<app>/apks/<version>/base.apk.sha256 \
-        apps/<app>/apks/<version>/base.apk.info
+git add apps/<app-family>/<feature>/README.md \
+        apps/<app-family>/<feature>/<version>/logs/*.log \
+        apps/<app-family>/<variant>/apks/<version>/base.apk.sha256 \
+        apps/<app-family>/<variant>/apks/<version>/base.apk.info
 git commit -m "docs(<feature>): validate ReVanced port for <version>"
 ```
 
@@ -415,7 +421,7 @@ val targetRegister = (moveResultInstruction as OneRegisterInstruction).registerA
 ### 2A.1 Extract Target DEX Shard
 
 ```bash
-cd apps/<app>/features/<feature>/<version>/smali-tests/01-canonical-url
+cd apps/<app-family>/<feature>/<version>/smali-tests/01-canonical-url
 
 # Extract only the target DEX shard (e.g., classes15 for X/UEU.smali)
 unzip -j ../../../../../apks/<version>/base.apk classes15.dex -d .
@@ -541,7 +547,7 @@ adb logcat -d | tee ../logs/targeted-dex-01-canonical-$(date +%Y%m%d-%H%M%S).log
 When debugging or modifying the smali patch, use this pipeline for rapid iteration:
 
 ```bash
-cd apps/<app>/features/<feature>/<version>/smali-tests/01-canonical-url
+cd apps/<app-family>/<feature>/<version>/smali-tests/01-canonical-url
 
 # Edit target method
 vim smali-classes15/X/UGk.smali  # or other target file
@@ -586,7 +592,7 @@ package app.revanced.patches.tiktok.share.fingerprints
 
 import app.revanced.patcher.fingerprint.MethodFingerprint
 
-// Based on: revanced-research/apps/<app>/features/<feature>/<version>/smali-tests/ and feature README
+// Based on: revanced-research/apps/<app-family>/<feature>/<version>/smali-tests/ and feature README
 // LJIJJ Method - Share extras builder
 internal object LjijjBundleFingerprint : MethodFingerprint(
     returnType = "Landroid/os/Bundle;",
@@ -654,12 +660,12 @@ java -jar revanced-src/revanced-cli.jar patch \
     --patch "Clean share URLs - Stage 1" \
     --merge revanced-src/revanced-integrations.apk \
     --out stage1-test.apk \
-    apps/<app>/apks/<version>/base.apk
+    apps/<app-family>/<variant>/apks/<version>/base.apk
 
 adb install -r stage1-test.apk
 adb logcat -c
 # Test share
-adb logcat -d | tee apps/<app>/features/<feature>/<version>/logs/stage1-test.log | grep "STAGE1"
+adb logcat -d | tee apps/<app-family>/<feature>/<version>/logs/stage1-test.log | grep "STAGE1"
 
 # Update feature README "Validation" section with result
 # Note: "Stage 1 - LJIJJ Only - Passed"
@@ -753,12 +759,12 @@ java -jar revanced-src/revanced-cli.jar patch \
     --patch "Clean share URLs" \
     --merge revanced-src/revanced-integrations.apk \
     --out stage2-test.apk \
-    apps/<app>/apks/<version>/base.apk
+    apps/<app-family>/<variant>/apks/<version>/base.apk
 
 adb install -r stage2-test.apk
 adb logcat -c
 # Test share
-adb logcat -d | tee apps/<app>/features/<feature>/<version>/logs/stage2-test.log | grep -E "LJIJJ|LJFF"
+adb logcat -d | tee apps/<app-family>/<feature>/<version>/logs/stage2-test.log | grep -E "LJIJJ|LJFF"
 
 # Update feature README "Validation" section
 # Note: "Stage 2 - Both Methods - Passed"
@@ -941,12 +947,12 @@ java -jar revanced-src/revanced-cli.jar patch \
     -p revanced-src/revanced-patches/patches/build/libs/patches-*.rvp \
     -o test-36.6.0.apk \
     -e "Your patch name" \
-    apps/<app>/apks/36.6.0/base.apk
+    apps/<app-family>/<variant>/apks/36.6.0/base.apk
 
 adb install -r test-36.6.0.apk
 adb logcat -c
 # Test and capture results
-adb logcat -d | tee apps/<app>/features/<feature>/36.6.0/logs/revanced-test.log
+adb logcat -d | tee apps/<app-family>/<feature>/36.6.0/logs/revanced-test.log
 
 # Update feature README with 36.6.0 row in Version Map + Validation table
 ```
@@ -956,10 +962,10 @@ adb logcat -d | tee apps/<app>/features/<feature>/36.6.0/logs/revanced-test.log
 ## **Success Factors**
 
 1. **ALWAYS smali test first** - Never write ReVanced code until Smali edit is proven
-2. **Document obfuscated names** - Map every `Lcom/a/b/c;->d` to its purpose
+2. **Document obfuscated names** - Map every `Lcom/a/b/c;->d` to its purpose in feature README
 3. **Stage your integration** - One method at a time (LJIJJ first, then LJFF)
 4. **Log aggressively initially** - Remove logs only after everything works
-5. **Track every attempt** - Update attempt-history.md to avoid circles
+5. **Update documentation** - Keep feature README synchronized with findings
 6. **Follow ReVanced patterns** - Copy their style exactly
 
 ---
@@ -969,15 +975,15 @@ adb logcat -d | tee apps/<app>/features/<feature>/36.6.0/logs/revanced-test.log
 ### Research Commits
 ```bash
 # After successful smali test
-git add apps/<app>/features/<feature>/<version>/smali-tests/
+git add apps/<app-family>/<feature>/<version>/smali-tests/
 git commit -m "test(<feature>): validate Smali injection for <version>"
 
 # After updating feature documentation
-git add apps/<app>/features/<feature>/README.md
+git add apps/<app-family>/<feature>/README.md
 git commit -m "docs(<feature>): update validation and technical reference for <version>"
 
 # When adding or updating the raw APK
-git add apps/<app>/apks/<version>/
+git add apps/<app-family>/<variant>/apks/<version>/
 git commit -m "chore(apk): add <app> <version> base artifact and metadata"
 
 ```
@@ -1003,12 +1009,11 @@ git push
 
 ## **Deliverables**
 
-1. `apps/<app>/features/<feature>/README.md` - Consolidated feature documentation (6 sections)
-2. `apps/<app>/features/<feature>/<version>/smali-tests/` - Validated Smali experiments
-3. `apps/<app>/features/<feature>/<version>/logs/` - Test execution evidence
-4. `apps/<app>/apks/<version>/` - Base APK, metadata, decompilations
+1. `apps/<app-family>/<feature>/README.md` - Consolidated feature documentation (6 sections)
+2. `apps/<app-family>/<feature>/<version>/key-files/` - Reference smali files (tracked in git)
+3. `apps/<app-family>/<variant>/apks/<version>/base.apk.info` - APK metadata (tracked)
+4. `apps/<app-family>/<variant>/apks/<version>/base.apk.sha256` - APK checksums (tracked)
 5. `revanced-src/revanced-patches/` - Working ReVanced patch (submodule)
-6. `attempt-history.md` - Global status and links to features
 
 ---
 

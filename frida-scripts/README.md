@@ -96,11 +96,15 @@ frida-ps -U
 
 ### Install Target Apps
 
-```bash
-# Trill (TikTok International)
-adb install apps/tiktok/trill/apks/36.5.4/base.apk
+Download base APKs separately (APK binaries are gitignored):
 
-# Musically (TikTok US)
+```bash
+# Verify APKs are present locally
+ls -lh apps/tiktok/trill/apks/36.5.4/base.apk
+ls -lh apps/tiktok/musically/apks/36.5.4/base.apk
+
+# Then install
+adb install apps/tiktok/trill/apks/36.5.4/base.apk
 adb install apps/tiktok/musically/apks/36.5.4/base.apk
 ```
 
@@ -239,7 +243,11 @@ The scripts highlight parameters that start with:
 
 - Feature Documentation: `../apps/tiktok/share-url-sanitization/README.md`
 - Obfuscation Map: See "Technical Reference" section in feature README
-- Trill JADX Source: `../apps/tiktok/trill/apks/36.5.4/jadx-deobf/sources/p003X/UEU.java`
-- Musically JADX Source: `../apps/tiktok/musically/apks/36.5.4/jadx-deobf/sources/p003X/C98464aOp.java`
-- Trill Smali: `../apps/tiktok/trill/apks/36.5.4/apktool/smali_classes15/X/UEU.smali`
-- Musically Smali: `../apps/tiktok/musically/apks/36.5.4/apktool/smali_classes18/X/aOp.smali`
+- Key Smali Files: `../apps/tiktok/share-url-sanitization/36.5.4/key-files/`
+
+Note: Decompiled sources (JADX, apktool outputs) are gitignored for size. Generate locally using:
+```bash
+cd apps/tiktok/<variant>/apks/36.5.4/
+jadx -d jadx-deobf base.apk
+apktool d base.apk -o apktool
+```
