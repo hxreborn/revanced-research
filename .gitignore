@@ -12,6 +12,14 @@ apps/**/decompiled-*/
 apps/**/*.dex
 apps/**/*.idsig
 
+# APK decompilation outputs
+apps/**/apktool/
+apps/**/jadx/
+apps/**/jadx-badcode/
+apps/**/jadx-deobf/
+apps/**/indices/
+frida-scripts/trace-outputs/
+
 # APK artifacts (only metadata tracked)
 apps/**/apks/**/*.apk
 apps/**/apks/**/*.ap_
