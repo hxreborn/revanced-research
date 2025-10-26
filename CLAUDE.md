@@ -2,7 +2,7 @@
 
 **Purpose:** Instructions for Claude Code when working in this repository. Keeps edits reproducible, focused, and reviewable.
 
-**Changelog:** 2025-10-23 - Updated to reflect feature-first structure. Feature READMEs are the single source of truth.
+**Changelog:** 2025-10-26 - Updated to reflect app family structure. Feature READMEs are the single source of truth.
 
 ---
 
@@ -10,7 +10,7 @@
 
 Research and develop ReVanced patches through **Smali-first validation**. Every bytecode change must work in raw Smali before porting to ReVanced.
 
-**Current Work**: See feature READMEs in `apps/<app>/features/<feature>/README.md` for status and findings.
+**Current Work**: See feature READMEs in `apps/<app-family>/<feature>/README.md` for status and findings.
 
 ---
 
@@ -25,12 +25,16 @@ Research and develop ReVanced patches through **Smali-first validation**. Every 
 
 ## Workspace Boundaries
 
+Structure: `apps/<app-family>/<variant|feature>/`
+
 | Directory | Your Access | Purpose |
 |-----------|-------------|---------|
-| `apps/<app>/features/<feature>/<version>/` | **Read/Write** | Version-specific smali tests, logs, patches |
-| `apps/<app>/apks/<version>/` | **Read/Write** | APK artifacts, decompilation outputs (jadx/, apktool/) |
-| `apps/<app>/features/<feature>/README.md` | **Read/Write** | Single source of truth: status, findings, technical details |
+| `apps/<app-family>/<variant>/apks/<version>/` | **Read/Write** | APK artifacts, decompilation outputs (jadx/, apktool/) |
+| `apps/<app-family>/<feature>/<version>/` | **Read/Write** | Version-specific smali tests, logs, patches |
+| `apps/<app-family>/<feature>/README.md` | **Read/Write** | Single source of truth: status, findings, technical details |
 | `revanced-src/revanced-patches/` | **Read-only** | Upstream port (only after Smali validation) |
+
+Example: `apps/tiktok/` contains variants (trill, musically) and shared features (share-url-sanitization)
 
 ---
 
@@ -58,10 +62,10 @@ Research and develop ReVanced patches through **Smali-first validation**. Every 
 ### Discovery (Read-only)
 ```bash
 # Search JADX decompilation for patterns
-rg "<pattern>" apps/tiktok/apks/36.5.4/jadx/
+rg "<pattern>" apps/tiktok/trill/apks/36.5.4/jadx/
 
 # Verify in Smali
-rg "<pattern>" apps/tiktok/features/<feature>/36.5.4/smali-tests/<test>/smali-classes*/
+rg "<pattern>" apps/tiktok/<feature>/36.5.4/trill/smali-tests/*/smali-classes*/
 ```
 
 ### Smali Testing (Your primary workflow)
@@ -105,10 +109,11 @@ Detailed commands in `WORKFLOW.md` Phase 2. Essential pipeline:
 
 ## Quick Reference
 
-**Single Source of Truth**: `apps/<app>/features/<feature>/README.md`
+**Single Source of Truth**: `apps/<app-family>/<feature>/README.md`
 - Status, findings, technical details, validation results, test matrices all live here
 - This is your primary reference for any feature work
 
 **Supporting references**:
-- **Version-specific details:** `apps/<app>/features/<feature>/<version>/` (smali-tests, logs, obfuscation-map.md)
+- **Version-specific details:** `apps/<app-family>/<feature>/<version>/` (smali-tests, logs, patches)
+- **App variants:** `apps/<app-family>/<variant>/apks/` (APK artifacts)
 - **Project overview:** `README.md` (repo structure, high-level goals only)

@@ -1,0 +1,6 @@
+Version: 36.5.4 (2023605040)
+Package: com.zhiliaoapp.musically
+Architecture: arm64-v8a, armeabi-v7a
+Min SDK: 21 (Android 5.0)
+Target SDK: 34 (Android 14)
+API Level: 34

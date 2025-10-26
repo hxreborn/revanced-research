@@ -10,16 +10,16 @@ Smali-first reverse-engineering workspace for Android APK analysis and ReVanced 
 
 | Path | Purpose |
 |------|---------|
-| `apps/<app>/features/<feature>/` | Research workspace: problem analysis, smali tests, logs |
-| `apps/<app>/features/<feature>/<version>/` | Version-specific artifacts (smali-tests/, logs/) |
-| `apps/<app>/apks/<version>/` | APK artifacts: base.apk, metadata, decompilation outputs |
+| `apps/<app-family>/<variant>/apks/<version>/` | APK artifacts: base.apk, metadata, decompilation outputs |
+| `apps/<app-family>/<feature>/` | Research workspace: problem analysis, smali tests, logs |
+| `apps/<app-family>/<feature>/<version>/` | Version-specific artifacts (smali-tests/, logs/, patches/) |
 | `revanced-src/` | ReVanced patches (submodule, upstream port only) |
 
 ## Targets
 
 | App | Feature | Status | Documentation |
 |-----|---------|--------|---|
-| TikTok | Share URL sanitization | Passed | [README.md](apps/tiktok/features/share-url-sanitization/README.md) |
+| Trill + Musically | Share URL sanitization | Passed | [README.md](apps/tiktok/share-url-sanitization/README.md) |
 
 ## Prerequisites
 
