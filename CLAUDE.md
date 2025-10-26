@@ -17,7 +17,7 @@ Research and develop ReVanced patches through **Smali-first validation**. Every 
 ## Core Principles
 
 1. **Validate in Smali first** - Never modify `revanced-src/revanced-patches/` until proven in `smali-tests/`
-2. **No APK artifacts in git** - Record hashes in `apk-metadata.txt`, never commit binaries
+2. **No APK artifacts in git** - Track metadata via .info/.sha256 files (gitignore exceptions), never commit binaries
 3. **Surgical edits** - Prefer targeted DEX injection (baksmali → smali) over full apktool rebuilds
 4. **Document everything** - Update obfuscation maps, injection points, and attempt history as you learn
 
@@ -27,12 +27,16 @@ Research and develop ReVanced patches through **Smali-first validation**. Every 
 
 Structure: `apps/<app-family>/<variant|feature>/`
 
-| Directory | Your Access | Purpose |
-|-----------|-------------|---------|
-| `apps/<app-family>/<variant>/apks/<version>/` | **Read/Write** | APK artifacts, decompilation outputs (jadx/, apktool/) |
-| `apps/<app-family>/<feature>/<version>/` | **Read/Write** | Version-specific smali tests, logs, patches |
-| `apps/<app-family>/<feature>/README.md` | **Read/Write** | Single source of truth: status, findings, technical details |
-| `revanced-src/revanced-patches/` | **Read-only** | Upstream port (only after Smali validation) |
+| Directory | Access | Tracked | Purpose |
+|-----------|--------|---------|---------|
+| `apps/<app-family>/<variant>/apks/<version>/*.info` | R/W | ✓ | APK metadata (hashes, build info) |
+| `apps/<app-family>/<variant>/apks/<version>/*.sha256` | R/W | ✓ | APK checksums |
+| `apps/<app-family>/<feature>/README.md` | R/W | ✓ | Single source of truth: status, findings, validation results |
+| `apps/<app-family>/<feature>/<version>/key-files/` | R/W | ✓ | Reference smali files for documentation |
+| `apps/<app-family>/<variant>/apks/<version>/` (binaries) | R/W | ✗ | APK binaries, decompilation outputs (apktool/, jadx/) - local only |
+| `apps/<app-family>/<feature>/<version>/smali-tests/` | R/W | ✗ | Smali test outputs - local only |
+| `apps/<app-family>/<feature>/<version>/logs/` | R/W | ✗ | Test logs - local only |
+| `revanced-src/revanced-patches/` | R | - | Upstream port (read-only after Smali validation) |
 
 Example: `apps/tiktok/` contains variants (trill, musically) and shared features (share-url-sanitization)
 
@@ -77,6 +81,8 @@ Detailed commands in `WORKFLOW.md` Phase 2. Essential pipeline:
 5. Inject: `zip -j patched.apk classes15-patched.dex`
 6. Sign: `zipalign` → `apksigner`
 
+**Note:** smali-tests/ outputs are gitignored. After validation, copy reference files to `<feature>/<version>/key-files/` for git tracking.
+
 ### Documentation (Required after validation)
 - Feature `README.md` - Update status, technical details, validation results
 - `logs/` - Save test logs with timestamps
@@ -109,11 +115,14 @@ Detailed commands in `WORKFLOW.md` Phase 2. Essential pipeline:
 
 ## Quick Reference
 
-**Single Source of Truth**: `apps/<app-family>/<feature>/README.md`
-- Status, findings, technical details, validation results, test matrices all live here
-- This is your primary reference for any feature work
+**Tracked in Git** (23 files):
+- `apps/<app-family>/<feature>/README.md` - Single source of truth: status, findings, validation results
+- `apps/<app-family>/<feature>/<version>/key-files/*.smali` - Reference bytecode for documentation
+- `apps/<app-family>/<variant>/apks/<version>/*.info` - APK metadata (build info, API levels)
+- `apps/<app-family>/<variant>/apks/<version>/*.sha256` - APK checksums for verification
 
-**Supporting references**:
-- **Version-specific details:** `apps/<app-family>/<feature>/<version>/` (smali-tests, logs, patches)
-- **App variants:** `apps/<app-family>/<variant>/apks/` (APK artifacts)
-- **Project overview:** `README.md` (repo structure, high-level goals only)
+**Local Workspace Only** (gitignored):
+- `apps/<app-family>/<feature>/<version>/smali-tests/` - Full decompiled bytecode (1.7GB+ per variant)
+- `apps/<app-family>/<feature>/<version>/logs/` - Test execution logs
+- `apps/<app-family>/<variant>/apks/<version>/apktool/` - Decompiled APK source
+- `apps/<app-family>/<variant>/apks/<version>/jadx/` - Decompiled Java code
