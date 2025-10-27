@@ -1,10 +1,83 @@
-# Frida Tracing Scripts for TikTok Share URL Sanitization
+# Frida Tracing Scripts for TikTok Research
 
-**Purpose**: Dynamic analysis of share URL generation in TikTok apps to understand runtime behavior before developing Smali patches.
+Dynamic analysis scripts for TikTok reverse engineering and patch development.
 
 ---
 
-## Scripts
+## Connection Methods Reference
+
+### Attach Mode (Recommended for Testing)
+
+Connect to already-running process. Faster for iterative testing.
+
+```bash
+# By package name
+frida -U -n <package> -l script.js
+
+# By PID
+adb shell pidof <package>
+frida -U <PID> -l script.js
+```
+
+### Spawn Mode
+
+Launch app from scratch, hooks installed before code execution.
+
+```bash
+frida -U -f <package> -l script.js
+```
+
+---
+
+## Download Path Analysis Scripts
+
+### trace-lbt-methods.js
+
+Traces X.LBT MediaStore download path methods.
+
+**Target**: TikTok 36.5.4 (Trill variant)
+
+**Purpose**: Verify LBT.LIZLLL and LBT.LJ execution during downloads
+
+**Usage**:
+```bash
+# Attach mode (recommended)
+frida -U -n com.ss.android.ugc.trill -l trace-lbt-methods.js
+```
+
+**Expected output**:
+```
+[LBT.LIZLLL] Called
+  Filename: 491f78cbaa2881116ec5e8d1108f2fc1.mp4
+  Return Uri: content://media/external_primary/video/media/1234
+
+[LBT.LJ] Called
+  Relative Path: DCIM/Camera/  ← TARGET PARAMETER
+```
+
+**Related**: `apps/tiktok/downloads/README.md`
+
+### patch-download-path.js
+
+Runtime path modification test. Intercepts LBT.LJ and replaces relative_path before MediaStore insert.
+
+**Configuration**:
+```javascript
+const CUSTOM_PATH = "DCIM/TikTok/";  // Edit this
+```
+
+**Usage**:
+```bash
+frida -U -n com.ss.android.ugc.trill -l patch-download-path.js
+# Download video in app
+# Verify: adb shell ls /storage/emulated/0/DCIM/TikTok/
+```
+
+**Purpose**: Validate path modification approach before Smali/ReVanced implementation.
+
+---
+
+## Share URL Sanitization Scripts
 
 ### 1. `trace-share-url-tiktok.js`
 
@@ -87,193 +160,12 @@ chmod +x compare-both-apps.sh
 
 ## Prerequisites
 
-### Install Frida
-
-```bash
-# Install Frida CLI tools
-pip install frida-tools
-
-# Verify installation
-frida --version
-```
-
-### Setup Device
-
-1. **Root your Android device** or use an emulator with root access
-2. **Install frida-server** on the device:
-
-```bash
-# Download frida-server matching your Frida version
-# https://github.com/frida/frida/releases
-
-# Push to device
-adb push frida-server-16.1.3-android-arm64 /data/local/tmp/frida-server
-adb shell "chmod 755 /data/local/tmp/frida-server"
-
-# Run frida-server
-adb shell "/data/local/tmp/frida-server &"
-```
-
-3. **Verify connection**:
-
-```bash
-frida-ps -U
-```
-
-### Install Target Apps
-
-Download base APKs separately (APK binaries are gitignored):
-
-```bash
-# Verify APKs are present locally
-ls -lh apps/tiktok/trill/apks/36.5.4/base.apk
-ls -lh apps/tiktok/musically/apks/36.5.4/base.apk
-
-# Then install
-adb install apps/tiktok/trill/apks/36.5.4/base.apk
-adb install apps/tiktok/musically/apks/36.5.4/base.apk
-```
-
----
-
-## How to Trigger Share Actions
-
-### Method 1: UI Interaction
-1. Open the app
-2. Navigate to any video
-3. Tap the "Share" button
-4. Select any share method (copy link, share to...)
-
-### Method 2: Deep Link
-```bash
-# Trigger share programmatically
-adb shell am start -a android.intent.action.VIEW \
-  -d "snssdk1233://video/<video_id>"
-```
-
----
-
-## Expected Output
-
-### Successful Hook
-```
-[*] Trill Share URL Tracer Started
-[*] Target: com.ss.android.ugc.trill v36.5.4
-[*] Waiting for share action...
-
-[+] Hooked: X.UEU.LIZLLL()
-[+] Hooked: X.UEU.LIZJ()
-[+] Hooked: X.UEU.LIZ()
-```
-
-### When Share Button is Clicked
-```
-================================================================================
-[+] LIZLLL METHOD CALLED
-================================================================================
-[*] Timestamp: 2025-10-24T12:30:45.123Z
-
-[PARAMETERS]
-  └─ Int param: 1
-  └─ URL (str1): https://vm.tiktok.com/ABCD1234/
-  └─ Item Type: video
-  └─ Key: share_url
-
-[*] Calling original LIZLLL...
-
-[RESULT]
-  └─ Return type: X.Wu4
-  └─ Observable returned (will emit URL asynchronously)
-
-[CALL STACK]
-<stack trace showing caller hierarchy>
-================================================================================
-
-[→] LIZJ (URL Processing) Called
-    Input URL: https://vm.tiktok.com/ABCD1234/
-    Item Type: video
-    Key: share_url
-    Output URL: https://vm.tiktok.com/ABCD1234/?utm_source=...
-    [!] URL Modified!
-    [!] Bytes added: 505
-    [!] Potential tracking params detected
-    [!] Parameters:
-        └─ [TRACKING] utm_source = share
-        └─ [TRACKING] utm_medium = android
-        └─ [TRACKING] share_link_id = abc123
-        └─ [TRACKING] enter_from = main_page
-        ...
-```
-
----
-
-## What to Look For
-
-### 1. Tracking Parameters Added
-The scripts highlight parameters that start with:
-- `utm_*` - Campaign tracking
-- `share_*` - Share attribution
-- `sec_*` - Security tokens
-- `enter_from`, `enter_method` - Navigation tracking
-- `timestamp_ms` - Timestamp
-
-### 2. URL Transformation
-- Compare input URL vs output URL
-- Note the byte size increase (should be ~505 bytes)
-- Identify all parameter names and values
-
-### 3. Call Stack
-- Understand where the share action is triggered from
-- Identify UI components or share handlers
-- Map the execution flow
-
-### 4. Return Values
-- Observable pattern (async URL emission)
-- How the URL is packaged for the share sheet
-
----
-
-## Troubleshooting
-
-### "Error: Java API not available"
-- Ensure the app is running when attaching Frida
-- Use `-f` flag to spawn the app: `frida -U -f <package> -l script.js`
-
-### "TypeError: cannot read property 'overload' of undefined"
-- The class or method might not be loaded yet
-- Try performing a share action to trigger class loading
-- Add `Java.classFactory.loader` checks if needed
-
-### "Failed to spawn: unable to find application"
-- Verify the package name: `adb shell pm list packages | grep tiktok`
-- Ensure the APK is installed: `adb shell pm list packages -f`
-
-### No output when sharing
-- Add console.log to verify hooks are installed
-- Try different share methods (copy link vs share to app)
-- Check if the share button actually triggers URL generation
-
----
-
-## Next Steps After Tracing
-
-1. **Analyze Logs**: Compare Trill vs Musically output
-2. **Identify Patterns**: Look for common bytecode paths
-3. **Parameter List**: Document all tracking parameters found
-4. **Develop Patch**: Use insights to create Smali modifications
-5. **Validate**: Re-run Frida after patching to confirm parameters removed
+- Rooted Android device or debuggable APK
+- frida-server running on device (match frida CLI version)
+- Target APK installed
 
 ---
 
 ## References
 
-- Feature Documentation: `../apps/tiktok/share-url-sanitization/README.md`
-- Obfuscation Map: See "Technical Reference" section in feature README
-- Key Smali Files: `../apps/tiktok/share-url-sanitization/36.5.4/key-files/`
-
-Note: Decompiled sources (JADX, apktool outputs) are gitignored for size. Generate locally using:
-```bash
-cd apps/tiktok/<variant>/apks/36.5.4/
-jadx -d jadx-deobf base.apk
-apktool d base.apk -o apktool
-```
+- Feature docs: `../apps/tiktok/{share-url-sanitization,downloads}/README.md`
