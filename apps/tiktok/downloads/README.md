@@ -3,13 +3,15 @@
 ## Summary
 
 Downloads ignore custom path setting in ReVanced menu.
-Files save to `storage/emulated/0/DCIM/Camera` regardless of preference.
+Files save to `/Android/data/com.ss.android.*/files/share/out/` then copied to DCIM/Camera by MediaStore API.
 
-Cause: `downloadUriFingerprint` matches no methods in 36.5.4.
+Cause: `downloadPathFingerprint` targets dead code (K6I/KHJ methods never execute during downloads).
 
-Solution: Replace with fingerprint targeting `X/KHJ.LIZ()` (Musically) and `X/K6I.LIZ()` (Trill) in classes10.dex.
+Solution: Target actual download path constructor `X/DG6.LIZLLL(Context)` using `/share/` string in classes6.dex.
 
 Patch: `revanced-src/revanced-patches/patches/src/main/kotlin/app/revanced/patches/tiktok/interaction/downloads/`
+
+**CRITICAL DISCOVERY:** K6I/KHJ methods containing `/DCIM/Camera/` exist but are **NEVER called**. Runtime analysis proves DG6.LIZLLL is the actual download path method.
 
 ---
 
@@ -17,12 +19,49 @@ Patch: `revanced-src/revanced-patches/patches/src/main/kotlin/app/revanced/patch
 
 | Version | App | Status | Files |
 |---------|-----|--------|-------|
-| 36.5.4 | Musically | Verified | [KHJ.smali](36.5.4/files/KHJ.smali) |
-| 36.5.4 | Trill | Verified | [K6I.smali](36.5.4/files/K6I.smali) |
+| 36.5.4 | Trill | Runtime Verified | [DG6.smali](36.5.4/files/DG6.smali) (actual), ~~K6I.smali~~ (dead code) |
+| 36.5.4 | Musically | Pending | DG6.smali expected in classes6.dex |
+
+Note: K6I/KHJ exist and contain `/DCIM/Camera/` but are never executed. Confirmed via Frida runtime tracing.
 
 ---
 
 ## Technical Reference
+
+### Runtime Analysis (Frida - 2025-10-27)
+
+**Objective:** Determine why current patch targets K6I/KHJ but downloads still use default path.
+
+**Method:** Instrumented File I/O operations during live downloads using Frida on Pixel 9 Pro.
+
+**Key Findings:**
+
+Download call stack (actual execution):
+```
+X.DG6.LIZ(SourceFile:16777226)
+  ↓
+X.UbO.LIZ(SourceFile:16777324)
+  ↓
+X.UMX.LJJIJ(SourceFile:117440924)
+  ↓
+X.UMX.LJIIL(SourceFile:33554458)
+```
+
+Actual download path:
+```
+/storage/emulated/0/Android/data/com.ss.android.ugc.trill/files/share/out/491f78cbaa2881116ec5e8d1108f2fc1.mp4
+```
+
+**Critical Evidence:**
+- `DG6.LIZ()` called multiple times per download (File constructor invocations)
+- `K6I.LIZ()` NEVER called during downloads
+- `KHJ.LIZ()` NEVER called during downloads
+- Files written to `/Android/data/.../files/share/out/` (app-specific storage)
+- DCIM/Camera copies appear via MediaStore API **after** download completes (different inodes, separate operation)
+
+**Conclusion:** K6I/KHJ are legacy/unused code paths. DG6.LIZLLL constructs actual download path.
+
+Log evidence: `apps/tiktok/downloads/36.5.4/logs/frida-dcim-live.log` (67,022 lines)
 
 ### Current Patch Structure
 
@@ -77,37 +116,36 @@ Strings:
 
 downloadUriFingerprint matches zero methods in 36.5.4 for both variants.
 
-### Actual Download Path Method
+### DG6.LIZLLL - Actual Download Path Constructor
 
-Located in classes10.dex:
+Location: `smali_classes6/X/DG6.smali:587-748`
 
-Musically:
-- Class: `X/KHJ`
-- Method: `.method public static final LIZ()Ljava/lang/String;`
-- Line 4522: `const-string v0, "/DCIM/Camera/"`
-
-Trill:
-- Class: `X/K6I`
-- Method: `.method public static final LIZ()Ljava/lang/String;`
-- Line 4522: `const-string v0, "/DCIM/Camera/"`
-
-Method structure:
+Signature:
 ```smali
-.method public static final LIZ()Ljava/lang/String;
-    invoke-static {}, LX/CLD;->LIZ()Ljava/lang/StringBuilder;
-    move-result-object v1
-    invoke-static {}, LX/bFn;->H()Ljava/io/File;  # getExternalStorageDirectory()
-    move-result-object v0
-    invoke-virtual {v0}, Ljava/io/File;->toString()Ljava/lang/String;
-    move-result-object v0
-    invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-    const-string v0, "/DCIM/Camera/"
-    invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-    invoke-static {v1}, LX/CLD;->LIZIZ(Ljava/lang/StringBuilder;)Ljava/lang/String;
-    move-result-object v0
-    return-object v0
-.end method
+.method public static LIZLLL(Landroid/content/Context;)Ljava/lang/String;
 ```
+
+Path construction (line 667):
+```smali
+const-string v0, "/share/"
+invoke-virtual {p0, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+```
+
+Returns: `{base_path}/share/` stored in static field `DG6.LIZ`
+
+Base path determined by:
+1. Checks `D7F.PREFER_PRIVATE` policy
+2. Calls `D7B.LJII(Context, D7F)` → returns File
+3. Falls back to `ccj.LLLLIIIILLL(Context, null)` if null
+4. Appends `/share/` component
+
+Result: `/Android/data/com.ss.android.*/files/share/`
+
+### K6I/KHJ - Dead Code (Not Executed)
+
+Location: `smali_classes10/X/K6I.smali:4522` (Trill), `X/KHJ.smali` (Musically)
+
+Contains `/DCIM/Camera/` string but never invoked during downloads. Runtime analysis confirmed zero calls.
 
 ---
 
@@ -136,33 +174,84 @@ downloadUriFingerprint non-functional, ACL fingerprints functional.
 
 ---
 
-## Implementation Options
+## Implementation (2025-10-27 Update)
 
-Replace downloadUriFingerprint with:
+Replaced downloadPathFingerprint targeting K6I/KHJ with DG6-focused approach:
 
 ```kotlin
 internal val downloadPathFingerprint = fingerprint {
-    accessFlags(AccessFlags.PUBLIC, AccessFlags.STATIC, AccessFlags.FINAL)
+    accessFlags(AccessFlags.PUBLIC, AccessFlags.STATIC)
     returns("Ljava/lang/String;")
-    parameters()
-    strings("/DCIM/Camera/")
+    parameters("Landroid/content/Context;")
+    strings("/share/")
+    custom { method, classDef ->
+        classDef.endsWith("/DG6;")
+    }
 }
 ```
 
-Injection approach:
-- Match string `/DCIM/Camera/` at line 4522
-- Replace `const-string v0, "/DCIM/Camera/"` with `invoke-static {}, Lapp/revanced/extension/tiktok/download/DownloadsPatch;->getDownloadPath()`
-- Works both variants, identical structure
+Fingerprint strategy:
+- Matches `LIZLLL(Context) -> String` signature
+- Targets `/share/` string (line 667 in DG6.smali)
+- Class validation prevents matching Cne.LJIILJJIL (which also has `/share/` + Context)
+- Avoids hardcoded method names (resilient to obfuscation)
+
+**Critical Discovery:**
+K6I/KHJ (dead code) builds public path:
+```
+Environment.getExternalStorageDirectory() + "/DCIM/Camera/"
+= /storage/emulated/0/DCIM/Camera/  (public storage)
+```
+
+DG6.LIZLLL (actual code) builds app-specific path:
+```
+D7B.LJII(Context, PREFER_PRIVATE) + "/share/"
+= /Android/data/com.ss.android.*/files/share/  (app-specific storage)
+```
+
+Replacing `/share/` alone insufficient - still results in app-specific storage with different folder name.
+
+**Solution:** Replace entire return value with public path.
+
+Injection:
+```kotlin
+val returnIndex = indexOfFirstInstructionOrThrow {
+    opcode == Opcode.RETURN_OBJECT
+}
+
+addInstructions(returnIndex,
+    """
+    invoke-static {}, Lapp/revanced/extension/tiktok/download/DownloadsPatch;->getDownloadPath()Ljava/lang/String;
+    move-result-object v0
+    """
+)
+```
+
+`getDownloadPath()` returns: `Environment.getExternalStorageDirectory() + "/" + userPath + "/"`
+
+Result: Downloads go directly to user-configured public storage (e.g., `/storage/emulated/0/DCIM/TikTok/`), bypassing app-specific storage entirely.
 
 ---
 
 ## Timeline
 
-- 2025-10-26 14:00: Branch created, patch weaknesses identified
-- 2025-10-26 14:30: Fingerprint strings absent in Musically classes.dex
-- 2025-10-26 14:07: Runtime test confirmed fingerprint mismatch
-- 2025-10-26 14:10: Verified Trill, confirmed broken both variants
-- 2025-10-26 14:20: Located download path method classes10.dex both variants
+### Initial Analysis (2025-10-26)
+- 14:00: Identified downloadUriFingerprint matches zero methods
+- 14:20: Located K6I/KHJ methods containing `/DCIM/Camera/` in classes10.dex
+- 14:30: Created fingerprint targeting K6I.LIZ
+
+### Runtime Discovery (2025-10-27)
+- 09:00: Frida File I/O instrumentation on Pixel 9 Pro
+- 09:15: Traced download to `/Android/data/.../files/share/out/`, K6I never called
+- 09:30: Identified DG6.LIZ in call stack, confirmed via stack traces
+- 10:00: Decompiled 49 DEX files (400MB APK, 20GB RAM, 8 threads)
+- 10:15: Found DG6.LIZLLL(Context) in smali_classes6, line 667: `/share/`
+- 10:45: Created resilient fingerprint using Context parameter + `/share/` string
+- 11:02: Built patches-5.45.0-dev.2.rvp with updated fingerprint
+- 11:20: First patch attempt crashed (Cne.LJIILJJIL also matched, register overflow)
+- 11:28: Added class validation (`endsWith("/DG6;")`), removed logging code
+- 11:35: Discovered app-specific vs public storage issue, updated extension to return full path
+- 11:40: Test failed - downloads still go to DCIM/Camera (MediaStore API likely involved)
 
 ---
 
