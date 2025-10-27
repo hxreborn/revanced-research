@@ -198,6 +198,13 @@ adb logcat -c
 adb logcat -d | tee ../logs/test-$TEST_NUM-$(date +%s).log
 ```
 
+**Pre-port sanity checks (repeatable for any feature):**
+- Count how many times the target literal, opcode sequence, or field reference appears in the method. If more than one, document how you will disambiguate before writing automation.
+- Capture which registers are populated around the change (note the exact `v?` names from baksmali). Reuse these registers when you automate the edit instead of hardcoding guesses.
+- Record the downstream call that consumes the value you modify (framework constants, helper invocations, etc.). These become anchors for later fingerprints.
+- Run a negative test by reverting the manual change and reproducing the failure so you understand the regression signal you expect when the patch breaks.
+- Save all logs (adb, Frida, CLI output) to `<feature>/<version>/logs/` with timestamps; they are required when you promote the patch.
+
 **Document results:** After testing, update feature README with outcome:
 - Add injection point details to "Technical Reference" section
 - Update register allocation table
@@ -244,6 +251,16 @@ public final class YourHelper {
     }
 }
 ```
+
+### 3.3 Fingerprint & Guardrail Checklist
+
+Before authoring Kotlin patches, confirm these points are covered in your notes or README:
+- **Framework anchors:** Require at least one stable framework reference (e.g., `DIRECTORY_*`, `MediaStore`, explicit API signatures) so obfuscation-only changes do not invalidate the fingerprint.
+- **Unique literal counts:** Verify the literal or opcode sequence you plan to match occurs exactly once. If multiple matches exist, add guards (method name, class suffix, call signature) and document the rationale.
+- **Call proximity:** Measure the instruction distance between the literal you replace and the call or `move-result` you rely on. Assert this window in code so structural shifts throw fast rather than silently misbehaving.
+- **Fallback criteria:** If you add a fallback match, state the conditions under which it should trigger and what additional guards keep it safe.
+- **Failure-path rehearsal:** Intentionally break the fingerprint (e.g., tweak a string) and run a build to ensure the patch skips gracefully without crashing the CLI. Archive the log message so future maintainers know the expected behavior.
+- **Variant coverage:** Identify every package/ABI variant you claim to support and plan validation runs for each before merging.
 
 ### 3.4 Create Fingerprint & Patch (Kotlin)
 
@@ -354,6 +371,11 @@ adb logcat -d | tee apps/<app-family>/<feature>/<version>/logs/revanced-test-$(d
 # Save CLI output
 sha256sum revanced-build-test.apk
 ```
+
+**Build promotion checklist:**
+- Store Gradle and CLI logs alongside device logs for traceability.
+- Record the exact patches bundle name (`patches-<version>.rvp`) and the APK SHA256 in the feature README.
+- Run the same CLI command with the fingerprint intentionally disabled to confirm the patch reports "not applied" rather than throwing.
 
 ### 3.6 Document Results
 
@@ -687,4 +709,3 @@ git push
 5. `revanced-src/revanced-patches/` - Working ReVanced patch (submodule)
 
 ---
-
