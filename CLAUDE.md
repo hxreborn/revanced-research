@@ -1,8 +1,10 @@
 # CLAUDE.md
 
-**Purpose:** Instructions for Claude Code when working in this repository. Keeps edits reproducible, focused, and reviewable.
+Instructions for Claude Code when working in this repository. Keeps edits reproducible, focused, and reviewable.
 
-**Changelog:** 2025-10-26 - Updated to reflect app family structure. Feature READMEs are the single source of truth.
+Changelog: 2025-10-26 - app family structure, feature READMEs as single source of truth.
+
+**Documentation:** Follow `~/.claude/CLAUDE.md` guidelines - no fluff, precise verbs, dense info, explain "why" not "what".
 
 ---
 
@@ -88,6 +90,31 @@ Detailed commands in `WORKFLOW.md` Phase 2:
 
 **Note:** smali-tests/ outputs are gitignored. After validation, copy reference files to `apps/<app-family>/<feature>/<version>/files/` for git tracking.
 
+### ReVanced Patch Application
+
+After updating patches in `revanced-src/revanced-patches/`:
+```bash
+# Build patches
+cd revanced-src/revanced-patches
+./gradlew build
+
+# Apply patches (use -p SPACE path, NOT -p=path)
+java -jar revanced-src/revanced-cli.jar patch \
+  -p revanced-src/revanced-patches/patches/build/libs/patches-X.Y.Z.rvp \
+  apps/<app-family>/apks/<version>/<package>.apk
+
+# Optional flags:
+# -e <patch-name>  Enable specific patch
+# -d <patch-name>  Disable specific patch
+# -o <output.apk>  Output path (defaults to <package>-patched.apk)
+# -i               Install to connected ADB device
+# --exclusive      Disable all patches except -e enabled ones
+```
+
+**CRITICAL:** Use `-p <path>` with SPACE, not `-p=<path>` or `--patches=<path>`. CLI v5.0.1 fails silently with `=` syntax.
+
+Output: `<package>-patched.apk` in same directory as input APK.
+
 ### Documentation (Required after validation)
 - Feature `README.md` - Update status, technical details, validation results
 - `logs/` - Save test logs with timestamps
@@ -100,6 +127,12 @@ Detailed commands in `WORKFLOW.md` Phase 2:
 **Paths in $PATH:**
 - `/usr/share/java/smali/` (baksmali/smali)
 - `~/Android/Sdk/build-tools/36.1.0/` (zipalign, apksigner)
+
+**apktool usage:** Use Java 11 with increased heap for large DEX processing:
+```bash
+export JAVA_HOME="/usr/lib/jvm/java-11-openjdk"
+java -Xmx20g -Xms8g -jar "/usr/share/java/android-apktool/apktool.jar" d <apk-file>
+```
 
 **Memory limits:** For large DEX assembly, set `SMALI_THREADS=1` and `java -Xmx16G`
 
