@@ -25,6 +25,20 @@ apps/**/apks/**/*.apk
 apps/**/apks/**/*.ap_
 !apps/**/apks/**/*.info
 !apps/**/apks/**/*.sha256
+apps/**/apks/**/apktool*/
+apps/**/apks/**/check-unsigned-smali/
+apps/**/apks/**/jars/
+apps/**/apks/**/lbt-search/
+apps/**/apks/**/smali*/
+apps/**/apks/**/stock-check/
+apps/**/apks/**/trill_analysis/
+apps/**/apks/**/verify-*/
+apps/**/downloads/**/logs/
+apps/**/downloads/**/FINDINGS.md
+
+com.ss.android.ugc.trill-patched-temporary-files/
+com.ss.android.ugc.trill-patched-fixed-temporary-files/
+com.ss.android.ugc.trill-patched-v2-temporary-files/
 
 # Cryptographic signing keys (NEVER commit these)
 *.keystore
