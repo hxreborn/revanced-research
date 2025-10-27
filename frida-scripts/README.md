@@ -48,7 +48,33 @@ frida -U com.zhiliaoapp.musically -l trace-share-url-musically.js
 frida -U -f com.zhiliaoapp.musically -l trace-share-url-musically.js > musically-trace.log 2>&1
 ```
 
-### 3. `compare-both-apps.sh`
+### 3. `trace-download-path-musically.js`
+
+**Target**: `com.zhiliaoapp.musically` (Musically / TikTok US) v36.5.4
+
+**Purpose**: Find the actual download path method by tracing File I/O and storage operations
+
+**Hooks**:
+- File constructors and FileOutputStream
+- Environment storage APIs (getExternalStorageDirectory, etc.)
+- MediaStore ContentResolver operations
+- ContentValues path setters (DISPLAY_NAME, RELATIVE_PATH)
+- StringBuilder path construction
+- `X.KHJ.LIZ()` / `X.K6I.LIZ()` (verification)
+
+**Usage**:
+```bash
+# Option 1: Spawn and resume (type %resume in console after script loads)
+frida -U -f com.zhiliaoapp.musically -l trace-download-path-musically.js > ../apps/tiktok/downloads/36.5.4/logs/frida-output.txt 2>&1
+
+# Option 2: Attach to running app (RECOMMENDED)
+adb shell am start -n com.zhiliaoapp.musically/.splash.SplashActivity
+frida -U com.zhiliaoapp.musically -l trace-download-path-musically.js > ../apps/tiktok/downloads/36.5.4/logs/frida-output.txt 2>&1
+```
+
+**Note**: DO NOT use `--no-pause` flag - it doesn't work. Use spawn + %resume or attach method.
+
+### 4. `compare-both-apps.sh`
 
 **Usage**: Run tracing on both apps side-by-side for comparison
 
