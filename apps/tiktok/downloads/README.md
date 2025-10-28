@@ -2,9 +2,9 @@
 
 ## Status
 
-**Phase 1 (Foundation):** Complete. X.DVV.LIZLLL fingerprint working. Patch applies and modifies MediaStore path via extension method.
+**Phase 1 (Foundation):** Complete. X.DVV.LIZLLL fingerprint working with 2 string anchors. Extension method injects path modification.
 
-**Phase 2 (Refactor):** In progress. Simplify DownloadsPatch.kt from low-level instruction manipulation to high-level patcher API. Replace `BuilderInstruction21c` with `replaceInstructions`.
+**Phase 2 (Refactor):** Complete. Simplified patch to high-level API (`addInstructions`). Injects `DownloadsPatch.getDownloadPath()` calls instead of bytecode manipulation.
 
 **Phase 3 (Settings):** Pending. Integrate user-configurable path via ReVanced settings instead of hardcoded "Movies/TikTok/".
 
@@ -27,19 +27,18 @@ Constructs MediaStore `relative_path` parameter. Fingerprint anchors: `"video/mp
 
 Generic strings `"/"` and `"/Camera"` matched multiple methods across DEXes (wrong targets). Refined to `"video/mp4"` + `"/Camera/"` for X.DVV.LIZLLL specificity.
 
-### Current Approach
-1. Patch finds `<init>` and `Uri`-return method references
-2. Injects `DownloadsPatch.getDownloadPath()` calls
-3. Extension returns hardcoded "Movies/TikTok/"
-4. MediaStore receives modified path
+### Implementation
+Patch uses high-level patcher API to inject calls to `DownloadsPatch.getDownloadPath()` extension method at two injection points in X.DVV.LIZLLL:
+1. After method references that return `Uri` type
+2. After `<init>` method references
+
+Extension method handles path resolution. Currently returns hardcoded "Movies/TikTok/".
 
 ### Tested On
 - com.zhiliaoapp.musically v36.5.4 (device): Downloads confirmed in /storage/emulated/0/Movies/TikTok/
 
 ---
 
-## Next Steps
+## Next
 
-1. Replace low-level `BuilderInstruction21c` manipulation with `replaceInstructions(smali_string)`
-2. Integrate with settings extension for user-configurable path
-3. Remove hardcoded path constant
+Phase 3: Replace hardcoded path with user-configurable path via ReVanced settings.
