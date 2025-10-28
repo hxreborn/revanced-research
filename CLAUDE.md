@@ -122,6 +122,61 @@ Output: `<package>-patched.apk` in same directory as input APK.
 
 ---
 
+## Code Comments Style Guide
+
+### Avoid Fragile References
+- Don't: Hard-code line numbers or positions that will drift as code changes
+- Do: Reference logical sections, method names, or conceptual boundaries
+- Example: "inject after validation check" not "inject after line 369"
+
+### Write for Your Future Self, Not a Tutorial
+- Don't: Document obvious control flow or explain what each line does
+- Do: Capture the why and high-level what in one concise statement
+- Example: "Intercept after URL builder so tracking never runs" vs multi-line flow explanation
+
+### Use Neutral, Technical Language
+- Skip collective pronouns ("we", "our") - use "the patch", "this change", "the code"
+- No marketing speak or subjective claims ("production-ready", "best-in-class", "elegant")
+- Stick to measurable facts: "reduces memory by 20%" not "optimized performance"
+- No emojis, ASCII art, or decorative flair
+
+### Be Precise and Concrete
+- Use specific nouns and verbs: "sanitizes URL" beats "makes things cleaner"
+- State what changed and how you verified it: "returns canonical URL (verified on v36.5.4)"
+- Include concrete results when relevant: specific error codes, performance metrics, test outputs
+
+### Keep It Brief
+- One idea per sentence, one topic per comment block
+- Two sentences max for most inline comments
+- If you need more than 3 lines, move it to documentation
+
+### Don't Echo the Code
+- Skip comments that just restate what the code already shows
+- Focus on intent, assumptions, and non-obvious behavior
+- Trust that code structure communicates basic flow
+
+### Write Like Git Commits
+- Describe what changed, not your feelings about it
+- Use imperative mood when describing actions
+- Facts only - no excitement, frustration, or editorial commentary
+
+### Handle Future Work Pragmatically
+- Only use TODO if you'll address it in the next few commits
+- Move longer-term concerns to issues or a research doc
+- Frame assumptions as simple statements: "This assumes X continues to Y"
+
+### Match Comments to Actual Code
+- Reference the exact variables/parameters used (p1, not "the URL" if p1 is the variable)
+- Update comments immediately when refactoring
+- Delete comments that no longer apply
+
+### Separate Documentation from Implementation
+- Inline comments: Quick orientation and critical assumptions only
+- External docs: Full analysis, design rationale, research notes
+- Rule of thumb: If it's more than 2 lines, consider moving it to docs
+
+---
+
 ## Environment Notes
 
 **Paths in $PATH:**

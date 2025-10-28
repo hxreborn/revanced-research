@@ -2,9 +2,11 @@
 
 ## Summary
 
-ReVanced patch for TikTok 36.5.4 downloads customization. Patch replaces DIRECTORY_DCIM with empty string and `/Camera/` with extension method returning full path (`DCIM/TikTok/` or `Videos/TikTok/`).
+ReVanced patch for TikTok 36.5.4 downloads customization. Target methods use MediaStore scoped storage API to control download destination via `relative_path` parameter.
 
-Fingerprint matches Trill (X/LBT.LIZLLL) and Musically (X/Kjb.LJJIIJ) variants using method signature guards instead of obfuscated class name matching.
+**Status:** Patch implementation in progress. Smali-level validation confirmed approach works (tested on device). ReVanced patch developed targeting X/LBT.LIZLLL (Trill) and X/Kjb.LJJIIJ (Musically) but device testing shows downloads still go to default location.
+
+**Root cause of failure:** X.Kjb.LJJIIJ (Musically) method exists but is not invoked during regular video downloads. Downloads use different code path via X.CtJ.LIZ. Patch requires redesign to target actual download method.
 
 Patch: `revanced-src/revanced-patches/patches/src/main/kotlin/app/revanced/patches/tiktok/interaction/downloads/`
 
@@ -80,14 +82,30 @@ frida -U $(adb shell pidof com.ss.android.ugc.trill) -l frida-scripts/patch-down
 
 ### Root Cause
 
-TikTok 36.5.4 uses MediaStore scoped storage API via ContentValues relative_path parameter instead of direct file path operations.
+TikTok 36.5.4 uses two-stage download process with separate code paths:
 
-**Download flow:**
+**Stage 1: File Creation (App-Scoped Storage)**
+- Method: X.CtJ.LIZ
+- Downloads to: `/storage/emulated/0/Android/data/com.ss.android.ugc.trill/files/share/out/`
+- This is the actual download destination where files are written
+- Method signature and exact invocation path identified via Frida stack traces
+
+**Stage 2: MediaStore Registration (Public Storage Intent)**
+- Method: X.Kjb.LJJIIJ (Musically) or X.LBT.LIZLLL (Trill)
+- Constructs: `DIRECTORY_DCIM + "/Camera/"` via StringBuilder
+- Calls: ContentResolver.insert with relative_path parameter
+- Result: MediaStore metadata updated but files NOT moved from `/files/share/out/`
+
+**Current patch targets Stage 2 only**, which does not affect actual download location. Files remain in app-scoped storage despite correct MediaStore metadata.
+
+**Download flow (current):**
 ```
-LBT.LIZLLL(Context, String) → Uri
-  ├─ Constructs relative_path via StringBuilder
-  ├─ DIRECTORY_DCIM + "/Camera/" = "DCIM/Camera/"
-  └─ LBT.LJ invokes ContentResolver.insert with relative_path
+Stage 1 - X.CtJ.LIZ(Context, String) → File
+  └─ Creates file in /files/share/out/ directory
+
+Stage 2 - X.Kjb.LJJIIJ(Context, String, ...) → Uri
+  ├─ Constructs relative_path: DIRECTORY_DCIM + "/Camera/"
+  └─ ContentResolver.insert registers file with MediaStore
 ```
 
 ### Solution
@@ -96,9 +114,19 @@ StringBuilder constructs `DIRECTORY_DCIM + "/Camera/"` (evaluated to "DCIM/Camer
 1. Replace `DIRECTORY_DCIM` sget with empty string to avoid `"DCIM" + "DCIM/TikTok/"` duplication
 2. Replace `/Camera/` literal with extension method returning user-configured path
 
-**Target methods:**
-- Trill 36.5.4: `X/LBT.LIZLLL(Context, String)` in classes10.dex
-- Musically 36.5.4: `X/Kjb.LJJIIJ(Context, String, String, Z, String, String, I)` in classes10.dex
+**Target methods (MediaStore registration):**
+
+**Trill 36.5.4:**
+```smali
+.method public static LIZLLL(Landroid/content/Context;Ljava/lang/String;)Landroid/net/Uri;
+```
+
+**Musically 36.5.4:**
+```smali
+.method public static LJJIIJ(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;I)Landroid/net/Uri;
+```
+
+Note: Musically method has 7 parameters but ReVanced fingerprint specified 2 (parameter count mismatch). Method exists at `smali_classes10/X/Kjb.3.smali:5034` but is not called during regular downloads.
 
 Both construct relative_path via:
 ```smali
@@ -107,6 +135,12 @@ invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(...)
 const-string v0, "/Camera/"
 invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(...)
 ```
+
+**Actual download method (not patched):**
+- Method: `X/CtJ.LIZ(Context, String) → File`
+- Location: classes10.dex
+- Behavior: Writes files to `/storage/emulated/0/Android/data/.../files/share/out/`
+- This method requires patching to change download destination
 
 **Injection points:**
 1. Locate `/Camera/` string literal (unique anchor)
@@ -131,27 +165,30 @@ Extension method `getDownloadPath()` returns configured path with trailing slash
 
 ---
 
-## Timeline
+## Investigation & Status
 
-### Investigation Summary (2025-10-26 to 2025-10-28)
+### Phase 1: Initial Discovery (2025-10-26)
+- fingerprint matched zero methods in standard locations
+- K6I/KHJ class located with `/DCIM/Camera/` strings
+- Frida trace confirmed these methods never called during actual downloads
 
-**Initial attempts:** downloadUriFingerprint matched zero methods. K6I/KHJ class located with `/DCIM/Camera/` strings but Frida trace showed method never invoked during downloads.
+### Phase 2: MediaStore Method Location (2025-10-27)
+- X.LBT.LIZLLL identified in Trill (classes10.dex)
+- X.Kjb.LJJIIJ identified in Musically (classes10.dex at smali_classes10/X/Kjb.3.smali:5034)
+- Both handle MediaStore registration with `/Camera/` path
+- Smali-level patch successful: Modified string literal, reassembled DEX, device test showed files saved to custom location
 
-**DG6 variant:** DG6.LIZLLL found in call stack but patch application failed - downloads still directed to DCIM/Camera. Cause: TikTok 36.5.4 uses MediaStore API rather than direct file path operations.
+### Phase 3: Device Testing Reveals Real Issue (2025-10-28)
+- ReVanced patch developed and applied successfully
+- Device test: Downloads still go to DCIM/Camera/ (or /files/share/out/ for Musically)
+- Root cause identified: Patched methods are not called during regular video downloads
+- Two-stage process discovered:
+  - **X.CtJ.LIZ** (real download method, NOT patched) writes to `/files/share/out/`
+  - **X.Kjb.LJJIIJ** (patched) only handles MediaStore metadata registration
+- Files never reach public storage because Stage 1 writes to app-scoped storage
 
-**Correct target method:** X.LBT.LIZLLL located in classes10.dex. Method constructs `/Camera/` string passed to LBT.LJ, which calls ContentResolver.insert with relative_path parameter.
-
-**Smali-level patch:** LBT.smali modified at string literal location. DEX reassembled and injected into APK. Device test confirmed downloads saved to custom location.
-
-**ReVanced patch development:**
-- Fingerprint designed without parameter count constraint (matches both Trill and Musically variants)
-- Method guard: single `/Camera/` literal, LJ invocation with 4 parameters
-- Initial build succeeded but patch applied with path duplication (DIRECTORY_DCIM + full path)
-- Root cause: Extension method returned full path but code prepended DIRECTORY_DCIM
-- Solution: Replace DIRECTORY_DCIM constant with empty string, replace `/Camera/` with extension call
-- Register extraction from const-string instruction (no register name hardcoding)
-
-Status: Patch modifications implemented and compiled successfully. Device testing pending.
+### Current Status
+**Patch requires redesign** to target X.CtJ.LIZ instead of X.Kjb.LJJIIJ. Current patch successfully modifies bytecode but has zero runtime effect on download destination.
 
 ---
 
