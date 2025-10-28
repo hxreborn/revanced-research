@@ -187,8 +187,69 @@ Extension method `getDownloadPath()` returns configured path with trailing slash
   - **X.Kjb.LJJIIJ** (patched) only handles MediaStore metadata registration
 - Files never reach public storage because Stage 1 writes to app-scoped storage
 
-### Current Status
-**Patch requires redesign** to target X.CtJ.LIZ instead of X.Kjb.LJJIIJ. Current patch successfully modifies bytecode but has zero runtime effect on download destination.
+### Phase 4: Actual MediaStore Registration Method Located (2025-10-28)
+- ContentValues.put hook traced exact moment `relative_path` key is set
+- Stack trace revealed: `X.DVV.LJ(SourceFile:67108942)` called from `X.DVV.LIZLLL(SourceFile:33554501)`
+- Located DVV.smali in classes6.dex (not classes10.dex like previous targets)
+- **LIZLLL method** (lines 720-864) constructs relative_path via StringBuilder, passes to LJ as 4th parameter
+- **LJ method** (line 866+) receives relative_path as p3, calls `ContentValues.put("relative_path", p3)` at line 1022
+- Identified 4 injection points in LIZLLL:
+  - Line 767: `sget-object v0, Landroid/os/Environment;->DIRECTORY_DCIM` → needs DIRECTORY_MOVIES for Videos folder
+  - Line 776: `const-string v0, "/Camera"` → change to "/TikTok"
+  - Line 824: `sget-object v0, Landroid/os/Environment;->DIRECTORY_DCIM` → needs DIRECTORY_MOVIES
+  - Line 833: `const-string v0, "/Camera/"` → change to "/TikTok/" (trailing slash for MediaStore)
+
+### Phase 5: Smali Patch Validation (2025-10-28)
+**Status: SUCCESS** - Patch validated on device, files save to Movies/TikTok/ as expected.
+
+**Patch workflow:**
+1. Extracted classes6.dex from stock APK (10MB)
+2. Decompiled with baksmali → smali_classes6/X/DVV.smali
+3. Applied 4 edits to LIZLLL method:
+   - Line 767: `DIRECTORY_DCIM` → `DIRECTORY_MOVIES`
+   - Line 776: `"/Camera"` → `"/TikTok"`
+   - Line 824: `DIRECTORY_DCIM` → `DIRECTORY_MOVIES`
+   - Line 833: `"/Camera/"` → `"/TikTok/"`
+4. Recompiled with smali (10MB patched DEX)
+5. Injected patched classes6.dex into stock APK via zip
+6. Aligned and signed with debug keystore (398MB APK)
+7. Installed via incremental install (18.3s)
+
+**Device test results (2025-10-28 10:18):**
+- Downloaded video: `7aecf33f6dd9cb22657c0ea97a330903.mp4` (1.8MB)
+- Location: `/storage/emulated/0/Movies/TikTok/` ✅
+- Expected: Movies/TikTok/ (DIRECTORY_MOVIES + "/TikTok/")
+- Previous: DCIM/Camera/ (DIRECTORY_DCIM + "/Camera/")
+
+**Conclusion:** Smali patch validated. X.DVV.LIZLLL controls MediaStore relative_path construction. Ready for ReVanced patch port.
+
+### Phase 6: ReVanced Patch Implementation (2025-10-28)
+**Status: SUCCESS** - ReVanced patch applied and validated on device.
+
+**Changes made:**
+1. Updated fingerprint in `Fingerprints.kt`:
+   - Changed parameters from 7-param signature to 2-param `(Context, String)`
+   - Added custom guard: `method.name == "LIZLLL"`
+   - Kept strings match: `"video/mp4"`, `"/Camera/"`
+
+2. Updated patch logic in `DownloadsPatch.kt`:
+   - Replaced single /Camera/ replacement with loop over all occurrences
+   - Found 2 /Camera occurrences via instruction iteration (indices 12, 25)
+   - For each occurrence:
+     - Located preceding DIRECTORY_DCIM sget-object via reverse search
+     - Replaced DIRECTORY_DCIM with DIRECTORY_MOVIES (using sget-object with updated FieldReference)
+     - Replaced /Camera or /Camera/ with /TikTok or /TikTok/ (preserved trailing slash)
+
+**Build and test:**
+- Built patches: `./gradlew clean build` → patches-5.45.0-dev.2.rvp (4.4MB)
+- Applied to stock APK: `revanced-cli.jar patch` with all patches enabled
+- Patch output: "Found 2 /Camera occurrences at: [12, 25]"
+- Device test (2025-10-28 10:29): File saved to `/storage/emulated/0/Movies/TikTok/14212dd30885c319cb8b29d1e300236f.mp4` (522KB)
+
+**Next steps:**
+1. Refactor patch to use settings-based path configuration instead of hardcoded "/TikTok/"
+2. Replace low-level Builder API (BuilderInstruction21c) with high-level instruction manipulation
+3. Add user-configurable download path via ReVanced settings integration
 
 ---
 
