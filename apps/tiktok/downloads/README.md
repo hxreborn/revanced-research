@@ -1,44 +1,51 @@
 # Downloads - TikTok
 
-## Status
-
-**Phase 1 (Foundation):** Complete. X.DVV.LIZLLL fingerprint working with 2 string anchors. Extension method injects path modification.
-
-**Phase 2 (Refactor):** Complete. Simplified patch to high-level API (`addInstructions`). Injects `DownloadsPatch.getDownloadPath()` calls instead of bytecode manipulation.
-
-**Phase 3 (Settings):** Pending. Integrate user-configurable path via ReVanced settings instead of hardcoded "Movies/TikTok/".
+Status: Complete. Patch implemented, tested on-device.
 
 ---
 
-## Patch Location
+## Target Method
 
-`revanced-src/revanced-patches/patches/src/main/kotlin/app/revanced/patches/tiktok/interaction/downloads/`
+`X.DVV.LIZLLL` (classes6.dex): `PUBLIC STATIC (Context, String) → Uri`
 
----
-
-## Current Implementation
-
-### Target Method
-X.DVV.LIZLLL (classes6.dex): `PUBLIC STATIC (Context, String) → Uri`
-
-Constructs MediaStore `relative_path` parameter. Fingerprint anchors: `"video/mp4"` and `"/Camera/"`.
-
-### Why 2 Strings, Not 4
-
-Generic strings `"/"` and `"/Camera"` matched multiple methods across DEXes (wrong targets). Refined to `"video/mp4"` + `"/Camera/"` for X.DVV.LIZLLL specificity.
-
-### Implementation
-Patch uses high-level patcher API to inject calls to `DownloadsPatch.getDownloadPath()` extension method at two injection points in X.DVV.LIZLLL:
-1. After method references that return `Uri` type
-2. After `<init>` method references
-
-Extension method handles path resolution. Currently returns hardcoded "Movies/TikTok/".
-
-### Tested On
-- com.zhiliaoapp.musically v36.5.4 (device): Downloads confirmed in /storage/emulated/0/Movies/TikTok/
+Constructs MediaStore `relative_path` for video downloads. Fingerprint: `"video/mp4"` + `"/Camera/"`.
 
 ---
 
-## Next
+## Implementation
 
-Phase 3: Replace hardcoded path with user-configurable path via ReVanced settings.
+**Previous approach:** Located two instruction indices (`<init>` call and Uri-returning method) via `indexOfFirstInstructionOrThrow`, inserted `getDownloadPath()` calls with result in v0. Stopped working on v36.5.4 (reported September 2024, [#3695](https://github.com/ReVanced/revanced-patches/issues/3695)) - downloads saved to DCIM regardless of configured folder.
+
+**Current approach:** Pattern-match `Environment.DIRECTORY_*` field accesses. Remove 4-instruction sequence (field load + append + string literal + append), replace with 3-instruction extension call + append.
+
+```kotlin
+instructions.withIndex()
+    .filter { (it.value as? ReferenceInstruction)?.reference as? FieldReference
+        matches Environment.DIRECTORY_* }
+    .asReversed()  // preserve index validity during mutation
+    .forEach { fieldIndex ->
+        repeat(4) { removeInstruction(fieldIndex) }
+        addInstructions(fieldIndex, extension call + append)
+    }
+```
+
+Difference: Current approach removes original path construction at field access, preventing TikTok's hardcoded logic from executing. Previous approach inserted extension calls but allowed original construction to overwrite register.
+
+Processes 2 occurrences per method (v36.5.4).
+
+---
+
+## Settings
+
+`DownloadsPatch.getDownloadPath()` returns `Settings.DOWNLOAD_PATH` value:
+- Format: `"BaseDir/Subdirectory/"` (trailing slash enforced)
+- Default: `"DCIM/TikTok"`
+- UI: Radio (DCIM/Movies/Pictures) + text input for subdirectory
+
+---
+
+## Validation
+
+com.zhiliaoapp.musically v36.5.4 (on-device):
+- Default `DCIM/TikTok` → `/storage/emulated/0/DCIM/TikTok/` ✓
+- Custom `Pictures/CustomPath` → `/storage/emulated/0/Pictures/CustomPath/` ✓
