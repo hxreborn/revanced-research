@@ -204,6 +204,12 @@ java -Xmx20g -Xms8g -jar "/usr/share/java/android-apktool/apktool.jar" d <apk-fi
 - **Report OOM errors** with stderr snippet and suggest alternatives (reduce threads, Java 11)
 - **Only stage intentional changes** - use `git add -p` when committing
 
+## PR Checklist
+
+Remember to:
+- Add spacing around register references in invoke instructions for better readability
+- Target PRs to dev branch, not main
+
 ---
 
 ## Quick Reference
