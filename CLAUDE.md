@@ -1,8 +1,10 @@
 # CLAUDE.md
 
-**Purpose:** Instructions for Claude Code when working in this repository. Keeps edits reproducible, focused, and reviewable.
+Instructions for Claude Code when working in this repository. Keeps edits reproducible, focused, and reviewable.
 
-**Changelog:** 2025-10-26 - Updated to reflect app family structure. Feature READMEs are the single source of truth.
+Changelog: 2025-10-26 - app family structure, feature READMEs as single source of truth.
+
+**Documentation:** Follow `~/.claude/CLAUDE.md` guidelines - no fluff, precise verbs, dense info, explain "why" not "what".
 
 ---
 
@@ -25,20 +27,20 @@ Research and develop ReVanced patches through **Smali-first validation**. Every 
 
 ## Workspace Boundaries
 
-Structure: `apps/<app-family>/<variant|feature>/`
+Structure: `apps/<app-family>/{apks,<feature>}/`
 
 | Directory | Access | Tracked | Purpose |
 |-----------|--------|---------|---------|
-| `apps/<app-family>/<variant>/apks/<version>/*.info` | R/W | ✓ | APK metadata (hashes, build info) |
-| `apps/<app-family>/<variant>/apks/<version>/*.sha256` | R/W | ✓ | APK checksums |
+| `apps/<app-family>/apks/<version>/<package>.apk.{info,sha256}` | R/W | ✓ | APK metadata |
 | `apps/<app-family>/<feature>/README.md` | R/W | ✓ | Single source of truth: status, findings, validation results |
-| `apps/<app-family>/<feature>/<version>/files/` | R/W | ✓ | Reference smali files for documentation |
-| `apps/<app-family>/<variant>/apks/<version>/` (binaries) | R/W | ✗ | APK binaries, decompilation outputs (apktool/, jadx/) - local only |
+| `apps/<app-family>/<feature>/<version>/files/` | R/W | ✓ | Reference smali for documentation |
+| `apps/<app-family>/apks/<version>/<package>.apk` | R/W | ✗ | APK binaries - local only |
+| `apps/<app-family>/apks/<version>/{apktool,jadx}/` | R/W | ✗ | Decompilation outputs - local only |
 | `apps/<app-family>/<feature>/<version>/smali-tests/` | R/W | ✗ | Smali test outputs - local only |
 | `apps/<app-family>/<feature>/<version>/logs/` | R/W | ✗ | Test logs - local only |
 | `revanced-src/revanced-patches/` | R | - | Upstream port (read-only after Smali validation) |
 
-Example: `apps/tiktok/` contains variants (trill, musically) and shared features (share-url-sanitization)
+Example: `apps/tiktok/` contains APKs (com.zhiliaoapp.musically, com.ss.android.ugc.trill) and features (share-url-sanitization, downloads)
 
 ---
 
@@ -66,20 +68,20 @@ Example: `apps/tiktok/` contains variants (trill, musically) and shared features
 ### Discovery (Read-only, local workspace)
 ```bash
 # Generate decompilation locally (JADX/apktool are gitignored)
-cd apps/tiktok/trill/apks/36.5.4/
-jadx -d jadx-deobf base.apk
-apktool d base.apk -o apktool
+cd apps/tiktok/apks/36.5.4/
+jadx -d jadx-deobf com.ss.android.ugc.trill.apk
+apktool d com.ss.android.ugc.trill.apk -o apktool
 
 # Search decompilation for patterns
 rg "<pattern>" jadx-deobf/ apktool/
 
 # Verify in Smali tests (local only)
-rg "<pattern>" ../../share-url-sanitization/36.5.4/trill/smali-tests/*/smali-classes*/
+rg "<pattern>" ../../share-url-sanitization/36.5.4/smali-tests/*/smali-classes*/
 ```
 
 ### Smali Testing
 Detailed commands in `WORKFLOW.md` Phase 2:
-1. Extract target DEX: `unzip -j base.apk classes15.dex`
+1. Extract target DEX: `unzip -j <package>.apk classes15.dex`
 2. Decompile: `baksmali d classes15.dex -o smali-classes15/`
 3. Edit smali, add verification logs
 4. Recompile: `smali a smali-classes15/ -o classes15-patched.dex --api 35`
@@ -88,10 +90,90 @@ Detailed commands in `WORKFLOW.md` Phase 2:
 
 **Note:** smali-tests/ outputs are gitignored. After validation, copy reference files to `apps/<app-family>/<feature>/<version>/files/` for git tracking.
 
+### ReVanced Patch Application
+
+After updating patches in `revanced-src/revanced-patches/`:
+```bash
+# Build patches
+cd revanced-src/revanced-patches
+./gradlew build
+
+# Apply patches (use -p SPACE path, NOT -p=path)
+java -jar revanced-src/revanced-cli.jar patch \
+  -p revanced-src/revanced-patches/patches/build/libs/patches-X.Y.Z.rvp \
+  apps/<app-family>/apks/<version>/<package>.apk
+
+# Optional flags:
+# -e <patch-name>  Enable specific patch
+# -d <patch-name>  Disable specific patch
+# -o <output.apk>  Output path (defaults to <package>-patched.apk)
+# -i               Install to connected ADB device
+# --exclusive      Disable all patches except -e enabled ones
+```
+
+**CRITICAL:** Use `-p <path>` with SPACE, not `-p=<path>` or `--patches=<path>`. CLI v5.0.1 fails silently with `=` syntax.
+
+Output: `<package>-patched.apk` in same directory as input APK.
+
 ### Documentation (Required after validation)
 - Feature `README.md` - Update status, technical details, validation results
 - `logs/` - Save test logs with timestamps
 - Inline Smali comments - Document register usage, injection points, edge cases
+
+---
+
+## Code Comments Style Guide
+
+### Avoid Fragile References
+- Don't: Hard-code line numbers or positions that will drift as code changes
+- Do: Reference logical sections, method names, or conceptual boundaries
+- Example: "inject after validation check" not "inject after line 369"
+
+### Write for Your Future Self, Not a Tutorial
+- Don't: Document obvious control flow or explain what each line does
+- Do: Capture the why and high-level what in one concise statement
+- Example: "Intercept after URL builder so tracking never runs" vs multi-line flow explanation
+
+### Use Neutral, Technical Language
+- Skip collective pronouns ("we", "our") - use "the patch", "this change", "the code"
+- No marketing speak or subjective claims ("production-ready", "best-in-class", "elegant")
+- Stick to measurable facts: "reduces memory by 20%" not "optimized performance"
+- No emojis, ASCII art, or decorative flair
+
+### Be Precise and Concrete
+- Use specific nouns and verbs: "sanitizes URL" beats "makes things cleaner"
+- State what changed and how you verified it: "returns canonical URL (verified on v36.5.4)"
+- Include concrete results when relevant: specific error codes, performance metrics, test outputs
+
+### Keep It Brief
+- One idea per sentence, one topic per comment block
+- Two sentences max for most inline comments
+- If you need more than 3 lines, move it to documentation
+
+### Don't Echo the Code
+- Skip comments that just restate what the code already shows
+- Focus on intent, assumptions, and non-obvious behavior
+- Trust that code structure communicates basic flow
+
+### Write Like Git Commits
+- Describe what changed, not your feelings about it
+- Use imperative mood when describing actions
+- Facts only - no excitement, frustration, or editorial commentary
+
+### Handle Future Work Pragmatically
+- Only use TODO if you'll address it in the next few commits
+- Move longer-term concerns to issues or a research doc
+- Frame assumptions as simple statements: "This assumes X continues to Y"
+
+### Match Comments to Actual Code
+- Reference the exact variables/parameters used (p1, not "the URL" if p1 is the variable)
+- Update comments immediately when refactoring
+- Delete comments that no longer apply
+
+### Separate Documentation from Implementation
+- Inline comments: Quick orientation and critical assumptions only
+- External docs: Full analysis, design rationale, research notes
+- Rule of thumb: If it's more than 2 lines, consider moving it to docs
 
 ---
 
@@ -100,6 +182,12 @@ Detailed commands in `WORKFLOW.md` Phase 2:
 **Paths in $PATH:**
 - `/usr/share/java/smali/` (baksmali/smali)
 - `~/Android/Sdk/build-tools/36.1.0/` (zipalign, apksigner)
+
+**apktool usage:** Use Java 11 with increased heap for large DEX processing:
+```bash
+export JAVA_HOME="/usr/lib/jvm/java-11-openjdk"
+java -Xmx20g -Xms8g -jar "/usr/share/java/android-apktool/apktool.jar" d <apk-file>
+```
 
 **Memory limits:** For large DEX assembly, set `SMALI_THREADS=1` and `java -Xmx16G`
 
@@ -120,14 +208,14 @@ Detailed commands in `WORKFLOW.md` Phase 2:
 
 ## Quick Reference
 
-**Tracked in Git** (22 files):
-- `apps/<app-family>/<feature>/README.md` - Feature documentation
-- `apps/<app-family>/<feature>/<version>/files/*.smali` - Reference bytecode
-- `apps/<app-family>/<variant>/apks/<version>/*.info` - APK metadata
-- `apps/<app-family>/<variant>/apks/<version>/*.sha256` - APK checksums
+Tracked in Git:
+- `apps/<app-family>/<feature>/README.md`
+- `apps/<app-family>/<feature>/<version>/files/*.smali`
+- `apps/<app-family>/apks/<version>/<package>.apk.info`
+- `apps/<app-family>/apks/<version>/<package>.apk.sha256`
 
-**Local Workspace Only** (gitignored):
-- `apps/<app-family>/<feature>/<version>/smali-tests/` - Full decompiled bytecode (1.7GB+ per variant)
-- `apps/<app-family>/<feature>/<version>/logs/` - Test execution logs
-- `apps/<app-family>/<variant>/apks/<version>/apktool/` - Decompiled APK source
-- `apps/<app-family>/<variant>/apks/<version>/jadx/` - Decompiled Java code
+Local workspace gitignored:
+- `apps/<app-family>/<feature>/<version>/smali-tests/`
+- `apps/<app-family>/<feature>/<version>/logs/`
+- `apps/<app-family>/apks/<version>/<package>.apk`
+- `apps/<app-family>/apks/<version>/{apktool,jadx}/`

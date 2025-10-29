@@ -2,7 +2,7 @@
 
 > **Single Source of Truth**: Feature READMEs (`apps/<app-family>/<feature>/README.md`) contain all research findings, technical details, and validation results. This runbook describes the procedures to produce those findings. Always reference the feature README for current status.
 
-## **Repository Structure**
+## Repository Structure
 ```bash
 revanced-research/
 ├── README.md                    # Main documentation + status
@@ -19,19 +19,13 @@ revanced-research/
 │       │       ├── files/
 │       │       ├── logs/
 │       │       └── smali-tests/
-│       ├── <variant>/
-│       │   └── apks/
-│       │       ├── <version>/
-│       │       │   ├── base.apk.info           # Metadata (tracked)
-│       │       │   ├── base.apk.sha256         # Checksums (tracked)
-│       │       │   ├── base.apk                # Binary (gitignored)
-│       │       │   ├── apktool/                # Decompilation (gitignored)
-│       │       │   └── jadx/                   # Decompilation (gitignored)
-│       │       └── 36.6.0/
-│       │           └── ...
-│       └── trill/
-│           └── apks/
-│               └── ...
+│       ├── apks/
+│       │   └── <version>/
+│       │       ├── <package>.apk.info          # Metadata (tracked)
+│       │       ├── <package>.apk.sha256        # Checksums (tracked)
+│       │       ├── <package>.apk               # Binary (gitignored)
+│       │       ├── apktool/                    # Decompilation (gitignored)
+│       │       └── jadx/                       # Decompilation (gitignored)
 └── revanced-src/
     ├── revanced-patches/        # Submodule (forked)
     └── revanced-cli.jar         # CLI tool
@@ -41,12 +35,12 @@ revanced-research/
 
 ---
 
-## **Mission Statement**
-Ship a working ReVanced patch using proven Smali edits. Test everything in raw Smali first, then port to ReVanced. Document every attempt to avoid circles.
+## Mission Statement
+Validate bytecode changes in Smali before porting to ReVanced patches.
 
 ---
 
-## **Documentation Guidelines**
+## Documentation Guidelines
 
 **Single source of truth per feature**: `apps/<app-family>/<feature>/README.md`
 
@@ -60,35 +54,35 @@ This README consolidates:
 
 Tracked files:
 - `apps/<app-family>/<feature>/<version>/files/*.smali` - Reference bytecode for documentation
-- `apps/<app-family>/<variant>/apks/<version>/base.apk.info` - APK metadata
-- `apps/<app-family>/<variant>/apks/<version>/base.apk.sha256` - APK checksums
+- `apps/<app-family>/apks/<version>/<package>.apk.info` - APK metadata
+- `apps/<app-family>/apks/<version>/<package>.apk.sha256` - APK checksums
 
 Local-only files (gitignored):
 - `apps/<app-family>/<feature>/<version>/smali-tests/` - Bytecode experiments and test APKs
 - `apps/<app-family>/<feature>/<version>/logs/` - Device logs, CLI output, validation evidence
-- `apps/<app-family>/<variant>/apks/<version>/` - APK binaries and decompilations
+- `apps/<app-family>/apks/<version>/` - APK binaries and decompilations
 
 **Workflow:**
 1. Create feature/version folder structure
-2. Decompile APK into `<variant>/apks/<version>/{apktool,jadx}` (local only)
+2. Decompile APK into `apks/<version>/{apktool,jadx}` (local only)
 3. Run smali experiments in `<feature>/<version>/smali-tests/` (local only)
 4. Update feature README as you learn (status, findings, validation results)
 5. Copy reference smali files to `<feature>/<version>/files/` for git tracking
 
 ---
 
-## **Phase 0: Repository Setup**
+## Phase 0: Repository Setup
 
 One-time setup when adding a new APK and feature:
 
 ### 0.1 Create APK Storage
 
 ```bash
-mkdir -p apps/<app-family>/<variant>/apks/<version>
+mkdir -p apps/<app-family>/apks/<version>
 
 # Create metadata (tracked in git)
-sha256sum apps/<app-family>/<variant>/apks/<version>/base.apk > apps/<app-family>/<variant>/apks/<version>/base.apk.sha256
-cat > apps/<app-family>/<variant>/apks/<version>/base.apk.info << 'EOF'
+sha256sum apps/<app-family>/apks/<version>/<package>.apk > apps/<app-family>/apks/<version>/<package>.apk.sha256
+cat > apps/<app-family>/apks/<version>/<package>.apk.info << 'EOF'
 Version: <VERSION>
 Package: <PACKAGE_NAME>
 Architecture: arm64-v8a, armeabi-v7a
@@ -128,7 +122,7 @@ EOF
 
 ---
 
-## **Phase 1: Discovery**
+## Phase 1: Discovery
 
 Decompile APK and explore:
 
@@ -138,7 +132,7 @@ Decompile APK and explore:
 
 ```bash
 # Navigate to APK directory
-cd apps/<app-family>/<variant>/apks/<version>/
+cd apps/<app-family>/apks/<version>/
 
 # Set environment for stability
 export JAVA_HOME=/usr/lib/jvm/java-11-openjdk
@@ -146,20 +140,20 @@ export PATH="$JAVA_HOME/bin:/home/rafa/.local/bin:$PATH"
 
 # JADX (Recommended - handles large APKs better)
 mkdir -p jadx-deobf
-taskset -c 0 jadx -d jadx-deobf base.apk
+taskset -c 0 jadx -d jadx-deobf <package>.apk
 
 # Apktool (Alternative - use jar directly with increased heap)
 mkdir -p apktool
-taskset -c 0 java -Xmx4G -jar /usr/share/java/android-apktool/apktool.jar d base.apk -o apktool
+taskset -c 0 java -Xmx4G -jar /usr/share/java/android-apktool/apktool.jar d <package>.apk -o apktool
 ```
 
 **For smaller APKs:**
 ```bash
 # apktool
-apktool d -f apps/<app-family>/<variant>/apks/<version>/base.apk -o apps/<app-family>/<variant>/apks/<version>/apktool
+apktool d -f apps/<app-family>/apks/<version>/<package>.apk -o apps/<app-family>/apks/<version>/apktool
 
 # JADX
-jadx apps/<app-family>/<variant>/apks/<version>/base.apk -d apps/<app-family>/<variant>/apks/<version>/jadx --deobf
+jadx apps/<app-family>/apks/<version>/<package>.apk -d apps/<app-family>/apks/<version>/jadx --deobf
 ```
 
 ### 1.2 Take temporary notes
@@ -173,7 +167,7 @@ Later, consolidate these into the feature README's "Technical Reference" section
 
 ---
 
-## **Phase 2: Smali Testing**
+## Phase 2: Smali Testing
 
 When creating a new smali-test experiment:
 
@@ -184,7 +178,7 @@ cd apps/<app-family>/<feature>/<version>/smali-tests/$TEST_NUM
 mkdir -p .
 
 # 2. Extract target DEX and decompile
-unzip -j ../../../../../apks/<version>/base.apk classes15.dex -d .
+unzip -j ../../../apks/<version>/<package>.apk classes15.dex -d .
 baksmali d classes15.dex -o smali-classes15/
 
 # 3. Edit and document
@@ -193,7 +187,7 @@ vim smali-classes15/X/UEU.smali
 
 # 4. Build and test
 smali a smali-classes15/ -o classes15-patched.dex --api 35
-cp ../../../../../apks/<version>/base.apk test.apk
+cp ../../../apks/<version>/<package>.apk test.apk
 zip -j test.apk classes15-patched.dex
 zip -d test.apk "META-INF/*"
 zipalign -f 4 test.apk test-aligned.apk
@@ -204,6 +198,13 @@ adb logcat -c
 adb logcat -d | tee ../logs/test-$TEST_NUM-$(date +%s).log
 ```
 
+**Pre-port sanity checks (repeatable for any feature):**
+- Count how many times the target literal, opcode sequence, or field reference appears in the method. If more than one, document how you will disambiguate before writing automation.
+- Capture which registers are populated around the change (note the exact `v?` names from baksmali). Reuse these registers when you automate the edit instead of hardcoding guesses.
+- Record the downstream call that consumes the value you modify (framework constants, helper invocations, etc.). These become anchors for later fingerprints.
+- Run a negative test by reverting the manual change and reproducing the failure so you understand the regression signal you expect when the patch breaks.
+- Save all logs (adb, Frida, CLI output) to `<feature>/<version>/logs/` with timestamps; they are required when you promote the patch.
+
 **Document results:** After testing, update feature README with outcome:
 - Add injection point details to "Technical Reference" section
 - Update register allocation table
@@ -212,7 +213,7 @@ adb logcat -d | tee ../logs/test-$TEST_NUM-$(date +%s).log
 
 ---
 
-## **Phase 3: ReVanced Patch Porting**
+## Phase 3: ReVanced Patch Porting
 
 **Prerequisites**: Phase 2 Smali testing complete with validated patch
 
@@ -250,6 +251,16 @@ public final class YourHelper {
     }
 }
 ```
+
+### 3.3 Fingerprint & Guardrail Checklist
+
+Before authoring Kotlin patches, confirm these points are covered in your notes or README:
+- **Framework anchors:** Require at least one stable framework reference (e.g., `DIRECTORY_*`, `MediaStore`, explicit API signatures) so obfuscation-only changes do not invalidate the fingerprint.
+- **Unique literal counts:** Verify the literal or opcode sequence you plan to match occurs exactly once. If multiple matches exist, add guards (method name, class suffix, call signature) and document the rationale.
+- **Call proximity:** Measure the instruction distance between the literal you replace and the call or `move-result` you rely on. Assert this window in code so structural shifts throw fast rather than silently misbehaving.
+- **Fallback criteria:** If you add a fallback match, state the conditions under which it should trigger and what additional guards keep it safe.
+- **Failure-path rehearsal:** Intentionally break the fingerprint (e.g., tweak a string) and run a build to ensure the patch skips gracefully without crashing the CLI. Archive the log message so future maintainers know the expected behavior.
+- **Variant coverage:** Identify every package/ABI variant you claim to support and plan validation runs for each before merging.
 
 ### 3.4 Create Fingerprint & Patch (Kotlin)
 
@@ -349,7 +360,7 @@ java -jar revanced-src/revanced-cli.jar patch \
     -p revanced-src/revanced-patches/patches/build/libs/patches-*.rvp \
     -o revanced-build-test.apk \
     -e "Your patch name" \
-    apps/<app-family>/<variant>/apks/<version>/base.apk
+    apps/<app-family>/apks/<version>/<package>.apk
 
 # Install and test
 adb install -r revanced-build-test.apk
@@ -360,6 +371,11 @@ adb logcat -d | tee apps/<app-family>/<feature>/<version>/logs/revanced-test-$(d
 # Save CLI output
 sha256sum revanced-build-test.apk
 ```
+
+**Build promotion checklist:**
+- Store Gradle and CLI logs alongside device logs for traceability.
+- Record the exact patches bundle name (`patches-<version>.rvp`) and the APK SHA256 in the feature README.
+- Run the same CLI command with the fingerprint intentionally disabled to confirm the patch reports "not applied" rather than throwing.
 
 ### 3.6 Document Results
 
@@ -378,8 +394,8 @@ Update feature README with ReVanced validation:
 # 3. Commit
 git add apps/<app-family>/<feature>/README.md \
         apps/<app-family>/<feature>/<version>/logs/*.log \
-        apps/<app-family>/<variant>/apks/<version>/base.apk.sha256 \
-        apps/<app-family>/<variant>/apks/<version>/base.apk.info
+        apps/<app-family>/apks/<version>/<package>.apk.sha256 \
+        apps/<app-family>/apks/<version>/<package>.apk.info
 git commit -m "docs(<feature>): validate ReVanced port for <version>"
 ```
 
@@ -424,7 +440,7 @@ val targetRegister = (moveResultInstruction as OneRegisterInstruction).registerA
 cd apps/<app-family>/<feature>/<version>/smali-tests/01-canonical-url
 
 # Extract only the target DEX shard (e.g., classes15 for X/UEU.smali)
-unzip -j ../../../../../apks/<version>/base.apk classes15.dex -d .
+unzip -j ../../../apks/<version>/<package>.apk classes15.dex -d .
 
 # Verify extraction
 ls -lh classes15.dex
@@ -476,7 +492,7 @@ ls -lh classes15-patched.dex
 
 ```bash
 # Copy original APK to working version
-cp ../../../../../apks/<version>/base.apk patched-working.apk
+cp ../../../apks/<version>/<package>.apk patched-working.apk
 
 # Replace the DEX in the APK (use -j to only update the file)
 zip -j patched-working.apk classes15-patched.dex
@@ -557,7 +573,7 @@ SMALI_THREADS=1 /usr/lib/jvm/java-11-openjdk/bin/java -Xms2G -Xmx16G \
   -jar /usr/share/java/smali/smali.jar assemble smali-classes15 \
   -o classes15-patched.dex --api 35 && python3 -c "
 import zipfile, os
-os.system('cp ../../../../../apks/<version>/base.apk temp.apk')
+os.system('cp ../../../apks/<version>/<package>.apk temp.apk')
 with zipfile.ZipFile('temp.apk', 'r') as orig, \
      zipfile.ZipFile('patched.apk', 'w', zipfile.ZIP_STORED) as new:
     for item in orig.infolist():
@@ -576,252 +592,8 @@ adb install -r patched-tiktok-$VERSION.apk && \
 adb shell am start -n $PACKAGE_NAME/.MainActivity
 ```
 
----
 
-### 3.2 Stage 1: LJIJJ Method Only
-
-Create fingerprint from verified code:
-
-```bash
-cd revanced-src/revanced-patches
-git checkout -b feat/tiktok-clean-urls
-
-mkdir -p src/main/kotlin/app/revanced/patches/tiktok/share/fingerprints/
-cat > src/main/kotlin/app/revanced/patches/tiktok/share/fingerprints/LjijjBundleFingerprint.kt << 'EOF'
-package app.revanced.patches.tiktok.share.fingerprints
-
-import app.revanced.patcher.fingerprint.MethodFingerprint
-
-// Based on: revanced-research/apps/<app-family>/<feature>/<version>/smali-tests/ and feature README
-// LJIJJ Method - Share extras builder
-internal object LjijjBundleFingerprint : MethodFingerprint(
-    returnType = "Landroid/os/Bundle;",
-    parameters = listOf("Ljava/lang/String;", "Landroid/content/Context;"),
-    strings = listOf(
-        "share_url"  // Verified at line 423 in smali test
-    )
-)
-EOF
-```
-
-Create patch for single method:
-
-```kotlin
-cat > src/main/kotlin/app/revanced/patches/tiktok/share/CleanShareUrlsPatch.kt << 'EOF'
-package app.revanced.patches.tiktok.share
-
-import app.revanced.patcher.data.BytecodeContext
-import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
-import app.revanced.patcher.patch.BytecodePatch
-import app.revanced.patcher.patch.annotation.CompatiblePackage
-import app.revanced.patcher.patch.annotation.Patch
-import app.revanced.patches.tiktok.share.fingerprints.LjijjBundleFingerprint
-import app.revanced.util.exception
-
-@Patch(
-    name = "Clean share URLs - Stage 1",
-    description = "Testing LJIJJ method only.",
-    compatiblePackages = [CompatiblePackage("$PACKAGE_NAME")]
-)
-object CleanShareUrlsPatch : BytecodePatch(
-    setOf(LjijjBundleFingerprint)  // Just one fingerprint
-) {
-    override fun execute(context: BytecodeContext) {
-        // LJIJJ method only
-        LjijjBundleFingerprint.result?.let { result ->
-            val method = result.mutableMethod
-            val insertIndex = result.scanResult.patternScanResult!!.endIndex
-
-            method.addInstructions(
-                insertIndex,
-                """
-                    const-string v0, "STAGE1"
-                    const-string v1, "LJIJJ patch triggered"
-                    invoke-static {v0, v1}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
-
-                    invoke-static {v4}, Lapp/revanced/integrations/tiktok/patches/CleanSharePatch;->sanitizeUrl(Ljava/lang/String;)Ljava/lang/String;
-                    move-result-object v4
-                """
-            )
-        } ?: throw LjijjBundleFingerprint.exception
-    }
-}
-EOF
-```
-
-Test Stage 1:
-
-```bash
-# Build and test
-cd revanced-src/revanced-patches && ./gradlew build patches:buildAndroid
-cd ../..
-
-java -jar revanced-src/revanced-cli.jar patch \
-    --patch "Clean share URLs - Stage 1" \
-    --merge revanced-src/revanced-integrations.apk \
-    --out stage1-test.apk \
-    apps/<app-family>/<variant>/apks/<version>/base.apk
-
-adb install -r stage1-test.apk
-adb logcat -c
-# Test share
-adb logcat -d | tee apps/<app-family>/<feature>/<version>/logs/stage1-test.log | grep "STAGE1"
-
-# Update feature README "Validation" section with result
-# Note: "Stage 1 - LJIJJ Only - Passed"
-```
-
-### 3.3 Stage 2: Add LJFF Method
-
-Only proceed after Stage 1 is confirmed working:
-
-```bash
-# Add second fingerprint
-cat > src/main/kotlin/app/revanced/patches/tiktok/share/fingerprints/LjffBuilderFingerprint.kt << 'EOF'
-package app.revanced.patches.tiktok.share.fingerprints
-
-import app.revanced.patcher.fingerprint.MethodFingerprint
-
-// LJFF Method - URL builder
-internal object LjffBuilderFingerprint : MethodFingerprint(
-    returnType = "Ljava/lang/String;",
-    parameters = listOf(
-        "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
-        "Ljava/lang/String;"
-    ),
-    strings = listOf("getShareLinkShortenUrl")  // Verified in smali-validated test
-)
-EOF
-```
-
-Update patch to include both methods:
-
-```kotlin
-@Patch(
-    name = "Clean share URLs",
-    description = "Removes tracking parameters from share URLs.",
-    compatiblePackages = [CompatiblePackage("$PACKAGE_NAME")]
-)
-object CleanShareUrlsPatch : BytecodePatch(
-    setOf(
-        LjijjBundleFingerprint,     // LJIJJ - Stage 1
-        LjffBuilderFingerprint      // LJFF - Stage 2
-    )
-) {
-    override fun execute(context: BytecodeContext) {
-        // LJIJJ method
-        LjijjBundleFingerprint.result?.let { result ->
-            val method = result.mutableMethod
-            val insertIndex = result.scanResult.patternScanResult!!.endIndex
-
-            method.addInstructions(
-                insertIndex,
-                """
-                    const-string v0, "LJIJJ"
-                    const-string v1, "Cleaning in bundle method"
-                    invoke-static {v0, v1}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
-
-                    invoke-static {v4}, Lapp/revanced/integrations/tiktok/patches/CleanSharePatch;->sanitizeUrl(Ljava/lang/String;)Ljava/lang/String;
-                    move-result-object v4
-                """
-            )
-        } ?: throw LjijjBundleFingerprint.exception
-
-        // LJFF method
-        LjffBuilderFingerprint.result?.let { result ->
-            val method = result.mutableMethod
-            val returnIndex = method.implementation!!.instructions.size - 1
-
-            method.addInstructions(
-                returnIndex,
-                """
-                    const-string v1, "LJFF"
-                    const-string v2, "Cleaning in builder method"
-                    invoke-static {v1, v2}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
-
-                    invoke-static {v0}, Lapp/revanced/integrations/tiktok/patches/CleanSharePatch;->sanitizeUrl(Ljava/lang/String;)Ljava/lang/String;
-                    move-result-object v0
-                """
-            )
-        } ?: throw LjffBuilderFingerprint.exception
-    }
-}
-```
-
-Test Stage 2:
-
-```bash
-# Build and test with both methods
-cd revanced-src/revanced-patches && ./gradlew build
-cd ../..
-
-java -jar revanced-src/revanced-cli.jar patch \
-    --patch "Clean share URLs" \
-    --merge revanced-src/revanced-integrations.apk \
-    --out stage2-test.apk \
-    apps/<app-family>/<variant>/apks/<version>/base.apk
-
-adb install -r stage2-test.apk
-adb logcat -c
-# Test share
-adb logcat -d | tee apps/<app-family>/<feature>/<version>/logs/stage2-test.log | grep -E "LJIJJ|LJFF"
-
-# Update feature README "Validation" section
-# Note: "Stage 2 - Both Methods - Passed"
-```
-
-### 3.4 Integration Helper
-
-Create helper with aggressive logging initially:
-
-```bash
-cd revanced-src/revanced-integrations
-mkdir -p app/revanced/integrations/tiktok/patches/
-cat > app/revanced/integrations/tiktok/patches/CleanSharePatch.java << 'EOF'
-package app.revanced.integrations.tiktok.patches;
-
-import android.util.Log;
-
-public class CleanSharePatch {
-    private static final String TAG = "RV_CLEAN";
-    
-    public static String sanitizeUrl(String url) {
-        // Aggressive logging for debugging
-        Log.d(TAG, "sanitizeUrl called");
-        Log.d(TAG, "Input type: " + (url == null ? "NULL" : url.getClass().getName()));
-        Log.d(TAG, "Input value: " + (url == null ? "NULL" : url));
-        
-        if (url == null) {
-            Log.w(TAG, "Received null URL, returning null");
-            return null;
-        }
-        
-        if (url.isEmpty()) {
-            Log.w(TAG, "Received empty URL, returning empty");  
-            return url;
-        }
-        
-        try {
-            String cleaned = url.replaceAll("[?&](utm_[^&]*|tt_[^&]*|enter_[^&]*)", "")
-                                .replaceAll("[?&]$", "");
-            
-            Log.d(TAG, "Original: " + url);
-            Log.d(TAG, "Cleaned: " + cleaned);
-            
-            return cleaned;
-            
-        } catch (Exception e) {
-            Log.e(TAG, "Exception in sanitizeUrl, returning original", e);
-            return url;
-        }
-    }
-}
-EOF
-```
-
----
-
-## **Phase 4: Common ReVanced Patterns Reference**
+## Phase 4: Common ReVanced Patterns Reference
 
 ### 4.1 Pattern Library (Study from existing patches)
 ```kotlin
@@ -890,87 +662,8 @@ Can't find target in obfuscated code?
 
 ---
 
-## **Phase 5: Verification Protocol**
 
-### 5.1 Test Checklist
-```markdown
-## Stage 1: Basic Function
-- [ ] App launches without crash
-- [ ] See "STAGE1" or "LJIJJ" in logs
-- [ ] See "RV_CLEAN" → "sanitizeUrl called"  
-- [ ] See "RV_CLEAN" → "Input value: https://..."
-- [ ] See "RV_CLEAN" → "Cleaned: https://..." (no tracking params)
-
-## Stage 2: Feature Test
-- [ ] Share button → Share sheet appears
-- [ ] Copy link → Link in clipboard
-- [ ] Copied URL has no utm_*, tt_*, enter_*
-- [ ] Share to WhatsApp → Clean URL sent
-- [ ] Share to Twitter → Clean URL in tweet
-
-## Stage 3: Edge Cases
-- [ ] Share from profile page
-- [ ] Share from sound page  
-- [ ] Share from hashtag page
-- [ ] Share while offline
-- [ ] Share immediately after app launch
-```
-
----
-
-## **Phase 6: Production & Multi-Version**
-
-### 6.1 Remove Debug Logging for Production
-```java
-// Production helper - minimal logging
-public static String sanitizeUrl(String url) {
-    if (url == null) return null;
-    try {
-        return url.replaceAll("[?&](utm_[^&]*|tt_[^&]*|enter_[^&]*)", "")
-                  .replaceAll("[?&]$", "");
-    } catch (Exception ignored) {
-        return url;
-    }
-}
-```
-
-### 6.2 Test on Multiple Versions
-```bash
-# When adding new version (36.6.0, etc):
-# 1. Create feature/<feature>/36.6.0/{smali-tests,logs}
-# 2. Create apks/36.6.0/ with base.apk, metadata
-# 3. Repeat Phase 2 (Smali testing)
-# 4. Update feature README Version Map with results
-# 5. Test ReVanced patch with new version
-
-java -jar revanced-src/revanced-cli.jar patch \
-    -p revanced-src/revanced-patches/patches/build/libs/patches-*.rvp \
-    -o test-36.6.0.apk \
-    -e "Your patch name" \
-    apps/<app-family>/<variant>/apks/36.6.0/base.apk
-
-adb install -r test-36.6.0.apk
-adb logcat -c
-# Test and capture results
-adb logcat -d | tee apps/<app-family>/<feature>/36.6.0/logs/revanced-test.log
-
-# Update feature README with 36.6.0 row in Version Map + Validation table
-```
-
----
-
-## **Success Factors**
-
-1. **ALWAYS smali test first** - Never write ReVanced code until Smali edit is proven
-2. **Document obfuscated names** - Map every `Lcom/a/b/c;->d` to its purpose in feature README
-3. **Stage your integration** - One method at a time (LJIJJ first, then LJFF)
-4. **Log aggressively initially** - Remove logs only after everything works
-5. **Update documentation** - Keep feature README synchronized with findings
-6. **Follow ReVanced patterns** - Copy their style exactly
-
----
-
-## **Git Workflow**
+## Git Workflow
 
 ### Research Commits
 ```bash
@@ -983,7 +676,7 @@ git add apps/<app-family>/<feature>/README.md
 git commit -m "docs(<feature>): update validation and technical reference for <version>"
 
 # When adding or updating the raw APK
-git add apps/<app-family>/<variant>/apks/<version>/
+git add apps/<app-family>/apks/<version>/
 git commit -m "chore(apk): add <app> <version> base artifact and metadata"
 
 ```
@@ -1007,13 +700,12 @@ git push
 
 ---
 
-## **Deliverables**
+## Deliverables
 
 1. `apps/<app-family>/<feature>/README.md` - Consolidated feature documentation (6 sections)
 2. `apps/<app-family>/<feature>/<version>/files/` - Reference smali files (tracked in git)
-3. `apps/<app-family>/<variant>/apks/<version>/base.apk.info` - APK metadata (tracked)
-4. `apps/<app-family>/<variant>/apks/<version>/base.apk.sha256` - APK checksums (tracked)
+3. `apps/<app-family>/apks/<version>/<package>.apk.info` - APK metadata (tracked)
+4. `apps/<app-family>/apks/<version>/<package>.apk.sha256` - APK checksums (tracked)
 5. `revanced-src/revanced-patches/` - Working ReVanced patch (submodule)
 
 ---
-

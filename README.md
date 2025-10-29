@@ -6,33 +6,37 @@
 
 Smali-first reverse-engineering workspace for Android APK analysis and ReVanced patch development.
 
-## Navigation
+## Workspace Layout
 
-| Path | Purpose |
-|------|---------|
-| `apps/<app-family>/<variant>/apks/<version>/` | APK metadata: checksums, build info (binaries gitignored) |
-| `apps/<app-family>/<feature>/` | Feature documentation: research findings, technical details |
-| `apps/<app-family>/<feature>/<version>/files/` | Reference smali files for documentation |
-| `revanced-src/` | ReVanced patches (submodule, upstream port only) |
+| Path | Tracked | Purpose |
+|------|---------|---------|
+| `apps/<family>/apks/<version>/<package>.apk.{info,sha256}` | ✓ | APK metadata |
+| `apps/<family>/<feature>/README.md` | ✓ | Research findings |
+| `apps/<family>/<feature>/<version>/files/` | ✓ | Reference smali |
+| `apps/<family>/apks/<version>/<package>.apk` | ✗ | APK binaries |
+| `apps/<family>/apks/<version>/{apktool,jadx}/` | ✗ | Decompilations |
+| `apps/<family>/<feature>/<version>/smali-tests/` | ✗ | Test outputs |
+| `revanced-src/` | submodule | Patch port target |
 
-## Targets
+Procedures: [WORKFLOW.md](WORKFLOW.md)
 
-| App | Feature | Status | Documentation |
-|-----|---------|--------|---|
-| Trill + Musically | Share URL sanitization | Passed | [README.md](apps/tiktok/share-url-sanitization/README.md) |
+## Environment
 
-## Prerequisites
+- [apktool](https://apktool.org/) - APK decompilation
+- [baksmali/smali](https://github.com/JesusFreke/smali) - DEX manipulation
+- [Android SDK](https://developer.android.com/studio) - zipalign, apksigner (`~/Android/Sdk/build-tools/36.1.0/`)
+- [jadx](https://github.com/skylot/jadx) - Source deobfuscation
+- [frida](https://frida.re/) - Dynamic instrumentation
+- [ripgrep](https://github.com/BurntSushi/ripgrep) - Code search
 
-- `apktool` - APK decompilation
-- `baksmali`/`smali` - DEX manipulation
-- `zipalign`, `apksigner` - APK signing
-- `jadx` - Source deobfuscation (optional)
-- `rg` (ripgrep) - Fast code search
+Java 11 for large DEX assembly (`-Xmx16G`).
 
-## Approach
+## Resources
 
-Smali-first validation: test bytecode changes in raw Smali before porting to ReVanced. Feature READMEs are the single source of truth.
+- [Dalvik Bytecode Reference](https://source.android.com/docs/core/runtime/dalvik-bytecode) - Official AOSP docs
+- [Smali Wiki](https://github.com/JesusFreke/smali/wiki) - Registers, types, methods
+- [Smali Reference](https://github.com/LaurieWired/SmaliReference) - Practical examples
 
 ## License
 
-GPLv3
+[GPLv3](https://www.gnu.org/licenses/gpl-3.0.html)
