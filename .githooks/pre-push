@@ -1,0 +1,28 @@
+#!/bin/bash
+# Pre-push hook: Verify no sensitive files in commits being pushed
+
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+COMMIT_COUNT=$(git rev-list --count origin/$BRANCH..$BRANCH)
+
+if [ $COMMIT_COUNT -eq 0 ]; then
+    exit 0
+fi
+
+# Check for dangerous file patterns in commits being pushed
+DANGEROUS_FILES=$(git diff origin/$BRANCH..$BRANCH --name-only | grep -E "(apktool|jadx|\.apk$|\.dex$)" || true)
+
+if [ -n "$DANGEROUS_FILES" ]; then
+    echo "⚠️  WARNING: About to push commits containing dangerous files!"
+    echo "Files: $DANGEROUS_FILES"
+    echo ""
+    echo "This will expose decompiled code with embedded credentials."
+    echo "Abort with Ctrl+C if this is unintended."
+    echo ""
+    read -p "Force push anyway? (type 'yes' to continue): " CONFIRM
+    if [ "$CONFIRM" != "yes" ]; then
+        echo "❌ Push aborted"
+        exit 1
+    fi
+fi
+
+exit 0
