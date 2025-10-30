@@ -1,18 +1,10 @@
+# ============================================================================
+# DECOMPILATION OUTPUTS (CRITICAL: Never commit these - repo inflation!)
+# ============================================================================
+# These are generated during APK reverse engineering and can be 100MB+ each.
+# Tools: apktool, jadx, baksmali
 decompiled-jadx/
 decompiled-smali-full/
-*.apk
-*.ap_
-*.log
-hs_err_*.log
-
-# App research outputs (feature-first structure)
-apps/**/smali-tests/
-apps/**/revanced-builds/
-apps/**/decompiled-*/
-apps/**/*.dex
-apps/**/*.idsig
-
-# APK decompilation outputs
 apps/**/apktool/
 apps/**/apktool-output/
 apps/**/jadx/
@@ -20,7 +12,24 @@ apps/**/jadx-output/
 apps/**/jadx-badcode/
 apps/**/jadx-deobf/
 apps/**/indices/
+apps/**/smali-tests/
+apps/**/tiktok-patched-decompiled/
 frida-scripts/trace-outputs/
+
+# ============================================================================
+# APK ARTIFACTS & BUILD OUTPUTS
+# ============================================================================
+*.apk                                  # APK binaries (tracked as .sha256/.info)
+*.ap_                                  # Android compiled resources
+*.dex                                  # Dalvik bytecode (except referenced smali)
+*.idsig                                # APK signature metadata
+apps/**/revanced-builds/               # Local patch compilation artifacts
+
+# ============================================================================
+# LOGS & TEMPORARY FILES
+# ============================================================================
+*.log                                  # All log files
+hs_err_*.log                          # JVM crash dumps
 
 # APK artifacts (only metadata tracked)
 apps/**/apks/**/*.apk
@@ -68,5 +77,30 @@ AGENTS.md
 comprehensive_verification.sh
 verification-checklist.txt
 
-# Editor settings
-.vscode/
+# ============================================================================
+# SYSTEM & TEMPORARY
+# ============================================================================
+.DS_Store                              # macOS directory metadata
+.metadata_never_index                  # macOS cache
+Thumbs.db                              # Windows thumbnails
+.gradle/                               # Gradle build cache
+.idea/                                 # IntelliJ IDEA settings
+.vscode/                               # VS Code settings
+*.swp                                  # Vim swap files
+*.swo                                  # Vim swap files
+*~                                     # Backup files
+.env                                   # Environment variables (secrets)
+.env.local                             # Local environment overrides
+
+# ============================================================================
+# LARGE BINARY & BUILD ARTIFACTS
+# ============================================================================
+# These patterns prevent accidentally committing large binaries
+*.so                                   # Native shared objects (can be 10MB+)
+*.a                                    # Static libraries
+*.o                                    # Object files
+*.jar                                  # Java archives (except tracked)
+build/                                 # Build directories
+dist/                                  # Distribution artifacts
+target/                                # Maven target
+.m2/                                   # Maven cache
