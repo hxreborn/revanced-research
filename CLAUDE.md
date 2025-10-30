@@ -2,9 +2,7 @@
 
 Instructions for Claude Code when working in this repository. Keeps edits reproducible, focused, and reviewable.
 
-Changelog: 2025-10-26 - app family structure, feature READMEs as single source of truth.
-
-**Documentation:** Follow `~/.claude/CLAUDE.md` guidelines - no fluff, precise verbs, dense info, explain "why" not "what".
+Changelog: 2025-10-30 - flexible methodology, CLAUDE.md style applied to feature READMEs.
 
 ---
 
@@ -46,20 +44,9 @@ Example: `apps/tiktok/` contains APKs (com.zhiliaoapp.musically, com.ss.android.
 
 ## Task Management
 
-**Use TodoWrite proactively** for:
-- Multi-step Smali validation workflows
-- Complex ReVanced patch porting
-- Any task with 3+ distinct steps
-
-**Use Task tool (subagent_type=Explore)** when:
-- Exploring the codebase for patterns (e.g., "find all share URL handlers")
-- Searching across decompiled sources without a specific file target
-- Answering "how does X work" questions
-
-**Ask questions** when:
-- Multiple approaches are valid and user preference matters
-- Requirements are ambiguous
-- You need clarification on obfuscation mappings
+- **TodoWrite:** Multi-step workflows, 3+ distinct steps
+- **Task tool (Explore):** Codebase patterns, cross-file searches, architecture questions
+- **Ask questions:** When multiple approaches exist, requirements unclear, or obfuscation mappings need clarification
 
 ---
 
@@ -122,58 +109,17 @@ Output: `<package>-patched.apk` in same directory as input APK.
 
 ---
 
-## Code Comments Style Guide
+## Code Comments
 
-### Avoid Fragile References
-- Don't: Hard-code line numbers or positions that will drift as code changes
-- Do: Reference logical sections, method names, or conceptual boundaries
-- Example: "inject after validation check" not "inject after line 369"
+**Inline comments:** Capture why, not what. Reference logical sections/methods, not line numbers. One idea per sentence, max two sentences. Examples:
+- ✓ "Intercept after URL builder so tracking never executes"
+- ✗ "Get item at line 369 and check if null"
 
-### Write for Your Future Self, Not a Tutorial
-- Don't: Document obvious control flow or explain what each line does
-- Do: Capture the why and high-level what in one concise statement
-- Example: "Intercept after URL builder so tracking never runs" vs multi-line flow explanation
+**Style:** Use facts only - no marketing ("elegant", "production-ready"), pronouns ("we", "our"), or decorative flair (emojis, ASCII art).
 
-### Use Neutral, Technical Language
-- Skip collective pronouns ("we", "our") - use "the patch", "this change", "the code"
-- No marketing speak or subjective claims ("production-ready", "best-in-class", "elegant")
-- Stick to measurable facts: "reduces memory by 20%" not "optimized performance"
-- No emojis, ASCII art, or decorative flair
+**External docs:** Full analysis, design rationale, research notes - if more than 2 lines, move to documentation.
 
-### Be Precise and Concrete
-- Use specific nouns and verbs: "sanitizes URL" beats "makes things cleaner"
-- State what changed and how you verified it: "returns canonical URL (verified on v36.5.4)"
-- Include concrete results when relevant: specific error codes, performance metrics, test outputs
-
-### Keep It Brief
-- One idea per sentence, one topic per comment block
-- Two sentences max for most inline comments
-- If you need more than 3 lines, move it to documentation
-
-### Don't Echo the Code
-- Skip comments that just restate what the code already shows
-- Focus on intent, assumptions, and non-obvious behavior
-- Trust that code structure communicates basic flow
-
-### Write Like Git Commits
-- Describe what changed, not your feelings about it
-- Use imperative mood when describing actions
-- Facts only - no excitement, frustration, or editorial commentary
-
-### Handle Future Work Pragmatically
-- Only use TODO if you'll address it in the next few commits
-- Move longer-term concerns to issues or a research doc
-- Frame assumptions as simple statements: "This assumes X continues to Y"
-
-### Match Comments to Actual Code
-- Reference the exact variables/parameters used (p1, not "the URL" if p1 is the variable)
-- Update comments immediately when refactoring
-- Delete comments that no longer apply
-
-### Separate Documentation from Implementation
-- Inline comments: Quick orientation and critical assumptions only
-- External docs: Full analysis, design rationale, research notes
-- Rule of thumb: If it's more than 2 lines, consider moving it to docs
+**Future work:** Only TODO if addressing in next few commits; move longer-term concerns to issues.
 
 ---
 
@@ -196,13 +142,6 @@ java -Xmx20g -Xms8g -jar "/usr/share/java/android-apktool/apktool.jar" d <apk-fi
 - `docs(smali): update injection points for LJIJJ method`
 
 ---
-
-## Safety Guardrails
-
-- **No network requests** unless explicitly asked
-- **No background jobs** without notification
-- **Report OOM errors** with stderr snippet and suggest alternatives (reduce threads, Java 11)
-- **Only stage intentional changes** - use `git add -p` when committing
 
 ## Upstream PR Guidelines
 
