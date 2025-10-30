@@ -1,22 +1,22 @@
 # Downloads - TikTok
 
-Status: Complete. Patch implemented, tested on-device.
+Status: Patch implemented and tested on-device (v36.5.4).
 
 ---
 
 ## Target Method
 
-`X.DVV.LIZLLL` (classes6.dex): `PUBLIC STATIC (Context, String) → Uri`
+`X.DVV.LIZLLL` (classes6.dex): constructs MediaStore `relative_path` for video downloads.
 
-Constructs MediaStore `relative_path` for video downloads. Fingerprint: `"video/mp4"` + `"/Camera/"`.
+Fingerprint: `"video/mp4"` + `"/Camera/"` (ReVanced fuzzy matching handles method variations across variants).
 
 ---
 
-## Why Main Branch Failed on 36.5.4
+## Main Branch Issue (v36.5.4)
 
-Main injected `getDownloadPath()` calls but never removed the 4-instruction block constructing `Environment.DIRECTORY_DCIM + "/Camera/"`. Stock path construction executed after injection, overwriting custom path. Downloads always saved to DCIM/Camera ([#3695](https://github.com/ReVanced/revanced-patches/issues/3695)).
+Main branch injected `getDownloadPath()` calls but never removed the original 4-instruction block that appends `Environment.DIRECTORY_DCIM + "/Camera/"`. Result: stock path construction executed after injection, overwriting custom path. Downloads always saved to DCIM/Camera ([#3695](https://github.com/ReVanced/revanced-patches/issues/3695)).
 
-Fingerprint was not the issue. ReVanced uses fuzzy matching - the original 4-string fingerprint `("/", "/Camera", "/Camera/", "video/mp4")` successfully matches LIZLLL method on v36.5.4 despite method containing only `("/", "/TikTok", "/TikTok/", "video/mp4")`. Verified via logcat on both trill (LX/LBT;.LIZLLL) and musically (LX/DVV;.LIZLLL).
+The original 4-string fingerprint `("/", "/Camera", "/Camera/", "video/mp4")` successfully matches despite method containing different strings `("/", "/TikTok", "/TikTok/", "video/mp4")` due to ReVanced's fuzzy matching logic.
 
 ---
 
