@@ -18,7 +18,7 @@ Research and develop ReVanced patches through **Smali-first validation**. Every 
 
 ## Core Principles
 
-1. **Validate in Smali first** - Never modify `revanced-src/revanced-patches/` until proven in smali-tests
+1. **Flexible approach** - Validate approach based on task (Smali-first for risky changes, direct ReVanced for straightforward patches)
 2. **No APK artifacts in git** - Track metadata via .info/.sha256 files (gitignore exceptions), never commit binaries
 3. **Surgical edits** - Prefer targeted DEX injection (baksmali → smali) over full apktool rebuilds
 4. **Keep READMEs current** - Update feature README with injection points, findings, and validation results as you work
@@ -204,11 +204,17 @@ java -Xmx20g -Xms8g -jar "/usr/share/java/android-apktool/apktool.jar" d <apk-fi
 - **Report OOM errors** with stderr snippet and suggest alternatives (reduce threads, Java 11)
 - **Only stage intentional changes** - use `git add -p` when committing
 
-## PR Checklist
+## Upstream PR Guidelines
 
-Remember to:
-- Add spacing around register references in invoke instructions for better readability
-- Target PRs to dev branch, not main
+When porting patches to [ReVanced Patches](https://github.com/ReVanced/revanced-patches):
+
+1. **Target branch**: Always PR to `dev` branch, never `main`
+2. **Smali validation**: Include reference smali files and validation results from `apps/<app-family>/<feature>/<version>/files/`
+3. **Test evidence**: Document device testing (app version, platform, results) in PR description
+4. **Extension code**: Provide clean extension implementations with proper error handling
+5. **Code style**: Follow ReVanced patterns - match existing Kotlin style, use consistent naming
+6. **Documentation**: Fingerprints must be precise, include alternatives if fuzzy matching needed
+7. **Register spacing**: Add spacing around register references in invoke instructions for readability
 
 ---
 

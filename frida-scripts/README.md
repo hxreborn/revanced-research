@@ -39,20 +39,21 @@ frida -U -f <package> -l script.js
 
 See: `apps/tiktok/downloads/README.md`
 
----
-
 ## Share URL Sanitization
 
-- `share-url-tiktok-trace.js` - Trace UEU methods (Trill variant)
-- `share-url-musically-trace.js` - Trace aOp methods (Musically variant)
+- `share-url-sanitization-tiktok-trace.js` - Trace UEU methods (Trill variant)
+- `share-url-sanitization-musically-trace.js` - Trace aOp methods (Musically variant)
+- `share-url-sanitization-discover-musically.js` - Share method discovery
 
 See: `apps/tiktok/share-url-sanitization/README.md`
 
+## Toggle Feature
+
+- `toggle-trace.js` - Basic toggle state tracing
+- `toggle-diagnose-musically.js` - Toggle feature diagnostics
+
 ## Other
 
-- `diagnose-toggle-issue-musically.js` - Toggle feature diagnostics
-- `discover-musically-share-methods.js` - Share method discovery
-- `simple-toggle-trace.js` - Basic toggle state tracing
 - `setup-frida.sh` - Device setup script
 - `compare-both-apps.sh` - Side-by-side app tracing
 
