@@ -14,7 +14,9 @@ apps/**/*.idsig
 
 # APK decompilation outputs
 apps/**/apktool/
+apps/**/apktool-output/
 apps/**/jadx/
+apps/**/jadx-output/
 apps/**/jadx-badcode/
 apps/**/jadx-deobf/
 apps/**/indices/
